@@ -629,538 +629,594 @@ print('ok')
 ## File: `core/characters.py`
 
 **Description:** Character profile registry (Dragon, Dog, Cats, Luffy, Fox, Rabbit, Penguin, Hamster, Owl, Panda), dialogue lines, and supported actions.
-**Total Lines:** 529  
+**Total Lines:** 585  
 **Full Path:** `C:\Pet\core/characters.py`
 
 ```python
 from core.dialogue import LINES
 
+
+
 # Default lines for characters that don't override them
+
 DEFAULT_LINES = LINES
 
+
+
 CHARACTER_PROFILES = {
+
     "dragon": {
+
         "name": "Dragon Companion",
+
         "type": "dragon",  # Uses DragonAnimator
+
         "supported_actions": [
+
             "celebrate",
+
             "fire_breathe",
+
             "think",
+
             "wander",
+
             "sleep",
+
             "exhausted",
+
             "focus",
+
             "type",
-            "wake",
+
+            "wake"
+
         ],
-        "lines": DEFAULT_LINES,
+
+        "lines": DEFAULT_LINES
+
     },
+
     "dog": {
+
         "name": "Puppy Dog",
-        "type": "dog",  # Uses DogAnimator
+
+        "type": "dog", # Uses DogAnimator
+
         "supported_actions": [
+
             "tongue_out",
+
             "sit",
+
             "bark",
+
             "celebrate",
+
             "jump",
+
             "eat",
+
             "fetch",
+
             "happy",
+
             "wander",
+
             "sleep",
+
             "think",
+
             "focus",
+
             "type",
-            "wake",
+
+            "wake"
+
         ],
+
         "lines": {
+
             "idle": [
-                "Woof! Want to play?",
-                "Tail wagging happily!",
-                "*Pant pant*",
-                "Boop my nose!",
-                "Who's a good pet?",
+
+                "Woof! Want to play?", "Tail wagging happily!", "*Pant pant*",
+
+                "Boop my nose!", "Who's a good pet?"
+
             ],
+
             "posture": [
-                "Sit up straight! Woof!",
-                "Don't slouch, human!",
+
+                "Sit up straight! Woof!", "Don't slouch, human!"
+
             ],
+
             "hungry": [
-                "Treat time? Woof!",
-                "Need treats!",
-                "*Stares at treat bowl*",
+
+                "Treat time? Woof!", "Need treats!", "*Stares at treat bowl*"
+
             ],
+
             "clicked": [
-                "Woof! *Happy tail wag*",
-                "Belly rubs please!",
-                "Arf!",
+
+                "Woof! *Happy tail wag*", "Belly rubs please!", "Arf!"
+
             ],
+
             "pomodoroStart": [
-                "Time to focus! I'll guard your desk!",
-                "Woof! Let's get to work!",
+
+                "Time to focus! I'll guard your desk!", "Woof! Let's get to work!"
+
             ],
+
             "pomodoroEnd": [
-                "Break time! Let me get a treat!",
-                "Woof! You did great!",
+
+                "Break time! Let me get a treat!", "Woof! You did great!"
+
             ],
+
             "lateNight": [
-                "Yawn... Time for bed?",
-                "Sleeping on the rug... Zzz",
-            ],
-        },
+
+                "Yawn... Time for bed?", "Sleeping on the rug... Zzz"
+
+            ]
+
+        }
+
     },
+
     "luffy": {
+
         "name": "Luffy",
+
         "type": "sprite",  # Uses SpriteAnimator
+
         "image_path": "assets/luffy.png",
+
         "supported_actions": [
+
             "celebrate",
+
             "gum_stretch",
+
             "gear2",
+
             "gear3",
+
             "gear5",
+
             "think",
+
             "wander",
+
             "sleep",
+
             "focus",
-            "wake",
+
+            "wake"
+
         ],
+
         "lines": {
+
             "idle": [
-                "I'm gonna be King of the Pirates!",
-                "Meat...",
-                "Is it time to eat?",
-                "I'm so bored!",
-                "Let's go on an adventure!",
+
+                "I'm gonna be King of the Pirates!", "Meat...", "Is it time to eat?",
+
+                "I'm so bored!", "Let's go on an adventure!"
+
             ],
+
             "pomodoroStart": [
-                "Alright! Let's get to work!",
-                "Focus time!",
+
+                "Alright! Let's get to work!", "Focus time!"
+
             ],
+
             "pomodoroEnd": [
-                "Time for meat!",
-                "Break time! Let's eat!",
+
+                "Time for meat!", "Break time! Let's eat!"
+
             ],
+
             "morning": [
-                "Morning! Where's breakfast?",
+
+                "Morning! Where's breakfast?"
+
             ],
+
             "hungry": [
-                "Meat... I need meat...",
-                "Sanji! Food!",
+
+                "Meat... I need meat...", "Sanji! Food!"
+
             ],
+
             "clicked": [
-                "Hey! Cut it out!",
-                "Shishishi!",
-            ],
-        },
+
+                "Hey! Cut it out!", "Shishishi!"
+
+            ]
+
+        }
+
     },
+
     "cat_orange": {
+
         "name": "Orange Tabby Cat",
+
         "type": "cat",
+
         "cat_variant": "cat_orange",
+
         "supported_actions": [
-            "meow",
-            "pounce",
-            "clean",
-            "stretch",
-            "purr",
-            "sleep",
-            "sit",
-            "wander",
-            "happy",
-            "wake",
+
+            "meow", "pounce", "clean", "stretch", "purr", "sleep", "sit", "wander", "happy", "wake"
+
         ],
+
         "lines": {
-            "idle": [
-                "Meow~",
-                "*Purrrrr*",
-                "Sunbathing time...",
-                "Pet me human!",
-                "*Makes biscuits*",
-            ],
-            "hungry": [
-                "Meow! Fish please!",
-                "*Stares at empty food bowl*",
-            ],
-            "clicked": [
-                "Purrrr... *head butt*",
-                "Meow! *tail curl*",
-                "Nyan!",
-            ],
-            "pomodoroStart": [
-                "I'll nap on your keyboard while you work!",
-                "Meow! Good luck!",
-            ],
-            "pomodoroEnd": [
-                "Break time! Time for cat treats!",
-                "Purrrr... You worked hard!",
-            ],
-        },
+
+            "idle": ["Meow~", "*Purrrrr*", "Sunbathing time...", "Pet me human!", "*Makes biscuits*"],
+
+            "hungry": ["Meow! Fish please!", "*Stares at empty food bowl*"],
+
+            "clicked": ["Purrrr... *head butt*", "Meow! *tail curl*", "Nyan!"],
+
+            "pomodoroStart": ["I'll nap on your keyboard while you work!", "Meow! Good luck!"],
+
+            "pomodoroEnd": ["Break time! Time for cat treats!", "Purrrr... You worked hard!"]
+
+        }
+
     },
+
     "cat_tuxedo": {
+
         "name": "Ghibli Tuxedo Cat",
+
         "type": "cat",
+
         "cat_variant": "cat_tuxedo",
+
         "supported_actions": [
-            "meow",
-            "pounce",
-            "clean",
-            "stretch",
-            "purr",
-            "sleep",
-            "sit",
-            "wander",
-            "happy",
-            "wake",
+
+            "meow", "pounce", "clean", "stretch", "purr", "sleep", "sit", "wander", "happy", "wake"
+
         ],
+
         "lines": {
-            "idle": [
-                "Meow~",
-                "*Gentle purr*",
-                "Watchful guardian...",
-                "*Licks paw*",
-            ],
-            "hungry": [
-                "Meow! Fish please!",
-            ],
-            "clicked": [
-                "Meow! *happy chirp*",
-                "Purrrr...",
-                "*Blinks slowly*",
-            ],
-            "pomodoroStart": [
-                "I'll keep watch from your desktop!",
-                "Meow! Focus time!",
-            ],
-            "pomodoroEnd": [
-                "Time to play! Meow!",
-            ],
-        },
+
+            "idle": ["Meow~", "*Gentle purr*", "Watchful guardian...", "*Licks paw*"],
+
+            "hungry": ["Meow! Fish please!"],
+
+            "clicked": ["Meow! *happy chirp*", "Purrrr...", "*Blinks slowly*"],
+
+            "pomodoroStart": ["I'll keep watch from your desktop!", "Meow! Focus time!"],
+
+            "pomodoroEnd": ["Time to play! Meow!"]
+
+        }
+
     },
+
     "cats_duo": {
+
         "name": "Forest Cat Duo (Both Cats)",
+
         "type": "cat",
+
         "cat_variant": "cats_duo",
+
         "supported_actions": [
-            "meow",
-            "pounce",
-            "clean",
-            "stretch",
-            "purr",
-            "sleep",
-            "sit",
-            "wander",
-            "happy",
-            "wake",
+
+            "meow", "pounce", "clean", "stretch", "purr", "sleep", "sit", "wander", "happy", "wake"
+
         ],
+
         "lines": {
-            "idle": [
-                "Meow meow! *Double purr*",
-                "Best friends forever!",
-                "Sunbathing together!",
-            ],
-            "hungry": [
-                "Double treats please! Meow!",
-            ],
-            "clicked": [
-                "*Double head butts*",
-                "Purrrr... *Happy cats*!",
-            ],
-            "pomodoroStart": [
-                "We'll guard your desktop together!",
-            ],
-            "pomodoroEnd": [
-                "Break time! Let me & my buddy play!",
-            ],
-        },
+
+            "idle": ["Meow meow! *Double purr*", "Best friends forever!", "Sunbathing together!"],
+
+            "hungry": ["Double treats please! Meow!"],
+
+            "clicked": ["*Double head butts*", "Purrrr... *Happy cats*!"],
+
+            "pomodoroStart": ["We'll guard your desktop together!"],
+
+            "pomodoroEnd": ["Break time! Let me & my buddy play!"]
+
+        }
+
     },
+
     "fox": {
+
         "name": "Kitsune Fox",
+
         "type": "chibi_animal",
+
         "species": "fox",
+
         "supported_actions": [
-            "tail_sway",
-            "curious",
-            "wander",
-            "celebrate",
-            "sleep",
-            "sit",
-            "wake",
+
+            "tail_sway", "curious", "wander", "celebrate", "sleep", "sit", "wake"
+
         ],
+
         "lines": {
-            "idle": [
-                "*Ears perk up*",
-                "Yip! Exploring the forest!",
-                "*Fluffy tail swishes*",
-                "What's that over there?",
-            ],
-            "hungry": [
-                "Berries or snacks please! Yip!",
-                "*Sniffs curiously at your desk*",
-            ],
-            "clicked": [
-                "Yip yip! *Happy bounce*",
-                "*Nuzzles gently*",
-                "Hehe, that tickles!",
-            ],
-            "pomodoroStart": [
-                "I'll keep watch with sharp ears!",
-                "Time to focus! Let's go!",
-            ],
-            "pomodoroEnd": [
-                "Break time! Time for a forest run!",
-                "Yip! Outstanding work!",
-            ],
-        },
+
+            "idle": ["*Ears perk up*", "Yip! Exploring the forest!", "*Fluffy tail swishes*", "What's that over there?"],
+
+            "hungry": ["Berries or snacks please! Yip!", "*Sniffs curiously at your desk*"],
+
+            "clicked": ["Yip yip! *Happy bounce*", "*Nuzzles gently*", "Hehe, that tickles!"],
+
+            "pomodoroStart": ["I'll keep watch with sharp ears!", "Time to focus! Let's go!"],
+
+            "pomodoroEnd": ["Break time! Time for a forest run!", "Yip! Outstanding work!"]
+
+        }
+
     },
+
     "rabbit": {
+
         "name": "Chibi Bunny",
+
         "type": "chibi_animal",
+
         "species": "rabbit",
+
         "supported_actions": [
-            "hop",
-            "nose_twitch",
-            "wander",
-            "celebrate",
-            "sleep",
-            "sit",
-            "wake",
+
+            "hop", "nose_twitch", "wander", "celebrate", "sleep", "sit", "wake"
+
         ],
+
         "lines": {
-            "idle": [
-                "*Nose twitches rapidly*",
-                "Hop hop hop!",
-                "*Ears flop happily*",
-                "Munching on clover...",
-            ],
-            "hungry": [
-                "Got any fresh carrots?",
-                "*Binky hop for treats!*",
-            ],
-            "clicked": [
-                "*Soft bunny thumping*",
-                "*Happy purr-grind*",
-                "Hop!",
-            ],
-            "pomodoroStart": [
-                "Quiet bunny focus mode activated!",
-                "I'll sit quietly while you work!",
-            ],
-            "pomodoroEnd": [
-                "*Binky celebration!* Break time!",
-                "Hop hooray! Great job!",
-            ],
-        },
+
+            "idle": ["*Nose twitches rapidly*", "Hop hop hop!", "*Ears flop happily*", "Munching on clover..."],
+
+            "hungry": ["Got any fresh carrots?", "*Binky hop for treats!*"],
+
+            "clicked": ["*Soft bunny thumping*", "*Happy purr-grind*", "Hop!"],
+
+            "pomodoroStart": ["Quiet bunny focus mode activated!", "I'll sit quietly while you work!"],
+
+            "pomodoroEnd": ["*Binky celebration!* Break time!", "Hop hooray! Great job!"]
+
+        }
+
     },
+
     "penguin": {
+
         "name": "Waddling Penguin",
+
         "type": "chibi_animal",
+
         "species": "penguin",
+
         "supported_actions": [
-            "waddle",
-            "flap",
-            "wander",
-            "celebrate",
-            "sleep",
-            "sit",
-            "wake",
+
+            "waddle", "flap", "wander", "celebrate", "sleep", "sit", "wake"
+
         ],
+
         "lines": {
-            "idle": [
-                "*Happy waddle*",
-                "Honk! Looking for icebergs!",
-                "*Flaps tiny flippers*",
-                "Slide into adventure!",
-            ],
-            "hungry": [
-                "Fish please! *Honk honk!*",
-                "*Stares with big round eyes*",
-            ],
-            "clicked": [
-                "*Excited wing flaps*",
-                "Waddle waddle!",
-                "Brrr! So cozy!",
-            ],
-            "pomodoroStart": [
-                "Cool heads accomplish great things!",
-                "Penguin focus engaged!",
-            ],
-            "pomodoroEnd": [
-                "Time to slide into the break pool!",
-                "Honk! Fantastic job!",
-            ],
-        },
+
+            "idle": ["*Happy waddle*", "Honk! Looking for icebergs!", "*Flaps tiny flippers*", "Slide into adventure!"],
+
+            "hungry": ["Fish please! *Honk honk!*", "*Stares with big round eyes*"],
+
+            "clicked": ["*Excited wing flaps*", "Waddle waddle!", "Brrr! So cozy!"],
+
+            "pomodoroStart": ["Cool heads accomplish great things!", "Penguin focus engaged!"],
+
+            "pomodoroEnd": ["Time to slide into the break pool!", "Honk! Fantastic job!"]
+
+        }
+
     },
+
     "hamster": {
+
         "name": "Cheeky Hamster",
+
         "type": "chibi_animal",
+
         "species": "hamster",
+
         "supported_actions": [
-            "scurry",
-            "cheek_puff",
-            "wander",
-            "celebrate",
-            "sleep",
-            "sit",
-            "wake",
+
+            "scurry", "cheek_puff", "wander", "celebrate", "sleep", "sit", "wake"
+
         ],
+
         "lines": {
-            "idle": [
-                "*Sniff sniff*",
-                "Cheeks full of sunflower seeds!",
-                "*Tiny rapid paws*",
-                "Scurry scurry!",
-            ],
-            "hungry": [
-                "Seeds please! My cheek pouches have room!",
-                "*Tiny paws begging*",
-            ],
-            "clicked": [
-                "Squeak! *Happy nibble*",
-                "*Puffs cheeks happily*",
-                "Hehe!",
-            ],
-            "pomodoroStart": [
-                "Spinning the wheel of productivity!",
-                "Let's scurry through your tasks!",
-            ],
-            "pomodoroEnd": [
-                "Break time! Snack stash unlocked!",
-                "Squeak! High five!",
-            ],
-        },
+
+            "idle": ["*Sniff sniff*", "Cheeks full of sunflower seeds!", "*Tiny rapid paws*", "Scurry scurry!"],
+
+            "hungry": ["Seeds please! My cheek pouches have room!", "*Tiny paws begging*"],
+
+            "clicked": ["Squeak! *Happy nibble*", "*Puffs cheeks happily*", "Hehe!"],
+
+            "pomodoroStart": ["Spinning the wheel of productivity!", "Let's scurry through your tasks!"],
+
+            "pomodoroEnd": ["Break time! Snack stash unlocked!", "Squeak! High five!"]
+
+        }
+
     },
+
     "owl": {
+
         "name": "Wise Chibi Owl",
+
         "type": "chibi_animal",
+
         "species": "owl",
+
         "supported_actions": [
-            "head_turn",
-            "wing_flap",
-            "wander",
-            "celebrate",
-            "sleep",
-            "perch",
-            "wake",
+
+            "head_turn", "wing_flap", "wander", "celebrate", "sleep", "perch", "wake"
+
         ],
+
         "lines": {
-            "idle": [
-                "Hoo hoo!",
-                "*Rotates head 180 degrees*",
-                "Observing wisdom...",
-                "*Fluffs soft feathers*",
-            ],
-            "hungry": [
-                "Midnight snacks are the best snacks!",
-                "*Hooting politely*",
-            ],
-            "clicked": [
-                "Hoo! *Wise blink*",
-                "*Feather ruffle*",
-                "Greetings, scholar!",
-            ],
-            "pomodoroStart": [
-                "Deep wisdom requires deep focus. Proceed.",
-                "Hoo! Stay diligent.",
-            ],
-            "pomodoroEnd": [
-                "Knowledge earned deserves a restful pause.",
-                "Hoo! Excellent progress!",
-            ],
-        },
+
+            "idle": ["Hoo hoo!", "*Rotates head 180 degrees*", "Observing wisdom...", "*Fluffs soft feathers*"],
+
+            "hungry": ["Midnight snacks are the best snacks!", "*Hooting politely*"],
+
+            "clicked": ["Hoo! *Wise blink*", "*Feather ruffle*", "Greetings, scholar!"],
+
+            "pomodoroStart": ["Deep wisdom requires deep focus. Proceed.", "Hoo! Stay diligent."],
+
+            "pomodoroEnd": ["Knowledge earned deserves a restful pause.", "Hoo! Excellent progress!"]
+
+        }
+
     },
+
     "panda": {
+
         "name": "Sleepy Panda",
+
         "type": "chibi_animal",
+
         "species": "panda",
+
         "supported_actions": [
-            "slow_walk",
-            "roll",
-            "wander",
-            "celebrate",
-            "sleep",
-            "sit",
-            "wake",
+
+            "slow_walk", "roll", "wander", "celebrate", "sleep", "sit", "wake"
+
         ],
+
         "lines": {
-            "idle": [
-                "*Chomp chomp bamboo*",
-                "Slow and steady...",
-                "*Lazy roll*",
-                "Life is good...",
-            ],
-            "hungry": [
-                "Bamboo shoots please!",
-                "*Rumbles tummy peacefully*",
-            ],
-            "clicked": [
-                "*Soft panda hug*",
-                "Yawn... Big cuddles!",
-                "Roly-poly!",
-            ],
-            "pomodoroStart": [
-                "Let's work steadily like a calm panda.",
-                "Focus time, then nap time!",
-            ],
-            "pomodoroEnd": [
-                "Break time! Time to roll around!",
-                "You did great, now relax!",
-            ],
-        },
-    },
+
+            "idle": ["*Chomp chomp bamboo*", "Slow and steady...", "*Lazy roll*", "Life is good..."],
+
+            "hungry": ["Bamboo shoots please!", "*Rumbles tummy peacefully*"],
+
+            "clicked": ["*Soft panda hug*", "Yawn... Big cuddles!", "Roly-poly!"],
+
+            "pomodoroStart": ["Let's work steadily like a calm panda.", "Focus time, then nap time!"],
+
+            "pomodoroEnd": ["Break time! Time to roll around!", "You did great, now relax!"]
+
+        }
+
+    }
+
 }
+
+
 
 def get_character_config(char_id):
+
     return CHARACTER_PROFILES.get(char_id, CHARACTER_PROFILES["dragon"])
 
+
+
 def get_character_line(char_id, category):
+
     config = get_character_config(char_id)
+
     lines_dict = config.get("lines", DEFAULT_LINES)
+
     # Fallback to default if category is missing in this character's lines
+
     lines = lines_dict.get(category, DEFAULT_LINES.get(category, ["..."]))
+
     import random
+
     return random.choice(lines)
 
+
+
+
+
 # Deterministic autonomous behavior cycles. These are deliberately ordered rather
+
 # than randomly selected so characters do not appear to perform unrelated actions.
+
 AUTONOMOUS_CHARACTER_CYCLES = {
+
     "dragon": ["idle", "wander", "idle", "sit", "idle"],
+
     "dog": ["idle", "wander", "idle", "sit", "idle"],
+
     "cat_orange": ["idle", "wander", "idle", "clean", "idle"],
+
     "cat_tuxedo": ["idle", "wander", "idle", "purr", "idle"],
+
     "cats_duo": ["idle", "wander", "idle", "purr", "idle"],
+
     "luffy": ["idle", "wander", "idle", "think", "idle"],
+
     "fox": ["idle", "wander", "idle", "curious", "idle"],
+
     "rabbit": ["idle", "wander", "idle", "hop", "idle"],
+
     "penguin": ["idle", "wander", "idle", "waddle", "idle"],
+
     "hamster": ["idle", "wander", "idle", "scurry", "idle"],
+
     "owl": ["idle", "perch", "idle", "head_turn", "idle"],
+
     "panda": ["idle", "wander", "idle", "slow_walk", "idle"],
+
 }
 
+
+
 ONE_SHOT_DURATIONS = {
+
     "celebrate": 1.20,
+
     "react_click": 0.55,
+
     "curious": 1.20,
+
     "hop": 1.10,
+
     "nose_twitch": 0.80,
+
     "waddle": 1.10,
+
     "flap": 0.90,
+
     "scurry": 1.00,
+
     "cheek_puff": 1.10,
+
     "head_turn": 1.20,
+
     "wing_flap": 1.00,
+
     "slow_walk": 1.40,
+
     "roll": 1.20,
+
     "pounce": 1.15,
+
     "clean": 1.50,
+
     "purr": 1.20,
+
     "stretch": 1.15,
+
     "jump": 1.80,
+
     "bark": 1.10,
+
     "meow": 1.00,
+
     "happy": 1.00,
+
 }
 
 ```
@@ -2435,734 +2491,1492 @@ $shortcut.Save()
 ## File: `ui/chibi_window.py`
 
 **Description:** Primary frameless translucent desktop window, event loops, timers, dynamic tray character switching, wander physics, and character dispatch.
-**Total Lines:** 725  
+**Total Lines:** 1483  
 **Full Path:** `C:\Pet\ui/chibi_window.py`
 
 ```python
 import sys
+
 import time
+
 import datetime
+
 import random
+
 import ctypes
+
 import threading
+
 from PyQt5.QtWidgets import QWidget, QApplication, QMenu, QSystemTrayIcon, QAction
+
 from PyQt5.QtCore import Qt, QPoint, QTimer, pyqtSlot, QMetaObject, Q_ARG
+
 from PyQt5.QtGui import QPainter, QMouseEvent
+
 from core.state_machine import StateMachine
+
 from core.layout import LayoutManager
+
 from core.typing_engine import TypingEngine
+
 from core.pomodoro import PomodoroTimer
+
 from ui.animator import DragonAnimator
+
 from ui.sprite_animator import SpriteAnimator
+
 from ui.dog_animator import DogAnimator
+
 from ui.cat_animator import CatAnimator
+
 from ui.chibi_animator import ChibiAnimalAnimator
+
 from ui.speech_bubble import SpeechBubble
+
 from ui.chat_overlay import ChatInputWidget
+
 from core.mood import MoodSystem
+
 from ui.control_panel import ControlPanel
+
 from core.web_server import PetWebServer
+
 from core.dialogue import LINES
+
 from core.characters import CHARACTER_PROFILES, get_character_line, AUTONOMOUS_CHARACTER_CYCLES, ONE_SHOT_DURATIONS
+
 from core.weather import WeatherService
+
 from core.video_detector import VideoDetector
 
+
+
 class LASTINPUTINFO(ctypes.Structure):
+
     _fields_ = [("cbSize", ctypes.c_uint),
+
                 ("dwTime", ctypes.c_ulong)]
 
+
+
 class SYSTEM_POWER_STATUS(ctypes.Structure):
+
     _fields_ = [
+
         ("ACLineStatus", ctypes.c_byte),
+
         ("BatteryFlag", ctypes.c_byte),
+
         ("BatteryLifePercent", ctypes.c_byte),
+
         ("SystemStatusFlag", ctypes.c_byte),
+
         ("BatteryLifeTime", ctypes.c_ulong),
+
         ("BatteryFullLifeTime", ctypes.c_ulong)
+
     ]
 
+
+
 class GlobalKeyboardTracker:
+
     def __init__(self):
+
         self.user32 = ctypes.windll.user32
+
         self.kernel32 = ctypes.windll.kernel32
+
         
+
     def get_idle_time(self):
+
         lii = LASTINPUTINFO()
+
         lii.cbSize = ctypes.sizeof(LASTINPUTINFO)
+
         if self.user32.GetLastInputInfo(ctypes.byref(lii)):
+
             tick_count = self.kernel32.GetTickCount() & 0xFFFFFFFF
+
             millis = (tick_count - lii.dwTime) & 0xFFFFFFFF
+
             return millis / 1000.0
+
         return 0.0
+
         
+
     def is_typing(self):
+
         # Check standard character keys A-Z (0x41 to 0x5A)
+
         for i in range(0x41, 0x5A + 1):
+
             if self.user32.GetAsyncKeyState(i) & 0x8000:
+
                 return True
+
         # Check space (0x20) and backspace (0x08)
+
         if self.user32.GetAsyncKeyState(0x20) & 0x8000: return True
+
         if self.user32.GetAsyncKeyState(0x08) & 0x8000: return True
+
         return False
 
+
+
 class DragonCompanionWindow(QWidget):
+
     def __init__(self):
+
         super().__init__()
+
         self.wander_chance = 0.02
+
         self.control_panel = None
+
         self.initUI()
+
         
+
         # Core Systems
+
         self.mood = MoodSystem()
+
         
+
         # Action locking
+
         self.is_generating = False
+
         self.is_destroyed = False
+
         
+
         # State machine
+
         self.state_machine = StateMachine()
+
         
+
         # Animators
+
         self.animator_dragon = DragonAnimator(self.state_machine)
+
         self.animator_dog = DogAnimator(self.state_machine)
+
         self.animator_luffy = SpriteAnimator(self.state_machine, "assets/luffy.png")
+
         self.animator_cat_orange = CatAnimator(self.state_machine, cat_variant="cat_orange")
+
         self.animator_cat_tuxedo = CatAnimator(self.state_machine, cat_variant="cat_tuxedo")
+
         self.animator_cats_duo = CatAnimator(self.state_machine, cat_variant="cats_duo")
+
         self.chibi_animators = {
+
             sp: ChibiAnimalAnimator(self.state_machine, species=sp)
+
             for sp in ['fox', 'rabbit', 'penguin', 'hamster', 'owl', 'panda']
+
         }
+
         self.current_character = "dragon"
+
         self.animator = self.animator_dragon
+
         
+
         from core.ai_companion import AICompanion
+
         self.ai = AICompanion()
+
         
+
         self.typing_engine = TypingEngine(self)
+
         self.layout_manager = LayoutManager(self)
+
         self.speech_bubble = SpeechBubble(self)
+
         
+
         self.chat_overlay = ChatInputWidget(self)
+
         self.chat_overlay.set_callback(self.process_chat_safe)
+
         
+
         self.pomodoro = PomodoroTimer(self)
+
         self.weather = WeatherService(self, enabled=False) # Off by default per user request
+
         self.keyboard_tracker = GlobalKeyboardTracker()
+
         self.video_detector = VideoDetector()
+
         self.is_stopped = False
+
         self._was_watching_video = False
+
         
+
         # Main Loop
+
         self.timer = QTimer(self)
+
         self.timer.timeout.connect(self.update_frame)
+
         self.timer.start(25) # ~40fps
+
         
+
         # Behavior Loop
+
         self.idle_timer = QTimer(self)
+
         self.idle_timer.timeout.connect(self.do_behavior_tick)
+
         self.idle_timer.start(500) # Check every half second
+
         
+
         # Fire breathe Timer (every 5 seconds)
+
         self.fire_timer = QTimer(self)
+
         self.fire_timer.timeout.connect(self.do_fire_breathe)
+
         self.fire_timer.start(5000)
+
         
+
         # Posture Timer (50 minutes)
+
         self.posture_timer = QTimer(self)
+
         self.posture_timer.timeout.connect(lambda: self.say(get_character_line(self.current_character, "posture")))
+
         self.posture_timer.start(50 * 60 * 1000)
+
         
+
         # Battery Timer (Check every 5 minutes)
+
         self.battery_timer = QTimer(self)
+
         self.battery_timer.timeout.connect(self.check_battery)
+
         self.battery_timer.start(5 * 60 * 1000)
+
         
+
         # Mood Timer (Update stats every 8 seconds)
+
         self.mood_timer = QTimer(self)
+
         self.mood_timer.timeout.connect(self.mood.tick)
+
         self.mood_timer.start(8000)
+
         
+
         # Interaction State
+
         self.drag_position = None
+
         self.click_count = 0
+
         self.wander_target = None
+
         self._wander_float_x = None
+
         self._wander_float_y = None
-        
+
+
+
         # Deterministic behavior/action control.
+
         self._behavior_cursor = {
-            char_id: 0
-            for char_id in AUTONOMOUS_CHARACTER_CYCLES
+
+            char_id: 0 for char_id in AUTONOMOUS_CHARACTER_CYCLES
+
         }
+
         self._next_behavior_time = time.time() + 8.0
+
         self._action_generation = 0
+
         self._active_action_character = None
+
+        
 
         self.setup_tray()
+
         
+
         # Initial placement
+
         self.layout_manager._refresh_screen()
+
         screen = self.layout_manager._screen_rect
+
         self.move(screen.right() - self.width(), screen.bottom() - self.height())
+
         self.state_machine.force_state('wake')
+
         QTimer.singleShot(2000, lambda: self.say(self.mood.get_time_greeting()))
+
         
+
         # Start Web Server Dashboard
+
         self.web_server = PetWebServer(self)
+
         
+
     def initUI(self):
+
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
+
         self.setAttribute(Qt.WA_TranslucentBackground)
+
         self.resize(350, 400)
+
         
+
     def setup_tray(self):
+
         self.tray_icon = QSystemTrayIcon(self)
+
         self.tray_icon.setToolTip("Baby Dragon Companion")
+
         tray_menu = QMenu()
+
         
+
         feed_action = QAction("Feed", self)
+
         feed_action.triggered.connect(lambda: self.say("Yummy! Rawr!", force_state='celebrate'))
+
         tray_menu.addAction(feed_action)
+
         
+
         pomo_action = QAction("Start 25m Focus", self)
+
         pomo_action.triggered.connect(self.pomodoro.start_work)
+
         tray_menu.addAction(pomo_action)
+
         
+
         stop_pomo_action = QAction("Stop Timer", self)
+
         stop_pomo_action.triggered.connect(self.pomodoro.stop)
+
         tray_menu.addAction(stop_pomo_action)
+
         
+
         tray_menu.addSeparator()
+
         
+
         start_action = QAction("Start Pet", self)
+
         start_action.triggered.connect(self.start_pet_safe)
+
         tray_menu.addAction(start_action)
+
         
+
         stop_action = QAction("Stop Pet", self)
+
         stop_action.triggered.connect(self.stop_pet_safe)
+
         tray_menu.addAction(stop_action)
+
         
+
         tray_menu.addSeparator()
+
         
+
         char_menu = tray_menu.addMenu("Switch Character")
+
         for char_id, profile in CHARACTER_PROFILES.items():
+
             action = QAction(profile.get("name", char_id.title()), self)
+
             action.triggered.connect(lambda checked=False, c=char_id: self.switch_character_safe(c))
+
             char_menu.addAction(action)
+
         
+
         tray_menu.addSeparator()
+
         
+
         settings_action = QAction("Control Panel", self)
+
         settings_action.triggered.connect(self.show_control_panel)
+
         tray_menu.addAction(settings_action)
+
         
+
         tray_menu.addSeparator()
+
         
+
         quit_action = QAction("Quit", self)
+
         quit_action.triggered.connect(QApplication.instance().quit)
+
         tray_menu.addAction(quit_action)
+
         
+
         self.tray_icon.setContextMenu(tray_menu)
+
         self.tray_icon.show()
 
+
+
     def show_control_panel(self):
+
         if self.control_panel is None:
+
             self.control_panel = ControlPanel(self)
+
         self.control_panel.show()
+
         self.control_panel.activateWindow()
 
+
+
     @pyqtSlot()
+
     def start_pet_safe(self):
+
         self.start_pet()
 
+
+
     @pyqtSlot()
+
     def stop_pet_safe(self):
+
         self.stop_pet()
 
+
+
     @pyqtSlot(bool)
+
     def set_video_sleep_safe(self, enabled):
+
         self.mood.sleep_on_video = enabled
 
+
+
     def closeEvent(self, event):
+
         self.is_destroyed = True
+
         self.web_server.stop()
+
         self.web_server.wait()
+
         super().closeEvent(event)
 
+
+
     def stop_pet(self):
+
         self.is_stopped = True
+
         self.hide()
+
         if hasattr(self, 'speech_bubble'):
+
             self.speech_bubble.hide()
+
         if hasattr(self, 'chat_overlay'):
+
             self.chat_overlay.hide()
 
+
+
     def start_pet(self):
+
         self.is_stopped = False
+
         self.show()
+
         self.mood.wake_up_refresh()
+
         self.state_machine.force_state('wake')
+
         self.say("I'm back!")
 
+
+
     @pyqtSlot(str)
+
     def switch_character_safe(self, name):
+
         self._action_generation += 1
+
         self._active_action_character = None
+
+
+
         if hasattr(self.animator, "clear_special"):
+
             self.animator.clear_special()
+
         if hasattr(self.animator, "clear_particles"):
+
             self.animator.clear_particles()
+
+
+
         self._wander_float_x = None
+
         self._wander_float_y = None
+
         self.wander_target = None
+
+
+
         if name not in CHARACTER_PROFILES:
+
             name = "dragon"
+
+
+
         self.current_character = name
+
+
+
         if name == "dog":
+
             self.animator = self.animator_dog
+
         elif name == "cat_orange":
+
             self.animator = self.animator_cat_orange
+
         elif name in ["cat_tuxedo", "cat_grey"]:
+
             self.animator = self.animator_cat_tuxedo
+
         elif name in ["cats_duo", "cat"]:
+
             self.animator = self.animator_cats_duo
+
         elif name == "luffy":
+
             self.animator = self.animator_luffy
+
         elif hasattr(self, "chibi_animators") and name in self.chibi_animators:
+
             self.animator = self.chibi_animators[name]
+
         else:
+
             self.animator = self.animator_dragon
+
+
+
         self.state_machine.force_state("idle")
+
+
+
         if hasattr(self.animator, "reset_animation"):
+
             self.animator.reset_animation()
+
+
+
         self.update()
 
+
+
     @pyqtSlot(str)
+
     def trigger_anim_safe(self, state):
+
         config = CHARACTER_PROFILES.get(self.current_character, CHARACTER_PROFILES["dragon"])
+
         supported = config.get("supported_actions", [])
+
+
+
         if state not in supported and state not in {"idle", "wander", "sleep", "focus", "think", "type", "react_click", "react_drag"}:
+
             return
+
+
 
         self._action_generation += 1
+
         generation = self._action_generation
+
         character = self.current_character
+
         self._active_action_character = character
 
+
+
         # Luffy transformations are animator-owned special actions, not StateMachine states.
+
         if character == "luffy" and state in {"gum_stretch", "gear2", "gear3", "gear5"}:
+
             self.animator_luffy.trigger_special(state)
+
             self.state_machine.force_state("idle")
+
+
+
             durations = {
+
                 "gum_stretch": 2.30,
+
                 "gear2": 3.00,
+
                 "gear3": 2.50,
+
                 "gear5": 3.50,
+
             }
 
+
+
             def finish_special():
+
                 if self.is_destroyed:
+
                     return
+
                 if generation != self._action_generation:
+
                     return
+
                 if character != self.current_character:
+
                     return
+
+
+
                 self.animator_luffy.clear_special()
+
                 self._active_action_character = None
+
                 self.state_machine.force_state("idle")
+
+
 
             QTimer.singleShot(int(durations[state] * 1000), finish_special)
+
             return
+
+
 
         self.state_machine.force_state(state)
+
+
+
         duration = ONE_SHOT_DURATIONS.get(state)
+
         if duration is None:
+
             self._active_action_character = None
+
             return
+
+
 
         def finish_one_shot():
+
             if self.is_destroyed:
+
                 return
+
             if generation != self._action_generation:
+
                 return
+
             if character != self.current_character:
+
                 return
+
+
+
             self._active_action_character = None
+
             self.state_machine.force_state("idle")
 
+
+
         QTimer.singleShot(int(duration * 1000), finish_one_shot)
-        
+
+
+
     def say_safe(self, text):
+
         if not self.is_destroyed:
+
             self.say(text)
 
+
+
     def process_chat_safe(self, message):
+
         if not self.is_destroyed:
+
             self.process_chat(message)
+
             
+
     @pyqtSlot()
+
     def clear_chat_safe(self):
+
         if not self.is_destroyed:
+
             self.ai.clear_memory()
+
             self.say("Memory cleared!")
+
             
+
     def _finish_chat(self):
+
         """Cooldown timer callback."""
+
         self.is_generating = False
+
         if self.control_panel:
+
             self.control_panel.set_ai_loading(False)
 
+
+
     def process_chat(self, message):
+
         """Processes a chat message by showing a thinking indicator and running the AI in a background thread."""
+
         if not message or not message.strip():
+
             return
+
         
+
         if self.is_generating:
+
             return
+
             
+
         self.is_generating = True
+
         if self.control_panel:
+
             self.control_panel.set_ai_loading(True)
+
         
+
         # Show thinking indicator
+
         self.say("Thinking...", force_state="think")
+
         
+
         # Run AI generation in background to prevent UI freeze
+
         thread = threading.Thread(target=self._run_ai_chat, args=(message,))
+
         thread.daemon = True
+
         thread.start()
 
+
+
     def _run_ai_chat(self, message):
+
         """Runs in background thread to call Gemini API."""
+
         try:
+
             response = self.ai.generate_response(message)
+
             if not self.is_destroyed:
+
                 QMetaObject.invokeMethod(self, "say_safe", Qt.QueuedConnection, Q_ARG(str, response))
+
         except Exception:
+
             if not self.is_destroyed:
+
                 QMetaObject.invokeMethod(self, "say_safe", Qt.QueuedConnection, Q_ARG(str, "Oops, my brain broke!"))
+
         finally:
+
             if not self.is_destroyed:
+
                 # 1 second cooldown
+
                 QTimer.singleShot(1000, self._finish_chat)
 
+
+
     @pyqtSlot(int, int)
+
     def start_pomo_safe(self, w, b):
+
         self.pomodoro.work_duration = w * 60
+
         self.pomodoro.break_duration = b * 60
+
         self.pomodoro.start_work()
+
         
+
     @pyqtSlot()
+
     def stop_pomo_safe(self):
+
         self.pomodoro.stop()
+
         
+
     @pyqtSlot()
+
     def feed_safe(self):
+
         if self.current_character == "dog":
+
             self.say("Yummy! Woof woof!", force_state='eat')
+
         elif "cat" in self.current_character:
+
             self.say("Yummy fish! Purrrr...", force_state='clean')
+
         elif self.current_character == "luffy":
+
             self.say("MEAAAT! *nom nom nom*", force_state='celebrate')
+
         elif self.current_character in ["rabbit", "hamster"]:
+
             self.say("Crunch crunch! Delicious!", force_state='celebrate')
+
         elif self.current_character == "fox":
+
             self.say("Yum yum! Tasty treat!", force_state='celebrate')
+
         elif self.current_character == "penguin":
+
             self.say("Fish! Flap flap flap!", force_state='celebrate')
+
         elif self.current_character == "panda":
+
             self.say("Bamboo snack! Omnomnom!", force_state='celebrate')
+
         elif self.current_character == "owl":
+
             self.say("Hoot! A tasty morsel!", force_state='celebrate')
+
         else:
+
             self.say("Yummy! Rawr!", force_state='celebrate')
+
         
+
     @pyqtSlot()
+
     def annoy_safe(self):
+
         self.mood.annoy()
+
         self.state_machine.force_state('annoyed')
+
         self.say("Grrr... put me down!")
+
         
+
     @pyqtSlot()
+
     def sleep_safe(self):
+
         self.mood.energy = 0
+
         self.state_machine.force_state('sleep')
+
         
+
     @pyqtSlot(float)
+
     def update_wander_safe(self, val):
+
         self.wander_chance = val
 
+
+
     def say(self, text, force_state=None):
+
         now = time.time()
+
         min_interval = getattr(self, '_speech_interval', 6.0)
+
         if hasattr(self, '_last_speech_time') and (now - self._last_speech_time) < min_interval:
+
             if not force_state:
+
                 return
+
         self._last_speech_time = now
+
         self._speech_interval = random.uniform(5.0, 7.0)
+
         self.typing_engine.start_typing(text, on_complete=lambda: self.state_machine.request_state(force_state or 'idle') if force_state else None)
 
+
+
     def check_battery(self):
+
         power_status = SYSTEM_POWER_STATUS()
+
         if ctypes.windll.kernel32.GetSystemPowerStatus(ctypes.byref(power_status)):
+
             if power_status.ACLineStatus == 0 and power_status.BatteryLifePercent <= 20:
+
                 self.say(get_character_line(self.current_character, "lowBattery"))
 
+
+
     def do_fire_breathe(self):
+
         if getattr(self, "is_stopped", False):
+
             return
+
         if self.pomodoro.is_running:
+
             return
+
         if self.typing_engine.timer.isActive() or self.is_generating:
+
             return
+
         if self.current_character != "dragon":
+
             return
+
+
 
         current_state = self.state_machine.get_state()
+
         if current_state in ["idle", "sit", "wander"]:
+
             self._action_generation += 1
+
             generation = self._action_generation
+
             self.state_machine.request_state("fire_breathe")
 
+
+
             def finish_fire():
+
                 if self.is_destroyed:
+
                     return
+
                 if generation != self._action_generation:
+
                     return
+
                 if self.current_character != "dragon":
+
                     return
+
                 self.state_machine.force_state("idle")
+
+
 
             QTimer.singleShot(2000, finish_fire)
 
+
+
     def _schedule_next_behavior(self, seconds=12.0):
+
         self._next_behavior_time = time.time() + float(seconds)
 
+
+
     def _run_next_autonomous_behavior(self):
+
         character = self.current_character
+
         cycle = AUTONOMOUS_CHARACTER_CYCLES.get(character, ["idle"])
+
+
+
         if not cycle:
+
             self._schedule_next_behavior(12.0)
+
             return
+
+
 
         index = self._behavior_cursor.get(character, 0)
+
         action = cycle[index % len(cycle)]
+
         self._behavior_cursor[character] = index + 1
+
         self._schedule_next_behavior(12.0)
 
+
+
         if action == "idle":
+
             self.state_machine.force_state("idle")
+
             return
+
+
 
         if action == "wander":
+
             self.wander_target = self.layout_manager.get_wander_target()
+
             self._wander_float_x = float(self.x())
+
             self._wander_float_y = float(self.y())
+
             self.state_machine.force_state("wander")
+
             return
+
+
 
         config = CHARACTER_PROFILES.get(character, CHARACTER_PROFILES["dragon"])
+
         supported = config.get("supported_actions", [])
+
+
+
         if action in supported:
+
             self.trigger_anim_safe(action)
+
         else:
+
             self.state_machine.force_state("idle")
 
+
+
     def do_behavior_tick(self):
+
         if getattr(self, "is_stopped", False):
+
             return
+
+
+
         if not self.timer.isActive() or not self.idle_timer.isActive():
+
             return
+
+
 
         idle_secs = self.keyboard_tracker.get_idle_time()
+
         current_state = self.state_machine.get_state()
 
+
+
         if self.pomodoro.is_running:
+
             return
+
+
 
         watching_video = (
+
             getattr(self.mood, "sleep_on_video", True)
+
             and self.video_detector.is_watching_video()
+
         )
+
+
+
         if watching_video:
+
             self._was_watching_video = True
+
             self._action_generation += 1
+
             if current_state != "sleep":
+
                 self.state_machine.force_state("sleep")
+
                 self.speech_bubble.hide()
+
             return
+
+
 
         if self._was_watching_video and current_state == "sleep":
+
             self._was_watching_video = False
+
             self.mood.wake_up_refresh()
+
             self.state_machine.force_state("wake")
+
             self.say("Movie over! I'm awake!")
+
             self._schedule_next_behavior(8.0)
+
             return
+
+
+
         self._was_watching_video = False
 
+
+
         if idle_secs < 1.0 and current_state == "sleep":
+
             self.mood.wake_up_refresh()
+
             self.state_machine.force_state("wake")
+
             self.say("You're back!")
+
             self._schedule_next_behavior(8.0)
+
             return
 
+
+
         if idle_secs < 2.0:
+
             self.mood.register_typing(0.5)
+
             if self.mood.is_exhausted_from_typing():
+
                 if current_state != "exhausted":
+
                     self._action_generation += 1
+
                     self.state_machine.force_state("exhausted")
+
             elif current_state not in ["focus", "type", "think"]:
+
                 self.state_machine.force_state("focus")
+
             return
+
+
 
         self.mood.stop_typing()
 
+
+
         if current_state in ["type", "focus", "think", "exhausted"]:
+
             self.state_machine.force_state("idle")
+
             self._schedule_next_behavior(8.0)
+
             return
+
+
 
         if idle_secs < 10.0:
+
             return
+
+
 
         if current_state not in ["idle", "sit"]:
+
             return
+
+
 
         if time.time() < self._next_behavior_time:
+
             return
 
+
+
         if self.current_character == "luffy" and self.animator_luffy.special_action is not None:
+
             return
+
+
 
         self._run_next_autonomous_behavior()
 
+
+
     def update_frame(self):
+
         self.state_machine.tick(0.025)
+
         self.animator.update()
+
         self.layout_manager.update()
+
         
+
         if self.pomodoro.is_running and not self.typing_engine.timer.isActive():
+
             # Update the speech bubble text directly without triggering typing animation
+
             prefix = "Break" if self.pomodoro.is_break else "Focus"
+
             self.speech_bubble.set_text(f"{prefix}: {self.pomodoro.get_remaining_str()}")
+
             self.speech_bubble.show()
+
             
+
         if self.state_machine.get_state() == 'wander' and self.wander_target:
+
             if self._wander_float_x is None or self._wander_float_y is None:
+
                 self._wander_float_x = float(self.x())
+
                 self._wander_float_y = float(self.y())
 
+
+
             dx = float(self.wander_target.x()) - self._wander_float_x
+
             dy = float(self.wander_target.y()) - self._wander_float_y
+
             dist = (dx**2 + dy**2)**0.5
+
             if dist < 5:
+
                 self.state_machine.request_state('idle')
+
                 self.wander_target = None
+
                 self._wander_float_x = None
+
                 self._wander_float_y = None
+
             else:
+
                 direction = 1.0 if dx >= 0 else -1.0
+
                 if hasattr(self.animator, 'set_facing'):
+
                     self.animator.set_facing(direction)
 
+
+
                 speed = 3.0
+
                 self._wander_float_x += (dx / dist) * speed
+
                 self._wander_float_y += (dy / dist) * speed
+
                 self.move(int(round(self._wander_float_x)), int(round(self._wander_float_y)))
+
         else:
+
             self._wander_float_x = None
+
             self._wander_float_y = None
+
                 
+
         self.update() # trigger paintEvent
 
+
+
     def paintEvent(self, event):
+
         painter = QPainter(self)
+
         painter.setRenderHint(QPainter.Antialiasing)
+
         
+
         dragon_rect = self.layout_manager.get_dragon_rect()
+
         self.animator.draw(painter, dragon_rect)
+
         
+
         if self.speech_bubble.is_visible():
+
             bubble_rect = self.layout_manager.get_bubble_rect(self.speech_bubble.get_text_size())
+
             self.speech_bubble.draw(painter, bubble_rect)
+
             
+
     def mouseDoubleClickEvent(self, event: QMouseEvent):
+
         if event.button() == Qt.LeftButton:
+
             # Show the chat overlay, passing the pet's global position and width
+
             global_pos = self.mapToGlobal(self.rect().topLeft())
+
             self.chat_overlay.show_overlay(global_pos.x(), global_pos.y(), self.width())
+
             event.accept()
+
+
 
     def mousePressEvent(self, event: QMouseEvent):
+
         if event.button() == Qt.LeftButton:
+
             self._wander_float_x = None
+
             self._wander_float_y = None
+
             self.drag_position = event.globalPos() - self.frameGeometry().topLeft()
+
             self.state_machine.force_state('drag')
+
             event.accept()
+
+
 
     def mouseMoveEvent(self, event: QMouseEvent):
+
         if event.buttons() == Qt.LeftButton and self.drag_position is not None:
+
             new_pos = event.globalPos() - self.drag_position
+
             clamped_pos = self.layout_manager.clamp_window_pos(new_pos)
+
             self.move(clamped_pos)
+
             event.accept()
 
+
+
     def mouseReleaseEvent(self, event: QMouseEvent):
+
         if event.button() == Qt.LeftButton:
+
             self.drag_position = None
+
             self.mood.register_interaction()
+
             
+
             self.click_count += 1
+
             if self.click_count > 4:
+
                 self.mood.annoy()
+
                 
+
             if self.mood.is_annoyed():
+
                 self.state_machine.force_state('annoyed')
+
                 self.say("Grrr... put me down!")
+
                 self.click_count = 0
+
             else:
+
                 if self.current_character == "dog":
+
                     actions = [
+
                         ("react_click", "Woof!"),
+
                         ("celebrate", "Happy tail wag!"),
+
                         ("jump", "Boing boing!"),
+
                         ("bark", "Arf arf!"),
+
                     ]
+
                 elif "cat" in self.current_character:
+
                     actions = [
+
                         ("meow", "Meow~"),
+
                         ("happy", "Purrrrr..."),
+
                         ("pounce", "Pounce!"),
+
                         ("clean", "*Licks paw*"),
+
                     ]
+
                 elif self.current_character == "luffy":
+
                     actions = [
+
                         ("celebrate", "Shishishi! I'm gonna be King of the Pirates!"),
+
                         ("react_click", "Yahoo!"),
+
                         ("curious", "Is that meat?!"),
+
                     ]
+
                 elif hasattr(self, 'chibi_animators') and self.current_character in self.chibi_animators:
+
                     line = get_character_line(self.current_character, "click")
+
                     actions = [
+
                         ("celebrate", line or "Yay!"),
+
                         ("react_click", line or "Hehe!"),
+
                     ]
+
                 else:
+
                     actions = [
+
                         ("react_click", "Hehe!"),
+
                         ("celebrate", "Wheee!"),
+
                         ("fire_breathe", "RAWR!"),
+
                         ("curious", "What are we doing?"),
+
                     ]
+
                 action, text = random.choice(actions)
+
                 self.say(text, force_state=action)
+
                 
+
             QTimer.singleShot(2000, lambda: setattr(self, 'click_count', 0))
+
             event.accept()
 
 ```
@@ -4557,925 +5371,866 @@ class CatAnimator:
 ## File: `ui/chibi_animator.py`
 
 **Description:** Shared procedural vector & chibi animation engine for 6 original pets (Fox, Rabbit, Penguin, Hamster, Owl, Panda) with breathing, ear twitching, waddling, wing flutters, and particle FX.
-**Total Lines:** 916  
+**Total Lines:** 857  
 **Full Path:** `C:\Pet\ui\chibi_animator.py`
 
 ```python
 import math
+
 import random
+
 from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QPainterPath
+
 from PyQt5.QtCore import Qt, QPointF, QRectF
 
+
+
+
+
 class VisualParticle:
+
     def __init__(self, x, y, kind, life=0.55, vx=0.0, vy=-12.0, size=4.0, color=None):
+
         self.x = float(x)
+
         self.y = float(y)
+
         self.kind = kind
+
         self.life = float(life)
+
         self.max_life = float(life)
+
         self.vx = float(vx)
+
         self.vy = float(vy)
+
         self.size = float(size)
+
         self.color = color
 
+
+
     def update(self, dt=0.025):
+
         self.life -= dt
+
         self.x += self.vx * dt
+
         self.y += self.vy * dt
-        if self.kind in ['dust', 'landing_puff']:
-            self.vy += 14.0 * dt
-        elif self.kind in ['sparkle', 'star']:
-            self.vy += 3.0 * dt
-        elif self.kind in ['sleepy_dot', 'heart']:
-            self.vy += -3.0 * dt
+
+        if self.kind == "heart":
+
+            self.vy -= 2.0 * dt
+
+        elif self.kind == "star":
+
+            self.vy += 2.0 * dt
+
+        else:
+
+            self.vy += 6.0 * dt
+
+
 
     def alive(self):
-        return self.life > 0
 
-    def draw(self, painter: QPainter):
+        return self.life > 0.0
+
+
+
+    def draw(self, painter):
+
         if not self.alive():
+
             return
+
         ratio = max(0.0, min(1.0, self.life / self.max_life))
-        alpha = int(240 * ratio)
+
+        alpha = int(225 * ratio)
+
         painter.save()
-        painter.setRenderHint(QPainter.Antialiasing, True)
-        
-        if self.kind == 'star':
-            col = QColor(255, 220, 60, alpha) if self.color is None else QColor(self.color)
-            col.setAlpha(alpha)
-            painter.setPen(Qt.NoPen)
+
+        painter.setPen(Qt.NoPen)
+
+        if self.kind == "heart":
+
+            col = QColor(255, 120, 150, alpha)
+
             painter.setBrush(col)
-            sz = max(2.0, self.size * ratio)
+
+            s = max(2.0, self.size * ratio)
+
             p = QPainterPath()
-            p.moveTo(self.x, self.y - sz * 1.4)
-            p.quadTo(self.x, self.y, self.x + sz * 1.4, self.y)
-            p.quadTo(self.x, self.y, self.x, self.y + sz * 1.4)
-            p.quadTo(self.x, self.y, self.x - sz * 1.4, self.y)
-            p.quadTo(self.x, self.y, self.x, self.y - sz * 1.4)
+
+            p.moveTo(self.x, self.y + s)
+
+            p.cubicTo(self.x - s * 1.7, self.y - s * 0.2, self.x - s * 0.9, self.y - s * 1.7, self.x, self.y - s * 0.6)
+
+            p.cubicTo(self.x + s * 0.9, self.y - s * 1.7, self.x + s * 1.7, self.y - s * 0.2, self.x, self.y + s)
+
             painter.drawPath(p)
-            
-        elif self.kind == 'heart':
-            col = QColor(255, 105, 140, alpha) if self.color is None else QColor(self.color)
-            col.setAlpha(alpha)
-            painter.setPen(Qt.NoPen)
+
+        else:
+
+            col = QColor(255, 225, 110, alpha)
+
             painter.setBrush(col)
-            sz = max(2.5, self.size * ratio)
-            p = QPainterPath()
-            p.moveTo(self.x, self.y)
-            p.cubicTo(self.x - sz, self.y - sz * 1.2, self.x - sz * 1.6, self.y + sz * 0.4, self.x, self.y + sz * 1.4)
-            p.cubicTo(self.x + sz * 1.6, self.y + sz * 0.4, self.x + sz, self.y - sz * 1.2, self.x, self.y)
-            painter.drawPath(p)
-            
-        elif self.kind in ['dust', 'sparkle']:
-            col = QColor(255, 235, 140, alpha) if self.color is None else QColor(self.color)
-            col.setAlpha(alpha)
-            painter.setPen(Qt.NoPen)
-            painter.setBrush(col)
-            sz = max(1.5, self.size * ratio)
-            painter.drawEllipse(QRectF(self.x - sz / 2.0, self.y - sz / 2.0, sz, sz))
-            
-        elif self.kind == 'sleepy_dot':
-            col = QColor(160, 185, 230, alpha) if self.color is None else QColor(self.color)
-            col.setAlpha(alpha)
-            painter.setPen(Qt.NoPen)
-            painter.setBrush(col)
-            sz = max(1.5, self.size * (0.6 + 0.4 * ratio))
-            painter.drawEllipse(QRectF(self.x - sz / 2.0, self.y - sz / 2.0, sz, sz))
-            
+
+            s = max(1.5, self.size * ratio)
+
+            painter.drawEllipse(QRectF(self.x - s / 2, self.y - s / 2, s, s))
+
         painter.restore()
+
+
+
+
 
 class ChibiAnimalAnimator:
-    """
-    Unified procedural chibi animal animation engine.
-    Supports Fox, Rabbit, Penguin, Hamster, Owl, and Panda.
-    """
+
+    """Original QPainter chibi renderer with strongly species-specific silhouettes."""
+
+
+
     def __init__(self, state_machine, species="fox"):
+
         self.state_machine = state_machine
+
         self.species = species.lower()
-        
-        # Shared Kinematics & Orientation
-        self.facing = 1  # 1 = right, -1 = left
-        self.particles = []
-        self._spawn_timer = 0.0
-        self._last_blink = 0.0
-        self._blink_interval = random.uniform(2.8, 4.8)
+
+        self.facing = 1
+
         self.elapsed = 0.0
 
-        # Standard Chibi Outlines & Blush
+        self.particles = []
+
+        self._spawn_timer = 0.0
+
+        self._blink_open_until = 0.0
+
+        self._next_blink = random.uniform(2.6, 4.4)
+
         self.c_outline = QColor(42, 32, 28)
-        self.c_blush = QColor(255, 160, 175, 140)
+
+        self.c_blush = QColor(255, 138, 164, 150)
+
+
 
     def reset_animation(self):
+
         self.elapsed = 0.0
-        self._spawn_timer = 0.0
-        self._last_blink = 0.0
-        self._blink_interval = random.uniform(2.8, 4.8)
+
         self.particles.clear()
+
+        self._spawn_timer = 0.0
+
+        self._blink_open_until = 0.0
+
+        self._next_blink = random.uniform(2.6, 4.4)
+
+
 
     def set_facing(self, direction):
+
         self.facing = 1 if direction >= 0 else -1
 
-    def clear_special(self):
-        self.particles.clear()
+
 
     def clear_particles(self):
+
         self.particles.clear()
 
-    def draw_contact_shadow(self, painter, y_offset=0.0, width=50.0, alpha=45):
-        painter.save()
-        painter.setPen(Qt.NoPen)
-        shadow_w = max(18.0, width * (1.0 - min(abs(y_offset) / 60.0, 0.40)))
-        painter.setBrush(QColor(0, 0, 0, alpha))
-        painter.drawEllipse(QRectF(-shadow_w / 2.0, -4.0, shadow_w, 8.0))
-        painter.restore()
+
+
+    def clear_special(self):
+
+        self.clear_particles()
+
+
 
     def update(self):
+
         dt = 0.025
+
         self.elapsed += dt
+
         self._spawn_timer += dt
-        
-        for p in self.particles:
-            p.update(dt)
+
+        state = self.state_machine.get_state()
+
+
+
+        if self.elapsed >= self._next_blink:
+
+            self._blink_open_until = self.elapsed + 0.12
+
+            self._next_blink = self.elapsed + random.uniform(2.6, 4.4)
+
+
+
+        for particle in self.particles:
+
+            particle.update(dt)
+
         self.particles = [p for p in self.particles if p.alive()]
-        
-        # Spawn bounded particles
-        if len(self.particles) < 12 and self._spawn_timer >= 0.22:
-            state = self.state_machine.get_state()
-            if state in ['celebrate']:
-                self._spawn_timer = 0.0
-                kind = 'heart' if random.random() < 0.5 else 'star'
-                self.particles.append(
-                    VisualParticle(
-                        x=random.uniform(-20, 20),
-                        y=random.uniform(-90, -60),
-                        kind=kind,
-                        life=0.6,
-                        vx=random.uniform(-14, 14),
-                        vy=random.uniform(-18, -8),
-                        size=random.uniform(4.5, 7.0)
-                    )
-                )
-            elif state in ['sleep', 'exhausted'] and random.random() < 0.4:
-                self._spawn_timer = 0.0
-                self.particles.append(
-                    VisualParticle(
-                        x=22 + random.uniform(-3, 5),
-                        y=-75 + random.uniform(-5, 2),
-                        kind='sleepy_dot',
-                        life=0.75,
-                        vx=random.uniform(2, 6),
-                        vy=random.uniform(-12, -5),
-                        size=random.uniform(3.0, 5.0)
-                    )
-                )
+
+
+
+        if self._spawn_timer >= 0.28 and len(self.particles) < 10:
+
+            self._spawn_timer = 0.0
+
+            if state == "celebrate":
+
+                self.particles.append(VisualParticle(random.uniform(-20, 20), random.uniform(-90, -55), "star", 0.65, random.uniform(-12, 12), -15, random.uniform(4, 7)))
+
+                if random.random() < 0.5:
+
+                    self.particles.append(VisualParticle(random.uniform(-18, 18), random.uniform(-85, -55), "heart", 0.7, random.uniform(-10, 10), -10, random.uniform(4, 6)))
+
+
+
+    def _eyes_closed(self, state):
+
+        return state == "sleep" or self.elapsed < self._blink_open_until
+
+
+
+    def _outline(self):
+
+        return QPen(self.c_outline, 1.9, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
+
+
+
+    def _ellipse(self, painter, rect, fill):
+
+        painter.setBrush(fill)
+
+        painter.drawEllipse(QRectF(*rect))
+
+
+
+    def _roundrect(self, painter, rect, radius, fill):
+
+        painter.setBrush(fill)
+
+        painter.drawRoundedRect(QRectF(*rect), radius, radius)
+
+
+
+    def draw_contact_shadow(self, painter, width=58, alpha=45):
+
+        painter.save()
+
+        painter.setPen(Qt.NoPen)
+
+        painter.setBrush(QColor(0, 0, 0, alpha))
+
+        painter.drawEllipse(QRectF(-width / 2, -5, width, 10))
+
+        painter.restore()
+
+
 
     def draw(self, painter: QPainter, rect):
+
         state = self.state_machine.get_state()
+
         t = self.elapsed
+
         painter.save()
+
         painter.setRenderHint(QPainter.Antialiasing, True)
+
         painter.translate(rect.center().x(), rect.bottom())
+
         painter.scale(self.facing, 1.0)
-        
-        # Natural blink check
-        if t - self._last_blink > self._blink_interval:
-            self._last_blink = t
-            self._blink_interval = random.uniform(2.5, 4.5)
-        is_blinking = (t - self._last_blink) < 0.16 or (state in ['sleep'])
-        
-        # Ground Contact Shadow
-        self.draw_contact_shadow(painter, y_offset=0.0, width=54.0)
-        
-        # Species-specific procedural rendering
-        if self.species == 'fox':
-            self.draw_fox(painter, state, t, is_blinking)
-        elif self.species == 'rabbit':
-            self.draw_rabbit(painter, state, t, is_blinking)
-        elif self.species == 'penguin':
-            self.draw_penguin(painter, state, t, is_blinking)
-        elif self.species == 'hamster':
-            self.draw_hamster(painter, state, t, is_blinking)
-        elif self.species == 'owl':
-            self.draw_owl(painter, state, t, is_blinking)
-        elif self.species == 'panda':
-            self.draw_panda(painter, state, t, is_blinking)
+
+        self.draw_contact_shadow(painter)
+
+
+
+        if self.species == "fox":
+
+            self.draw_fox(painter, state, t, self._eyes_closed(state))
+
+        elif self.species == "rabbit":
+
+            self.draw_rabbit(painter, state, t, self._eyes_closed(state))
+
+        elif self.species == "penguin":
+
+            self.draw_penguin(painter, state, t, self._eyes_closed(state))
+
+        elif self.species == "hamster":
+
+            self.draw_hamster(painter, state, t, self._eyes_closed(state))
+
+        elif self.species == "owl":
+
+            self.draw_owl(painter, state, t, self._eyes_closed(state))
+
+        elif self.species == "panda":
+
+            self.draw_panda(painter, state, t, self._eyes_closed(state))
+
         else:
-            self.draw_fox(painter, state, t, is_blinking)
-            
-        # Particles
-        for p in self.particles:
-            p.draw(painter)
-            
+
+            self.draw_fox(painter, state, t, self._eyes_closed(state))
+
+
+
+        for particle in self.particles:
+
+            particle.draw(painter)
+
         painter.restore()
 
-    # ========================================================
-    # 1. KITSUNE FOX
-    # ========================================================
-    def draw_fox(self, painter: QPainter, state: str, t: float, is_blinking: bool):
-        c_fur = QColor(234, 112, 38)
-        c_bib = QColor(255, 245, 235)
-        c_dark = QColor(58, 38, 32)
-        
-        # Gait / Stride
-        y_offset = 0.0
-        scale_x, scale_y = 1.0, 1.0
-        walk_stride = 0.0
-        tail_sway = math.sin(t * 3.5) * 8.0
-        
-        if state in ['wander', 'curious']:
-            w_phase = (t * 7.0) % (math.pi * 2.0)
-            walk_stride = math.sin(w_phase)
-            y_offset = -abs(math.sin(w_phase)) * 2.5
-            tail_sway = math.sin(w_phase) * 16.0
-        elif state == 'celebrate':
-            y_offset = -20.0 * abs(math.sin(t * 5.0))
-            tail_sway = math.sin(t * 12.0) * 22.0
-            scale_y = 1.08 if y_offset < -5 else 0.92
-        elif state in ['sleep']:
-            scale_y = 0.92
-            y_offset = 4.0
-            tail_sway = 2.0
-            
-        painter.save()
-        painter.translate(0, y_offset)
-        painter.scale(scale_x, scale_y)
-        painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        
-        # Fluffy Brush Tail
-        painter.save()
-        painter.translate(-14, -40)
-        painter.rotate(-20 + tail_sway)
-        p_tail = QPainterPath()
-        p_tail.moveTo(0, 0)
-        p_tail.quadTo(-38, -12, -44, -36)
-        p_tail.quadTo(-32, -54, -14, -42)
-        p_tail.quadTo(4, -24, 0, 0)
-        p_tail.closeSubpath()
-        painter.setBrush(c_fur)
-        painter.drawPath(p_tail)
-        # Tail white tip
-        p_tip = QPainterPath()
-        p_tip.moveTo(-34, -44)
-        p_tip.lineTo(-44, -36)
-        p_tip.lineTo(-30, -50)
-        p_tip.closeSubpath()
-        painter.setBrush(c_bib)
-        painter.drawPath(p_tip)
-        painter.restore()
-        
-        # Fox Body & Legs
-        painter.setBrush(c_dark)
-        # Back paws
-        painter.drawRoundedRect(QRectF(-16 + walk_stride * 4, -12, 10, 14), 4, 4)
-        painter.drawRoundedRect(QRectF(8 - walk_stride * 4, -12, 10, 14), 4, 4)
-        
-        # Chubby Torso
-        painter.setBrush(c_fur)
-        painter.drawRoundedRect(QRectF(-18, -60, 36, 46), 16, 16)
-        
-        # Cream chest bib
-        painter.setBrush(c_bib)
-        p_bib = QPainterPath()
-        p_bib.moveTo(-9, -60)
-        p_bib.lineTo(9, -60)
-        p_bib.lineTo(13, -40)
-        p_bib.lineTo(0, -28)
-        p_bib.lineTo(-13, -40)
-        p_bib.closeSubpath()
-        painter.drawPath(p_bib)
-        
-        # Front paws
-        painter.setBrush(c_dark)
-        painter.drawRoundedRect(QRectF(-14 - walk_stride * 3, -16, 9, 18), 4, 4)
-        painter.drawRoundedRect(QRectF(5 + walk_stride * 3, -16, 9, 18), 4, 4)
-        
-        # Fox Head
-        head_y = -86.0
-        head_tilt = math.sin(t * 3.0) * 3.0 if state in ['curious', 'idle'] else 0.0
-        painter.save()
-        painter.translate(0, head_y)
-        painter.rotate(head_tilt)
-        
-        # Large Triangular Alert Ears
-        painter.setBrush(c_dark)
-        p_ear_l = QPainterPath()
-        p_ear_l.moveTo(-24, -10)
-        p_ear_l.lineTo(-32, -36)
-        p_ear_l.lineTo(-10, -22)
-        p_ear_l.closeSubpath()
-        painter.drawPath(p_ear_l)
-        
-        p_ear_r = QPainterPath()
-        p_ear_r.moveTo(24, -10)
-        p_ear_r.lineTo(32, -36)
-        p_ear_r.lineTo(10, -22)
-        p_ear_r.closeSubpath()
-        painter.drawPath(p_ear_r)
-        
-        # Inner ear cream
-        painter.setBrush(c_bib)
-        p_iear_l = QPainterPath()
-        p_iear_l.moveTo(-22, -12)
-        p_iear_l.lineTo(-28, -30)
-        p_iear_l.lineTo(-12, -20)
-        p_iear_l.closeSubpath()
-        painter.drawPath(p_iear_l)
-        
-        p_iear_r = QPainterPath()
-        p_iear_r.moveTo(22, -12)
-        p_iear_r.lineTo(28, -30)
-        p_iear_r.lineTo(12, -20)
-        p_iear_r.closeSubpath()
-        painter.drawPath(p_iear_r)
-        
-        # Head base
-        painter.setBrush(c_fur)
-        painter.drawRoundedRect(QRectF(-30, -24, 60, 44), 18, 18)
-        
-        # Cute cheek fluffs
-        p_cheek = QPainterPath()
-        p_cheek.moveTo(-30, 4)
-        p_cheek.lineTo(-38, 10)
-        p_cheek.lineTo(-28, 16)
-        p_cheek.closeSubpath()
-        painter.drawPath(p_cheek)
-        
-        p_cheek_r = QPainterPath()
-        p_cheek_r.moveTo(30, 4)
-        p_cheek_r.lineTo(38, 10)
-        p_cheek_r.lineTo(28, 16)
-        p_cheek_r.closeSubpath()
-        painter.drawPath(p_cheek_r)
-        
-        # Cream Muzzle
-        painter.setBrush(c_bib)
-        painter.drawRoundedRect(QRectF(-16, -2, 32, 22), 11, 11)
-        
-        # Little Nose & Mouth
-        painter.setBrush(c_dark)
-        painter.drawEllipse(QRectF(-3.5, 0, 7, 5))
-        painter.drawLine(QPointF(0, 5), QPointF(0, 8))
-        painter.drawLine(QPointF(-4, 10), QPointF(0, 8))
-        painter.drawLine(QPointF(4, 10), QPointF(0, 8))
-        
-        # Blush
+
+
+    def _draw_big_eyes(self, painter, left, right, y, rx, ry, closed):
+
+        if closed:
+
+            painter.setPen(self._outline())
+
+            painter.drawArc(QRectF(left - rx, y - 1, rx * 2, 8), 200, 140)
+
+            painter.drawArc(QRectF(right - rx, y - 1, rx * 2, 8), 200, 140)
+
+            return
+
         painter.setPen(Qt.NoPen)
-        painter.setBrush(self.c_blush)
-        painter.drawEllipse(QRectF(-22, 2, 9, 5))
-        painter.drawEllipse(QRectF(13, 2, 9, 5))
-        painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        
-        # Eyes
-        if is_blinking:
-            painter.drawLine(QPointF(-19, -4), QPointF(-7, -4))
-            painter.drawLine(QPointF(7, -4), QPointF(19, -4))
-        else:
-            painter.setBrush(c_dark)
-            painter.drawEllipse(QRectF(-18, -10, 10, 13))
-            painter.drawEllipse(QRectF(8, -10, 10, 13))
-            painter.setPen(Qt.NoPen)
-            painter.setBrush(Qt.white)
-            painter.drawEllipse(QRectF(-16, -8, 3.5, 3.5))
-            painter.drawEllipse(QRectF(10, -8, 3.5, 3.5))
-            painter.drawEllipse(QRectF(-13, -3, 2, 2))
-            painter.drawEllipse(QRectF(13, -3, 2, 2))
-            painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-            
-        painter.restore()
+
+        painter.setBrush(QColor(48, 38, 42))
+
+        painter.drawEllipse(QRectF(left - rx, y - ry, rx * 2, ry * 2))
+
+        painter.drawEllipse(QRectF(right - rx, y - ry, rx * 2, ry * 2))
+
+        painter.setBrush(Qt.white)
+
+        painter.drawEllipse(QRectF(left - rx * 0.55, y - ry * 0.65, rx * 0.42, ry * 0.42))
+
+        painter.drawEllipse(QRectF(right - rx * 0.55, y - ry * 0.65, rx * 0.42, ry * 0.42))
+
+        painter.drawEllipse(QRectF(left + rx * 0.1, y + ry * 0.15, rx * 0.20, ry * 0.20))
+
+        painter.drawEllipse(QRectF(right + rx * 0.1, y + ry * 0.15, rx * 0.20, ry * 0.20))
+
+        painter.setPen(self._outline())
+
+
+
+    # ------------------------------------------------------------
+
+    # FOX
+
+    # ------------------------------------------------------------
+
+    def draw_fox(self, painter, state, t, closed):
+
+        orange = QColor(236, 118, 40)
+
+        orange_dark = QColor(181, 72, 29)
+
+        cream = QColor(255, 246, 231)
+
+        nose = QColor(71, 44, 40)
+
+        bounce = -abs(math.sin(t * 6.6)) * 3.0 if state in ("wander", "curious") else 0.0
+
+        tail_wave = math.sin(t * 2.8) * 12.0
+
+        if state == "celebrate":
+
+            bounce = -abs(math.sin(t * 7.0)) * 18.0
+
+            tail_wave = math.sin(t * 10) * 20
+
+
+
+        painter.save()
+
+        painter.translate(0, bounce)
+
+        painter.setPen(self._outline())
+
+
+
+        # Large bushy tail first
+
+        painter.save()
+
+        painter.translate(-14, -30)
+
+        painter.rotate(-16 + tail_wave)
+
+        path = QPainterPath()
+
+        path.moveTo(3, 2)
+
+        path.cubicTo(-22, -4, -48, -25, -47, -53)
+
+        path.cubicTo(-40, -70, -19, -69, -7, -53)
+
+        path.cubicTo(5, -36, 10, -12, 3, 2)
+
+        path.closeSubpath()
+
+        painter.setBrush(orange)
+
+        painter.drawPath(path)
+
+        painter.setBrush(cream)
+
+        tip = QPainterPath()
+
+        tip.moveTo(-28, -57)
+
+        tip.cubicTo(-42, -54, -47, -45, -42, -35)
+
+        tip.cubicTo(-31, -40, -22, -46, -17, -54)
+
+        tip.closeSubpath()
+
+        painter.drawPath(tip)
+
         painter.restore()
 
-    # ========================================================
-    # 2. CHIBI BUNNY (RABBIT)
-    # ========================================================
-    def draw_rabbit(self, painter: QPainter, state: str, t: float, is_blinking: bool):
-        c_fur = QColor(252, 250, 246)
-        c_inner = QColor(248, 195, 208)
-        c_dark = QColor(48, 36, 32)
-        
-        # Hop kinematics
-        y_offset = 0.0
-        scale_x, scale_y = 1.0, 1.0
-        ear_lag = 0.0
-        
-        if state in ['wander', 'hop']:
-            hop_phase = (t * 6.5) % 1.0
-            if hop_phase < 0.65:
-                jump_prog = hop_phase / 0.65
-                y_offset = -22.0 * math.sin(jump_prog * math.pi)
-                scale_y = 1.10
-                scale_x = 0.92
-                ear_lag = -12.0 * math.sin(jump_prog * math.pi)
-            else:
-                land_prog = (hop_phase - 0.65) / 0.35
-                y_offset = 2.5 * math.sin(land_prog * math.pi)
-                scale_y = 0.90
-                scale_x = 1.10
-                ear_lag = 6.0
-        elif state == 'celebrate':
-            y_offset = -24.0 * abs(math.sin(t * 6.0))
-            ear_lag = -16.0 * math.sin(t * 6.0)
-        elif state in ['sleep']:
-            scale_y = 0.92
-            y_offset = 4.0
-            ear_lag = 12.0
-            
+
+
+        # Rear legs and compact body
+
+        self._roundrect(painter, (-18, -18, 15, 18), 6, orange_dark)
+
+        self._roundrect(painter, (4, -18, 15, 18), 6, orange_dark)
+
+        self._roundrect(painter, (-23, -69, 46, 54), 20, orange)
+
+        self._roundrect(painter, (-13, -57, 26, 35), 13, cream)
+
+
+
+        # Front legs
+
+        self._roundrect(painter, (-15, -24, 10, 18), 5, orange)
+
+        self._roundrect(painter, (5, -24, 10, 18), 5, orange)
+
+
+
+        # Head with unmistakable triangular ears and cream muzzle
+
         painter.save()
-        painter.translate(0, y_offset)
-        painter.scale(scale_x, scale_y)
-        painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        
-        # Fluffy Bunny Tail
-        painter.setBrush(c_fur)
-        painter.drawEllipse(QRectF(-26, -34, 14, 14))
-        
-        # Round Body & Paws
-        painter.drawRoundedRect(QRectF(-18, -54, 36, 44), 18, 18)
-        # Big feet
-        painter.drawRoundedRect(QRectF(-18, -14, 14, 16), 6, 6)
-        painter.drawRoundedRect(QRectF(4, -14, 14, 16), 6, 6)
-        # Front paws
-        painter.drawRoundedRect(QRectF(-12, -32, 9, 14), 4, 4)
-        painter.drawRoundedRect(QRectF(3, -32, 9, 14), 4, 4)
-        
-        # Bunny Head & Ears
-        head_y = -78.0
-        painter.save()
-        painter.translate(0, head_y)
-        
-        # Long Floppy/Upright Ears with spring lag
-        painter.save()
-        painter.translate(-12, -18)
-        painter.rotate(-8 + ear_lag)
-        p_ear_l = QPainterPath()
-        p_ear_l.moveTo(-6, 0)
-        p_ear_l.quadTo(-12, -38, 0, -48)
-        p_ear_l.quadTo(12, -38, 6, 0)
-        p_ear_l.closeSubpath()
-        painter.setBrush(c_fur)
-        painter.drawPath(p_ear_l)
-        painter.setBrush(c_inner)
-        painter.drawRoundedRect(QRectF(-3.5, -42, 7, 34), 3.5, 3.5)
-        painter.restore()
-        
-        painter.save()
-        painter.translate(12, -18)
-        painter.rotate(8 - ear_lag)
-        p_ear_r = QPainterPath()
-        p_ear_r.moveTo(-6, 0)
-        p_ear_r.quadTo(-12, -38, 0, -48)
-        p_ear_r.quadTo(12, -38, 6, 0)
-        p_ear_r.closeSubpath()
-        painter.setBrush(c_fur)
-        painter.drawPath(p_ear_r)
-        painter.setBrush(c_inner)
-        painter.drawRoundedRect(QRectF(-3.5, -42, 7, 34), 3.5, 3.5)
-        painter.restore()
-        
-        # Chubby Face
-        painter.setBrush(c_fur)
-        painter.drawRoundedRect(QRectF(-28, -22, 56, 42), 20, 20)
-        
-        # Pink Nose & Twitch
-        nose_twitch = math.sin(t * 12.0) * 1.5 if state in ['idle', 'nose_twitch'] else 0.0
-        painter.setBrush(c_inner)
-        painter.drawEllipse(QRectF(-3.5, -2 + nose_twitch, 7, 5))
-        painter.drawLine(QPointF(0, 3 + nose_twitch), QPointF(0, 6 + nose_twitch))
-        painter.drawLine(QPointF(-4, 7 + nose_twitch), QPointF(0, 6 + nose_twitch))
-        painter.drawLine(QPointF(4, 7 + nose_twitch), QPointF(0, 6 + nose_twitch))
-        
-        # Blush
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(self.c_blush)
-        painter.drawEllipse(QRectF(-20, 2, 8, 5))
-        painter.drawEllipse(QRectF(12, 2, 8, 5))
-        painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        
-        # Big Shiny Eyes
-        if is_blinking:
-            painter.drawLine(QPointF(-18, -6), QPointF(-8, -6))
-            painter.drawLine(QPointF(8, -6), QPointF(18, -6))
-        else:
-            painter.setBrush(c_dark)
-            painter.drawEllipse(QRectF(-17, -12, 10, 13))
-            painter.drawEllipse(QRectF(7, -12, 10, 13))
-            painter.setPen(Qt.NoPen)
-            painter.setBrush(Qt.white)
-            painter.drawEllipse(QRectF(-15, -10, 3.5, 3.5))
-            painter.drawEllipse(QRectF(9, -10, 3.5, 3.5))
-            painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-            
-        painter.restore()
+
+        painter.translate(0, -82)
+
+        left_ear = QPainterPath()
+
+        left_ear.moveTo(-25, -10)
+
+        left_ear.lineTo(-30, -43)
+
+        left_ear.lineTo(-5, -22)
+
+        left_ear.closeSubpath()
+
+        right_ear = QPainterPath()
+
+        right_ear.moveTo(25, -10)
+
+        right_ear.lineTo(30, -43)
+
+        right_ear.lineTo(5, -22)
+
+        right_ear.closeSubpath()
+
+        painter.setBrush(orange_dark)
+
+        painter.drawPath(left_ear)
+
+        painter.drawPath(right_ear)
+
+        painter.setBrush(cream)
+
+        painter.drawPath(QPainterPath(left_ear))
+
+        # Inner ears are smaller cream triangles
+
+        p = QPainterPath(); p.moveTo(-22, -15); p.lineTo(-26, -34); p.lineTo(-10, -22); p.closeSubpath(); painter.drawPath(p)
+
+        p = QPainterPath(); p.moveTo(22, -15); p.lineTo(26, -34); p.lineTo(10, -22); p.closeSubpath(); painter.drawPath(p)
+
+        self._roundrect(painter, (-31, -24, 62, 46), 22, orange)
+
+        self._roundrect(painter, (-18, -2, 36, 20), 12, cream)
+
+        self._ellipse(painter, (-4, 1, 8, 6), nose)
+
+        self._draw_big_eyes(painter, -14, 14, -5, 8, 11, closed)
+
+        painter.setBrush(self.c_blush); painter.setPen(Qt.NoPen)
+
+        painter.drawEllipse(QRectF(-25, 1, 9, 5)); painter.drawEllipse(QRectF(16, 1, 9, 5))
+
         painter.restore()
 
-    # ========================================================
-    # 3. WADDLING PENGUIN
-    # ========================================================
-    def draw_penguin(self, painter: QPainter, state: str, t: float, is_blinking: bool):
-        c_body = QColor(28, 34, 48)
-        c_belly = QColor(255, 255, 255)
-        c_beak = QColor(255, 140, 0)
-        
-        # Waddle cycle
-        y_offset = 0.0
-        waddle_tilt = 0.0
-        wing_flap = 0.0
-        if state in ['wander', 'waddle']:
-            w_phase = (t * 6.5) % (math.pi * 2.0)
-            waddle_tilt = math.sin(w_phase) * 11.0
-            y_offset = -abs(math.sin(w_phase)) * 3.0
-            wing_flap = math.cos(w_phase) * 14.0
-        elif state == 'celebrate':
-            y_offset = -16.0 * abs(math.sin(t * 6.0))
-            wing_flap = math.sin(t * 18.0) * 28.0
-        elif state in ['sleep']:
-            y_offset = 3.0
-            waddle_tilt = 4.0
-            
-        painter.save()
-        painter.translate(0, y_offset)
-        painter.rotate(waddle_tilt)
-        painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        
-        # Orange Flipper Feet
-        painter.setBrush(c_beak)
-        painter.drawRoundedRect(QRectF(-20, -12, 16, 12), 5, 5)
-        painter.drawRoundedRect(QRectF(4, -12, 16, 12), 5, 5)
-        
-        # Flipper Wings (behind body)
-        painter.setBrush(c_body)
-        painter.save()
-        painter.translate(-24, -50)
-        painter.rotate(-15 + wing_flap)
-        painter.drawRoundedRect(QRectF(-6, 0, 12, 28), 6, 6)
-        painter.restore()
-        
-        painter.save()
-        painter.translate(24, -50)
-        painter.rotate(15 - wing_flap)
-        painter.drawRoundedRect(QRectF(-6, 0, 12, 28), 6, 6)
-        painter.restore()
-        
-        # Rounded Body & Head
-        painter.setBrush(c_body)
-        painter.drawRoundedRect(QRectF(-25, -84, 50, 76), 25, 25)
-        
-        # White Belly Oval
-        painter.setBrush(c_belly)
-        painter.drawEllipse(QRectF(-18, -66, 36, 54))
-        
-        # Cute Beak
-        painter.setBrush(c_beak)
-        p_beak = QPainterPath()
-        p_beak.moveTo(-7, -56)
-        p_beak.lineTo(7, -56)
-        p_beak.lineTo(0, -46)
-        p_beak.closeSubpath()
-        painter.drawPath(p_beak)
-        
-        # Blush
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(self.c_blush)
-        painter.drawEllipse(QRectF(-20, -56, 7, 5))
-        painter.drawEllipse(QRectF(13, -56, 7, 5))
-        painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        
-        # Round Eyes
-        if is_blinking:
-            painter.drawLine(QPointF(-16, -64), QPointF(-8, -64))
-            painter.drawLine(QPointF(8, -64), QPointF(16, -64))
-        else:
-            painter.setBrush(Qt.white)
-            painter.drawEllipse(QRectF(-16, -70, 9, 12))
-            painter.drawEllipse(QRectF(7, -70, 9, 12))
-            painter.setBrush(c_body)
-            painter.drawEllipse(QRectF(-14, -68, 6, 8))
-            painter.drawEllipse(QRectF(8, -68, 6, 8))
-            painter.setPen(Qt.NoPen)
-            painter.setBrush(Qt.white)
-            painter.drawEllipse(QRectF(-13, -67, 2.5, 2.5))
-            painter.drawEllipse(QRectF(9, -67, 2.5, 2.5))
-            painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-            
         painter.restore()
 
-    # ========================================================
-    # 4. CHEEKY HAMSTER
-    # ========================================================
-    def draw_hamster(self, painter: QPainter, state: str, t: float, is_blinking: bool):
-        c_fur = QColor(228, 168, 98)
-        c_belly = QColor(255, 248, 240)
-        c_pink = QColor(248, 192, 202)
-        c_dark = QColor(48, 36, 32)
-        
-        # Fast scurrying gait
-        y_offset = 0.0
-        scurry_step = 0.0
-        cheek_bounce = 0.0
-        if state in ['wander', 'scurry']:
-            s_phase = (t * 14.0) % (math.pi * 2.0)
-            scurry_step = math.sin(s_phase) * 5.0
-            y_offset = -abs(math.sin(s_phase)) * 2.0
-            cheek_bounce = math.sin(s_phase) * 1.5
-        elif state == 'celebrate':
-            y_offset = -18.0 * abs(math.sin(t * 6.0))
-            cheek_bounce = math.sin(t * 12.0) * 3.0
-        elif state in ['sleep']:
-            y_offset = 5.0
-            
-        painter.save()
-        painter.translate(0, y_offset)
-        painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        
-        # Tiny Paws
-        painter.setBrush(c_pink)
-        painter.drawRoundedRect(QRectF(-16 + scurry_step, -10, 8, 11), 3, 3)
-        painter.drawRoundedRect(QRectF(8 - scurry_step, -10, 8, 11), 3, 3)
-        
-        # Extremely Round Body
-        painter.setBrush(c_fur)
-        painter.drawEllipse(QRectF(-28, -62, 56, 56))
-        
-        # White tummy
-        painter.setBrush(c_belly)
-        painter.drawEllipse(QRectF(-18, -48, 36, 40))
-        
-        # Tiny front hands holding sunflower seed
-        painter.setBrush(c_pink)
-        painter.drawEllipse(QRectF(-10, -32, 7, 7))
-        painter.drawEllipse(QRectF(3, -32, 7, 7))
-        
-        # Sunflower seed
-        painter.setBrush(QColor(60, 50, 45))
-        p_seed = QPainterPath()
-        p_seed.moveTo(0, -35)
-        p_seed.lineTo(-4, -27)
-        p_seed.lineTo(4, -27)
-        p_seed.closeSubpath()
-        painter.drawPath(p_seed)
-        
-        # Tiny Ears
-        painter.setBrush(c_fur)
-        painter.drawEllipse(QRectF(-26, -72, 14, 14))
-        painter.drawEllipse(QRectF(12, -72, 14, 14))
-        painter.setBrush(c_pink)
-        painter.drawEllipse(QRectF(-23, -69, 8, 8))
-        painter.drawEllipse(QRectF(15, -69, 8, 8))
-        
-        # Puffed Cheeks
-        painter.setBrush(c_belly)
-        painter.drawEllipse(QRectF(-31, -44 + cheek_bounce, 20, 18))
-        painter.drawEllipse(QRectF(11, -44 + cheek_bounce, 20, 18))
-        
-        # Nose & Whiskers
-        painter.setBrush(c_pink)
-        painter.drawEllipse(QRectF(-3, -38, 6, 5))
-        painter.drawLine(QPointF(-10, -36), QPointF(-24, -38))
-        painter.drawLine(QPointF(-10, -34), QPointF(-24, -32))
-        painter.drawLine(QPointF(10, -36), QPointF(24, -38))
-        painter.drawLine(QPointF(10, -34), QPointF(24, -32))
-        
-        # Blush
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(self.c_blush)
-        painter.drawEllipse(QRectF(-26, -38, 10, 6))
-        painter.drawEllipse(QRectF(16, -38, 10, 6))
-        painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        
-        # Beady Black Eyes
-        if is_blinking:
-            painter.drawLine(QPointF(-16, -46), QPointF(-8, -46))
-            painter.drawLine(QPointF(8, -46), QPointF(16, -46))
-        else:
-            painter.setBrush(c_dark)
-            painter.drawEllipse(QRectF(-16, -52, 9, 11))
-            painter.drawEllipse(QRectF(7, -52, 9, 11))
-            painter.setPen(Qt.NoPen)
-            painter.setBrush(Qt.white)
-            painter.drawEllipse(QRectF(-14, -50, 3, 3))
-            painter.drawEllipse(QRectF(9, -50, 3, 3))
-            painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-            
+
+
+    # ------------------------------------------------------------
+
+    # RABBIT
+
+    # ------------------------------------------------------------
+
+    def draw_rabbit(self, painter, state, t, closed):
+
+        fur = QColor(252, 250, 246)
+
+        pink = QColor(247, 170, 190)
+
+        foot_pink = QColor(243, 183, 195)
+
+        hop = -abs(math.sin(t * 6.0)) * 18.0 if state in ("wander", "hop") else 0.0
+
+        ear_sway = math.sin(t * 4.0) * 7.0
+
+        if state == "celebrate": hop = -abs(math.sin(t * 7.0)) * 23.0
+
+
+
+        painter.save(); painter.translate(0, hop); painter.setPen(self._outline())
+
+        self._ellipse(painter, (-27, -28, 15, 15), fur)
+
+        self._roundrect(painter, (-22, -66, 44, 54), 21, fur)
+
+        self._roundrect(painter, (-18, -22, 15, 18), 7, foot_pink)
+
+        self._roundrect(painter, (3, -22, 15, 18), 7, foot_pink)
+
+        self._roundrect(painter, (-13, -38, 9, 14), 4, fur)
+
+        self._roundrect(painter, (4, -38, 9, 14), 4, fur)
+
+
+
+        painter.save(); painter.translate(-12, -82); painter.rotate(-10 + ear_sway)
+
+        p = QPainterPath(); p.moveTo(-7, 3); p.quadTo(-15, -45, 0, -59); p.quadTo(15, -45, 7, 3); p.closeSubpath(); painter.setBrush(fur); painter.drawPath(p)
+
+        painter.setBrush(pink); painter.drawRoundedRect(QRectF(-4, -48, 8, 40), 4, 4); painter.restore()
+
+        painter.save(); painter.translate(12, -82); painter.rotate(10 - ear_sway)
+
+        p = QPainterPath(); p.moveTo(-7, 3); p.quadTo(-15, -45, 0, -59); p.quadTo(15, -45, 7, 3); p.closeSubpath(); painter.setBrush(fur); painter.drawPath(p)
+
+        painter.setBrush(pink); painter.drawRoundedRect(QRectF(-4, -48, 8, 40), 4, 4); painter.restore()
+
+
+
+        painter.translate(0, -73)
+
+        self._roundrect(painter, (-28, -19, 56, 43), 20, fur)
+
+        self._draw_big_eyes(painter, -13, 13, -1, 8, 10, closed)
+
+        painter.setPen(self._outline()); painter.setBrush(pink); painter.drawEllipse(QRectF(-3.5, 5, 7, 5)); painter.drawLine(QPointF(0, 9), QPointF(0, 12)); painter.drawLine(QPointF(-4, 14), QPointF(0, 12)); painter.drawLine(QPointF(4, 14), QPointF(0, 12))
+
+        painter.setPen(Qt.NoPen); painter.setBrush(self.c_blush); painter.drawEllipse(QRectF(-23, 5, 9, 5)); painter.drawEllipse(QRectF(14, 5, 9, 5))
+
         painter.restore()
 
-    # ========================================================
-    # 5. WISE CHIBI OWL
-    # ========================================================
-    def draw_owl(self, painter: QPainter, state: str, t: float, is_blinking: bool):
-        c_feather = QColor(110, 78, 54)
-        c_chest = QColor(252, 245, 235)
-        c_beak = QColor(235, 155, 35)
-        c_eyes = QColor(255, 184, 0)
-        c_dark = QColor(42, 32, 28)
-        
-        # Head turning rotation
-        head_rotate = 0.0
-        wing_flap = 0.0
-        y_offset = 0.0
-        if state in ['wander', 'head_turn']:
-            w_phase = (t * 5.0) % (math.pi * 2.0)
-            y_offset = -abs(math.sin(w_phase)) * 2.0
-            head_rotate = math.sin(w_phase) * 18.0
-        elif state == 'celebrate':
-            y_offset = -20.0 * abs(math.sin(t * 6.0))
-            wing_flap = math.sin(t * 16.0) * 26.0
-        elif state in ['sleep', 'perch']:
-            y_offset = 3.0
-            
-        painter.save()
-        painter.translate(0, y_offset)
-        painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        
-        # Talon Feet
-        painter.setBrush(c_beak)
-        painter.drawRoundedRect(QRectF(-16, -10, 12, 11), 3, 3)
-        painter.drawRoundedRect(QRectF(4, -10, 12, 11), 3, 3)
-        
-        # Wing fluffs
-        painter.setBrush(c_feather)
-        painter.save()
-        painter.translate(-24, -46)
-        painter.rotate(-12 + wing_flap)
-        painter.drawRoundedRect(QRectF(-6, 0, 12, 28), 6, 6)
-        painter.restore()
-        
-        painter.save()
-        painter.translate(24, -46)
-        painter.rotate(12 - wing_flap)
-        painter.drawRoundedRect(QRectF(-6, 0, 12, 28), 6, 6)
-        painter.restore()
-        
-        # Chubby Oval Body
-        painter.setBrush(c_feather)
-        painter.drawRoundedRect(QRectF(-25, -74, 50, 68), 24, 24)
-        
-        # Speckled Chest
-        painter.setBrush(c_chest)
-        painter.drawEllipse(QRectF(-16, -50, 32, 42))
-        painter.setPen(QPen(c_feather, 1.5))
-        for sx, sy in [(-8, -40), (8, -40), (0, -32), (-6, -24), (6, -24)]:
-            painter.drawArc(QRectF(sx - 3, sy - 2, 6, 4), 0, 180 * 16)
-        painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        
-        # Owl Head with Head Swivel
-        head_y = -72.0
-        painter.save()
-        painter.translate(0, head_y)
-        painter.rotate(head_rotate)
-        
-        # Feather tufts / horns
-        p_tuft_l = QPainterPath()
-        p_tuft_l.moveTo(-20, -10)
-        p_tuft_l.lineTo(-28, -26)
-        p_tuft_l.lineTo(-12, -18)
-        p_tuft_l.closeSubpath()
-        painter.drawPath(p_tuft_l)
-        
-        p_tuft_r = QPainterPath()
-        p_tuft_r.moveTo(20, -10)
-        p_tuft_r.lineTo(28, -26)
-        p_tuft_r.lineTo(12, -18)
-        p_tuft_r.closeSubpath()
-        painter.drawPath(p_tuft_r)
-        
-        # Head Base
-        painter.drawRoundedRect(QRectF(-28, -18, 56, 36), 16, 16)
-        
-        # Huge Golden Amber Eyes
-        painter.setBrush(c_eyes)
-        painter.drawEllipse(QRectF(-24, -14, 22, 22))
-        painter.drawEllipse(QRectF(2, -14, 22, 22))
-        
-        if is_blinking:
-            painter.drawLine(QPointF(-20, -3), QPointF(-6, -3))
-            painter.drawLine(QPointF(6, -3), QPointF(20, -3))
-        else:
-            painter.setBrush(c_dark)
-            painter.drawEllipse(QRectF(-18, -9, 11, 13))
-            painter.drawEllipse(QRectF(7, -9, 11, 13))
-            painter.setPen(Qt.NoPen)
-            painter.setBrush(Qt.white)
-            painter.drawEllipse(QRectF(-16, -7, 4, 4))
-            painter.drawEllipse(QRectF(9, -7, 4, 4))
-            painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-            
-        # Curved Beak
-        painter.setBrush(c_beak)
-        p_beak = QPainterPath()
-        p_beak.moveTo(-4, -4)
-        p_beak.lineTo(4, -4)
-        p_beak.lineTo(0, 6)
-        p_beak.closeSubpath()
-        painter.drawPath(p_beak)
-        
-        painter.restore()
+
+
+    # ------------------------------------------------------------
+
+    # PENGUIN
+
+    # ------------------------------------------------------------
+
+    def draw_penguin(self, painter, state, t, closed):
+
+        body = QColor(33, 39, 52)
+
+        white = QColor(254, 254, 252)
+
+        orange = QColor(244, 147, 33)
+
+        waddle = math.sin(t * 5.8) * 8.0 if state in ("wander", "waddle") else 0.0
+
+        flap = math.sin(t * 7.0) * 16.0 if state in ("flap", "celebrate") else 0.0
+
+        lift = -abs(math.sin(t * 6.0)) * 4.0 if state == "celebrate" else 0.0
+
+
+
+        painter.save(); painter.translate(0, lift); painter.rotate(waddle); painter.setPen(self._outline())
+
+        self._roundrect(painter, (-21, -15, 17, 12), 6, orange); self._roundrect(painter, (4, -15, 17, 12), 6, orange)
+
+        painter.save(); painter.translate(-24, -55); painter.rotate(-15 + flap); self._roundrect(painter, (-6, 0, 12, 30), 6, body); painter.restore()
+
+        painter.save(); painter.translate(24, -55); painter.rotate(15 - flap); self._roundrect(painter, (-6, 0, 12, 30), 6, body); painter.restore()
+
+        self._ellipse(painter, (-27, -90, 54, 79), body)
+
+        self._ellipse(painter, (-19, -72, 38, 58), white)
+
+        # White face mask reads as penguin, not generic bird
+
+        self._ellipse(painter, (-22, -78, 44, 37), white)
+
+        self._draw_big_eyes(painter, -11, 11, -60, 7.5, 9, closed)
+
+        painter.setBrush(orange); painter.setPen(self._outline())
+
+        p = QPainterPath(); p.moveTo(-7, -48); p.lineTo(7, -48); p.lineTo(0, -39); p.closeSubpath(); painter.drawPath(p)
+
+        painter.setPen(Qt.NoPen); painter.setBrush(self.c_blush); painter.drawEllipse(QRectF(-21, -53, 8, 5)); painter.drawEllipse(QRectF(13, -53, 8, 5))
+
         painter.restore()
 
-    # ========================================================
-    # 6. SLEEPY PANDA
-    # ========================================================
-    def draw_panda(self, painter: QPainter, state: str, t: float, is_blinking: bool):
-        c_white = QColor(250, 247, 242)
-        c_black = QColor(32, 34, 38)
-        
-        # Heavy cute waddle
-        y_offset = 0.0
-        waddle = 0.0
-        arm_sway = 0.0
-        if state in ['wander', 'slow_walk']:
-            w_phase = (t * 4.5) % (math.pi * 2.0)
-            waddle = math.sin(w_phase) * 6.0
-            y_offset = -abs(math.sin(w_phase)) * 2.2
-            arm_sway = math.sin(w_phase) * 8.0
-        elif state == 'celebrate':
-            y_offset = -18.0 * abs(math.sin(t * 5.0))
-            arm_sway = math.sin(t * 12.0) * 16.0
-        elif state in ['sleep', 'roll']:
-            y_offset = 6.0
-            
-        painter.save()
-        painter.translate(0, y_offset)
-        painter.rotate(waddle)
-        painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        
-        # Black Leg Paws
-        painter.setBrush(c_black)
-        painter.drawRoundedRect(QRectF(-18, -14, 14, 15), 5, 5)
-        painter.drawRoundedRect(QRectF(4, -14, 14, 15), 5, 5)
-        
-        # Round White Body
-        painter.setBrush(c_white)
-        painter.drawRoundedRect(QRectF(-24, -62, 48, 52), 22, 22)
-        
-        # Black arms
-        painter.setBrush(c_black)
-        painter.save()
-        painter.translate(-22, -52)
-        painter.rotate(-8 + arm_sway)
-        painter.drawRoundedRect(QRectF(-6, 0, 12, 23), 5, 5)
+
+
+    # ------------------------------------------------------------
+
+    # HAMSTER - deliberately rebuilt around real hamster proportions
+
+    # ------------------------------------------------------------
+
+    def draw_hamster(self, painter, state, t, closed):
+
+        fur = QColor(234, 166, 91)
+
+        fur_light = QColor(255, 238, 215)
+
+        muzzle = QColor(255, 245, 230)
+
+        pink = QColor(244, 167, 184)
+
+        dark = QColor(57, 42, 38)
+
+        scurry = math.sin(t * 11.0) * 3.5 if state in ("wander", "scurry") else 0.0
+
+        body_bob = -abs(math.sin(t * 10.0)) * 2.0 if state in ("wander", "scurry") else 0.0
+
+        if state == "celebrate": body_bob = -abs(math.sin(t * 7.0)) * 14.0
+
+
+
+        painter.save(); painter.translate(0, body_bob); painter.setPen(self._outline())
+
+
+
+        # Tiny rear feet + tail
+
+        self._ellipse(painter, (-21, -15, 14, 13), pink); self._ellipse(painter, (7, -15, 14, 13), pink)
+
+        self._ellipse(painter, (23, -49, 9, 9), pink)
+
+
+
+        # Very broad pear-shaped hamster body
+
+        self._ellipse(painter, (-31, -66, 62, 63), fur)
+
+        self._ellipse(painter, (-18, -49, 36, 43), fur_light)
+
+
+
+        # Round ears, visibly hamster-specific
+
+        self._ellipse(painter, (-29, -79, 20, 20), fur)
+
+        self._ellipse(painter, (9, -79, 20, 20), fur)
+
+        self._ellipse(painter, (-24, -74, 10, 10), pink)
+
+        self._ellipse(painter, (14, -74, 10, 10), pink)
+
+
+
+        # Raised tiny paws
+
+        self._ellipse(painter, (-14 + scurry, -35, 11, 10), pink)
+
+        self._ellipse(painter, (3 - scurry, -35, 11, 10), pink)
+
+
+
+        # Huge cheek pouches: the defining visual cue
+
+        cheek_y = -50 + math.sin(t * 8.0) * 1.3 if state == "cheek_puff" else -50
+
+        self._ellipse(painter, (-31, cheek_y, 24, 21), muzzle)
+
+        self._ellipse(painter, (7, cheek_y, 24, 21), muzzle)
+
+
+
+        # Head/muzzle sits forward over the body
+
+        self._ellipse(painter, (-28, -78, 56, 45), fur)
+
+        self._ellipse(painter, (-21, -55, 42, 25), muzzle)
+
+        self._draw_big_eyes(painter, -14, 14, -61, 8, 10, closed)
+
+
+
+        painter.setBrush(pink); painter.setPen(self._outline())
+
+        painter.drawEllipse(QRectF(-3.5, -50, 7, 5))
+
+        painter.drawLine(QPointF(-1, -45), QPointF(0, -40))
+
+        painter.drawLine(QPointF(0, -40), QPointF(5, -37))
+
+        painter.setPen(QPen(dark, 1.1))
+
+        painter.drawLine(QPointF(-12, -47), QPointF(-24, -50)); painter.drawLine(QPointF(-12, -44), QPointF(-24, -44))
+
+        painter.drawLine(QPointF(12, -47), QPointF(24, -50)); painter.drawLine(QPointF(12, -44), QPointF(24, -44))
+
+        painter.setPen(Qt.NoPen); painter.setBrush(self.c_blush); painter.drawEllipse(QRectF(-25, -53, 10, 6)); painter.drawEllipse(QRectF(15, -53, 10, 6))
+
         painter.restore()
-        
-        painter.save()
-        painter.translate(22, -52)
-        painter.rotate(8 - arm_sway)
-        painter.drawRoundedRect(QRectF(-6, 0, 12, 23), 5, 5)
-        painter.restore()
-        
-        # Panda Head & Ears
-        head_y = -82.0
-        painter.save()
-        painter.translate(0, head_y)
-        
-        # Black Round Ears
-        painter.setBrush(c_black)
-        painter.drawEllipse(QRectF(-28, -26, 16, 16))
-        painter.drawEllipse(QRectF(12, -26, 16, 16))
-        
-        # Chubby White Head
-        painter.setBrush(c_white)
-        painter.drawRoundedRect(QRectF(-28, -18, 56, 42), 20, 20)
-        
-        # Black Teardrop Eye Patches
-        painter.setBrush(c_black)
-        painter.save()
-        painter.translate(-13, -2)
-        painter.rotate(-18)
-        painter.drawEllipse(QRectF(-7, -9, 14, 18))
-        painter.restore()
-        
-        painter.save()
-        painter.translate(13, -2)
-        painter.rotate(18)
-        painter.drawEllipse(QRectF(-7, -9, 14, 18))
-        painter.restore()
-        
-        # Eyes inside patches
-        if is_blinking:
-            painter.setPen(QPen(Qt.white, 1.8))
-            painter.drawLine(QPointF(-16, -2), QPointF(-9, -2))
-            painter.drawLine(QPointF(9, -2), QPointF(16, -2))
-            painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+
+
+
+    # ------------------------------------------------------------
+
+    # OWL - true facial disk and huge forward-facing eyes
+
+    # ------------------------------------------------------------
+
+    def draw_owl(self, painter, state, t, closed):
+
+        brown = QColor(111, 79, 57)
+
+        dark = QColor(67, 47, 39)
+
+        cream = QColor(250, 241, 220)
+
+        gold = QColor(202, 149, 41)
+
+        beak = QColor(235, 161, 42)
+
+        flap = math.sin(t * 8.0) * 18.0 if state in ("wing_flap", "celebrate") else 0.0
+
+        turn = math.sin(t * 2.7) * 12.0 if state in ("head_turn", "wander") else 0.0
+
+        lift = -abs(math.sin(t * 6.0)) * 14.0 if state == "celebrate" else 0.0
+
+
+
+        painter.save(); painter.translate(0, lift); painter.setPen(self._outline())
+
+        painter.save(); painter.translate(-22, -52); painter.rotate(-14 + flap); self._roundrect(painter, (-6, 0, 12, 29), 6, brown); painter.restore()
+
+        painter.save(); painter.translate(22, -52); painter.rotate(14 - flap); self._roundrect(painter, (-6, 0, 12, 29), 6, brown); painter.restore()
+
+        self._ellipse(painter, (-25, -72, 50, 66), brown)
+
+
+
+        # Ear tufts
+
+        p = QPainterPath(); p.moveTo(-18, -64); p.lineTo(-25, -88); p.lineTo(-8, -75); p.closeSubpath(); painter.setBrush(dark); painter.drawPath(p)
+
+        p = QPainterPath(); p.moveTo(18, -64); p.lineTo(25, -88); p.lineTo(8, -75); p.closeSubpath(); painter.drawPath(p)
+
+
+
+        painter.save(); painter.translate(0, -59); painter.rotate(turn)
+
+        # Large cream facial disk
+
+        self._ellipse(painter, (-28, -29, 56, 52), cream)
+
+        # Golden eyes with dark pupils
+
+        if closed:
+
+            painter.setPen(self._outline()); painter.drawArc(QRectF(-22, -8, 16, 7), 200, 140); painter.drawArc(QRectF(6, -8, 16, 7), 200, 140)
+
         else:
-            painter.setPen(Qt.NoPen)
-            painter.setBrush(Qt.white)
-            painter.drawEllipse(QRectF(-15, -4, 4, 4))
-            painter.drawEllipse(QRectF(11, -4, 4, 4))
-            painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-            
-        # Cute Black Nose & Smile
-        painter.setBrush(c_black)
-        painter.drawEllipse(QRectF(-4, 6, 8, 5))
-        painter.drawLine(QPointF(0, 11), QPointF(0, 13))
-        painter.drawLine(QPointF(-4, 15), QPointF(0, 13))
-        painter.drawLine(QPointF(4, 15), QPointF(0, 13))
-        
-        # Soft Blush
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(self.c_blush)
-        painter.drawEllipse(QRectF(-22, 10, 8, 5))
-        painter.drawEllipse(QRectF(14, 10, 8, 5))
-        painter.setPen(QPen(self.c_outline, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        
+
+            painter.setPen(Qt.NoPen); painter.setBrush(gold); painter.drawEllipse(QRectF(-22, -19, 18, 21)); painter.drawEllipse(QRectF(4, -19, 18, 21))
+
+            painter.setBrush(QColor(44, 34, 26)); painter.drawEllipse(QRectF(-17, -14, 8, 12)); painter.drawEllipse(QRectF(9, -14, 8, 12))
+
+            painter.setBrush(Qt.white); painter.drawEllipse(QRectF(-15, -13, 3.5, 3.5)); painter.drawEllipse(QRectF(11, -13, 3.5, 3.5))
+
+        painter.setPen(self._outline()); painter.setBrush(beak)
+
+        p = QPainterPath(); p.moveTo(-5, -1); p.lineTo(5, -1); p.lineTo(0, 9); p.closeSubpath(); painter.drawPath(p)
+
+        painter.restore(); painter.restore()
+
+
+
+    # ------------------------------------------------------------
+
+    # PANDA - clean black/white silhouette, no vest
+
+    # ------------------------------------------------------------
+
+    def draw_panda(self, painter, state, t, closed):
+
+        white = QColor(250, 248, 243)
+
+        black = QColor(32, 32, 36)
+
+        waddle = math.sin(t * 4.8) * 5.0 if state in ("wander", "slow_walk") else 0.0
+
+        lift = -abs(math.sin(t * 6.0)) * 15.0 if state == "celebrate" else 0.0
+
+        roll = state == "roll"
+
+
+
+        painter.save(); painter.translate(0, lift); painter.rotate(waddle); painter.setPen(self._outline())
+
+        self._ellipse(painter, (-21, -18, 18, 16), black); self._ellipse(painter, (3, -18, 18, 16), black)
+
+        self._roundrect(painter, (-24, -66, 48, 53), 22, white)
+
+        # Black limbs, not a shoulder vest
+
+        self._roundrect(painter, (-31, -56, 13, 28), 6, black); self._roundrect(painter, (18, -56, 13, 28), 6, black)
+
+        self._roundrect(painter, (-25, -17, 17, 15), 7, black); self._roundrect(painter, (8, -17, 17, 15), 7, black)
+
+
+
+        # Head and ears
+
+        self._ellipse(painter, (-28, -91, 56, 46), white)
+
+        self._ellipse(painter, (-27, -93, 18, 18), black); self._ellipse(painter, (9, -93, 18, 18), black)
+
+        painter.save(); painter.translate(0, -70)
+
+        painter.setBrush(black); painter.save(); painter.rotate(-18); painter.drawEllipse(QRectF(-24, -11, 14, 22)); painter.restore(); painter.save(); painter.rotate(18); painter.drawEllipse(QRectF(10, -11, 14, 22)); painter.restore()
+
+        if closed:
+
+            painter.setPen(QPen(Qt.white, 2.0)); painter.drawLine(QPointF(-16, 0), QPointF(-9, 0)); painter.drawLine(QPointF(9, 0), QPointF(16, 0))
+
+        else:
+
+            painter.setPen(Qt.NoPen); painter.setBrush(Qt.white); painter.drawEllipse(QRectF(-15, -3, 5, 5)); painter.drawEllipse(QRectF(10, -3, 5, 5))
+
+        painter.setBrush(black); painter.drawEllipse(QRectF(-4, 8, 8, 5)); painter.drawLine(QPointF(0, 13), QPointF(0, 15)); painter.drawLine(QPointF(-4, 17), QPointF(0, 15)); painter.drawLine(QPointF(4, 17), QPointF(0, 15))
+
         painter.restore()
+
         painter.restore()
 
 ```
@@ -5486,977 +6241,2259 @@ class ChibiAnimalAnimator:
 ## File: `ui/sprite_animator.py`
 
 **Description:** Procedural vector & chibi animation engine for Luffy (4-phase chibi walk cycle, straw hat secondary lag, Bezier rubber arms, dynamic facial expressions, and Gear 2/3/5 transformations).
-**Total Lines:** 969  
+**Total Lines:** 2251  
 **Full Path:** `C:\Pet\ui/sprite_animator.py`
 
 ```python
 import math
+
 import random
+
 from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QPainterPath, QFont, QPixmap
+
 from PyQt5.QtCore import Qt, QPointF, QRectF
+
 from ui.animator import DragonAnimator
 
+
+
+
+
 def smoothstep(x):
+
     x = max(0.0, min(1.0, x))
+
     return x * x * (3.0 - 2.0 * x)
 
+
+
+
+
 def ease_in_out_sine(x):
+
     x = max(0.0, min(1.0, x))
+
     return -(math.cos(math.pi * x) - 1.0) / 2.0
 
+
+
+
+
 def ping_pong01(x):
+
     x = x % 2.0
+
     return x if x <= 1.0 else 2.0 - x
 
+
+
+
+
 def ease_out_back(x):
+
     c1 = 1.70158
+
     c3 = c1 + 1.0
+
     return 1.0 + c3 * (x - 1.0)**3 + c1 * (x - 1.0)**2
 
+
+
+
+
 def draw_rubber_arm(painter, shoulder, target, width=9.0, bend_override=None, outline_col=None, skin_col=None):
+
     sx, sy = shoulder
+
     tx, ty = target
+
+
+
     dx = tx - sx
+
     dy = ty - sy
+
     length = math.hypot(dx, dy)
+
+
+
     if length < 0.01:
+
         return
+
+
+
     nx = -dy / length
+
     ny = dx / length
+
+
+
     bend = bend_override if bend_override is not None else min(16.0, length * 0.18)
 
+
+
     p = QPainterPath()
+
     p.moveTo(sx + nx * width, sy + ny * width)
+
     p.quadTo(
+
         sx + dx * 0.45 + nx * bend,
+
         sy + dy * 0.45 + ny * bend,
+
         tx + nx * (width * 0.72),
+
         ty + ny * (width * 0.72)
+
     )
+
     p.quadTo(
+
         tx - nx * (width * 0.72),
+
         ty - ny * (width * 0.72),
+
         sx - nx * width,
+
         sy - ny * width
+
     )
+
     p.closeSubpath()
 
+
+
     painter.save()
+
     if outline_col:
+
         painter.setPen(QPen(outline_col, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+
     if skin_col:
+
         painter.setBrush(skin_col)
+
     painter.drawPath(p)
+
     painter.restore()
 
+
+
+
+
 class VisualParticle:
+
     def __init__(self, x, y, kind, life=0.55, vx=0.0, vy=-12.0, size=4.0, color=None):
+
         self.x = float(x)
+
         self.y = float(y)
+
         self.kind = kind
+
         self.life = float(life)
+
         self.max_life = float(life)
+
         self.vx = float(vx)
+
         self.vy = float(vy)
+
         self.size = float(size)
+
         self.color = color
 
+
+
     def update(self, dt=0.025):
+
         self.life -= dt
+
         self.x += self.vx * dt
+
         self.y += self.vy * dt
+
         if self.kind in ['dust', 'landing_puff']:
+
             self.vy += 14.0 * dt
+
         elif self.kind in ['sparkle', 'star']:
+
             self.vy += 3.0 * dt
+
         elif self.kind in ['steam', 'smoke_ribbon']:
+
             self.vy += -4.0 * dt
+
         elif self.kind in ['sleepy_dot']:
+
             self.vy += -3.0 * dt
 
+
+
     def alive(self):
+
         return self.life > 0
 
+
+
     def draw(self, painter: QPainter):
+
         if not self.alive():
+
             return
+
         ratio = max(0.0, min(1.0, self.life / self.max_life))
+
         alpha = int(240 * ratio)
+
         painter.save()
+
         painter.setRenderHint(QPainter.Antialiasing, True)
-        
+
+
+
         if self.kind == 'star':
+
             col = QColor(255, 220, 60, alpha) if self.color is None else QColor(self.color)
+
             col.setAlpha(alpha)
+
             painter.setPen(Qt.NoPen)
+
             painter.setBrush(col)
+
             sz = max(2.0, self.size * ratio)
+
             p = QPainterPath()
+
             p.moveTo(self.x, self.y - sz * 1.4)
+
             p.quadTo(self.x, self.y, self.x + sz * 1.4, self.y)
+
             p.quadTo(self.x, self.y, self.x, self.y + sz * 1.4)
+
             p.quadTo(self.x, self.y, self.x - sz * 1.4, self.y)
+
             p.quadTo(self.x, self.y, self.x, self.y - sz * 1.4)
+
             painter.drawPath(p)
-            
+
+
+
         elif self.kind == 'sparkle':
+
             col = QColor(255, 235, 120, alpha) if self.color is None else QColor(self.color)
+
             col.setAlpha(alpha)
+
             painter.setPen(Qt.NoPen)
+
             painter.setBrush(col)
+
             sz = max(1.5, self.size * ratio)
+
             painter.drawEllipse(QRectF(self.x - sz / 2.0, self.y - sz / 2.0, sz, sz))
-            
+
+
+
         elif self.kind in ['steam', 'smoke_ribbon']:
+
             col = QColor(255, 255, 255, int(alpha * 0.5)) if self.color is None else QColor(self.color)
+
             col.setAlpha(int(alpha * 0.5))
+
             painter.setPen(Qt.NoPen)
+
             painter.setBrush(col)
+
             sz = self.size * (0.8 + 0.6 * (1.0 - ratio))
+
             painter.drawEllipse(QRectF(self.x - sz / 2.0, self.y - sz / 2.0, sz, sz))
-            
+
+
+
         elif self.kind == 'sleepy_dot':
+
             col = QColor(165, 180, 220, alpha) if self.color is None else QColor(self.color)
+
             col.setAlpha(alpha)
+
             painter.setPen(Qt.NoPen)
+
             painter.setBrush(col)
+
             sz = max(1.5, self.size * (0.65 + 0.35 * ratio))
+
             painter.drawEllipse(QRectF(self.x - sz / 2.0, self.y - sz / 2.0, sz, sz))
-            
+
+
+
         painter.restore()
+
+
+
+
 
 class SpriteAnimator:
+
     def __init__(self, state_machine, image_path="assets/luffy.png"):
+
         self.state_machine = state_machine
+
         self.image_path = image_path
+
         self.pixmap = QPixmap(image_path)
+
         if not self.pixmap.isNull():
+
             self.pixmap = self.pixmap.scaledToHeight(150, Qt.SmoothTransformation)
-            
+
+
+
         # Reusable laptop and fire breath renderer for compatibility
+
         self.dummy_dragon = DragonAnimator(state_machine)
-        
+
+
+
         # Canonical Luffy Color Palette
+
         self.c_outline = QColor(44, 28, 22)
+
         self.c_skin = QColor(254, 218, 186)
+
         self.c_skin_shadow = QColor(240, 196, 162)
+
         self.c_hair = QColor(24, 23, 28)
+
         self.c_hat = QColor(234, 188, 102)
+
         self.c_hat_dark = QColor(212, 162, 75)
+
         self.c_hat_band = QColor(204, 38, 38)
+
         self.c_vest = QColor(226, 44, 44)
+
         self.c_shorts = QColor(46, 108, 180)
+
         self.c_cuff = QColor(235, 240, 248)
+
         self.c_sandals = QColor(140, 92, 58)
+
         self.c_blush = QColor(255, 175, 180, 140)
+
         self.c_meat = QColor(180, 75, 45)
+
         self.c_bone = QColor(248, 245, 235)
-        
+
+
+
         # Facing & Orientation
+
         self.facing = 1  # 1 = facing right, -1 = facing left
-        
+
+
+
         # Special Action State
+
         self.special_action = None
+
         self.special_timer = 0.0
+
         self.elapsed = 0.0
-        
+
+
+
         # Animation states & particles
+
         self.particles = []
+
         self._spawn_timer = 0.0
+
         self._blink_seed = random.uniform(1.0, 3.0)
+
         self._last_blink_time = 0.0
+
         self._blink_interval = random.uniform(2.5, 4.5)
 
+
+
     def reset_animation(self):
+
         self.elapsed = 0.0
+
         self.special_action = None
+
         self.special_timer = 0.0
+
         self.particles.clear()
+
         self._spawn_timer = 0.0
+
         self._last_blink_time = 0.0
+
         self._blink_interval = random.uniform(2.8, 4.8)
 
+
+
     def set_facing(self, direction):
+
         self.facing = 1 if direction >= 0 else -1
 
+
+
     def trigger_special(self, action):
+
         self.special_action = action
+
         self.special_timer = 0.0
+
+
 
     def clear_special(self):
+
         self.special_action = None
+
         self.special_timer = 0.0
+
         self.particles.clear()
 
+
+
     def draw_contact_shadow(self, painter, y_offset=0.0, width=54.0, alpha=45):
+
         painter.save()
+
         painter.setPen(Qt.NoPen)
+
         shadow_width = max(22.0, width * (1.0 - min(abs(y_offset) / 60.0, 0.35)))
+
         painter.setBrush(QColor(0, 0, 0, alpha))
+
         painter.drawEllipse(QRectF(-shadow_width / 2.0, -4.0, shadow_width, 8.0))
+
         painter.restore()
 
+
+
+    def _draw_gear5_cloud_ring(self, painter, front=False, t=0.0):
+
+        """Draw the white, cloud-like ribbon encircling Luffy's upper body in Gear 5."""
+
+        painter.save()
+
+        wobble = math.sin(t * 5.5) * 3.0
+
+        painter.translate(0.0, wobble)
+
+
+
+        path = QPainterPath()
+
+        path.moveTo(-56.0, -74.0)
+
+        path.cubicTo(-70.0, -88.0, -68.0, -106.0, -51.0, -110.0)
+
+        path.cubicTo(-35.0, -114.0, -26.0, -101.0, -18.0, -92.0)
+
+        path.cubicTo(-8.0, -106.0, 8.0, -106.0, 18.0, -92.0)
+
+        path.cubicTo(26.0, -101.0, 35.0, -114.0, 51.0, -110.0)
+
+        path.cubicTo(68.0, -106.0, 70.0, -88.0, 56.0, -74.0)
+
+        path.cubicTo(47.0, -63.0, 31.0, -59.0, 19.0, -63.0)
+
+        path.cubicTo(8.0, -67.0, -8.0, -67.0, -19.0, -63.0)
+
+        path.cubicTo(-31.0, -59.0, -47.0, -63.0, -56.0, -74.0)
+
+        path.closeSubpath()
+
+
+
+        # Offset/trim by overlaying the torso later. The cloud itself is white, with a dark outline.
+
+        painter.setPen(QPen(self.c_outline, 3.0, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+
+        painter.setBrush(QBrush(QColor(255, 255, 255)))
+
+        painter.drawPath(path)
+
+
+
+        # Individual soft lobes make the ring read as smoke/cloud rather than a solid belt.
+
+        painter.setPen(Qt.NoPen)
+
+        painter.setBrush(QColor(255, 255, 255))
+
+        lobes = [
+
+            (-52, -98, 18), (-34, -103, 16), (-17, -94, 15),
+
+            (17, -94, 15), (34, -103, 16), (52, -98, 18),
+
+        ]
+
+        for x, y, r in lobes:
+
+            painter.drawEllipse(QRectF(x - r * 0.55, y - r * 0.42, r * 1.1, r * 0.84))
+
+
+
+        # In front view, draw a small front-center cloud segment after the torso.
+
+        if front:
+
+            painter.setPen(QPen(self.c_outline, 3.0, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+
+            painter.setBrush(QBrush(QColor(255, 255, 255)))
+
+            front_path = QPainterPath()
+
+            front_path.moveTo(-18, -80)
+
+            front_path.cubicTo(-10, -70, -7, -63, 0, -60)
+
+            front_path.cubicTo(7, -63, 10, -70, 18, -80)
+
+            front_path.cubicTo(12, -75, 7, -75, 0, -70)
+
+            front_path.cubicTo(-7, -75, -12, -75, -18, -80)
+
+            front_path.closeSubpath()
+
+            painter.drawPath(front_path)
+
+
+
+        painter.restore()
+
+
+
     def update(self):
+
         dt = 0.025
+
         self.elapsed += dt
+
         self._spawn_timer += dt
-        
+
+
+
         if self.special_action is not None:
+
             self.special_timer += dt
+
             # Auto-clear after duration
+
             durations = {
+
                 "gum_stretch": 2.2,
+
                 "gear2": 3.0,
+
                 "gear3": 2.5,
+
                 "gear5": 3.5
+
             }
+
             max_d = durations.get(self.special_action, 2.5)
+
             if self.special_timer >= max_d:
+
                 self.clear_special()
 
+
+
         # Update and cull active particles
+
         for p in self.particles:
+
             p.update(dt)
+
         self.particles = [p for p in self.particles if p.alive()]
-        
+
+
+
         # Spawn state-specific particles (capped at 12)
+
         if len(self.particles) < 12 and self._spawn_timer >= 0.2:
+
             state = self.state_machine.get_state()
+
             active_act = self.special_action or state
-            
+
+
+
             if active_act in ['celebrate']:
+
                 self._spawn_timer = 0.0
+
                 kind = 'star' if random.random() < 0.6 else 'sparkle'
+
                 self.particles.append(
+
                     VisualParticle(
+
                         x=random.uniform(-25, 25),
+
                         y=random.uniform(-110, -70),
+
                         kind=kind,
+
                         life=0.55,
+
                         vx=random.uniform(-16, 16),
+
                         vy=random.uniform(-20, -8),
+
                         size=random.uniform(4.5, 7.5)
+
                     )
+
                 )
+
             elif active_act == 'gear2':
+
                 # Steam puff ONLY during gear2
+
                 self._spawn_timer = 0.0
+
                 self.particles.append(
+
                     VisualParticle(
+
                         x=random.uniform(-16, 16),
+
                         y=random.uniform(-65, -15),
+
                         kind='steam',
+
                         life=0.6,
+
                         vx=random.uniform(-6, 6),
+
                         vy=random.uniform(-18, -8),
+
                         size=random.uniform(5.0, 8.5),
+
                         color=QColor(255, 220, 225, 180)
+
                     )
+
                 )
+
             elif active_act == 'gear5':
+
                 # Mythical smoke ribbon
+
                 self._spawn_timer = 0.0
+
                 self.particles.append(
+
                     VisualParticle(
+
                         x=random.uniform(-25, 25),
+
                         y=random.uniform(-115, -45),
+
                         kind='smoke_ribbon',
+
                         life=0.7,
+
                         vx=random.uniform(-10, 10),
+
                         vy=random.uniform(-14, -6),
+
                         size=random.uniform(7.0, 12.0),
+
                         color=QColor(255, 255, 255, 220)
+
                     )
+
                 )
+
             elif active_act in ['sleep', 'exhausted'] and random.random() < 0.4:
+
                 self._spawn_timer = 0.0
+
                 self.particles.append(
+
                     VisualParticle(
+
                         x=26 + random.uniform(-4, 6),
+
                         y=-85 + random.uniform(-6, 2),
+
                         kind='sleepy_dot',
+
                         life=0.75,
+
                         vx=random.uniform(2, 6),
+
                         vy=random.uniform(-12, -5),
+
                         size=random.uniform(3.0, 5.0)
+
                     )
+
                 )
+
+
 
     def draw(self, painter: QPainter, rect):
+
         state = self.state_machine.get_state()
+
         t = self.elapsed
+
         effective_action = self.special_action or state
-        
+
+
+
         painter.save()
+
         painter.setRenderHint(QPainter.Antialiasing, True)
+
         painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
-        
+
+
+
         # Origin at bottom center
+
         painter.translate(rect.center().x(), rect.bottom())
-        
+
+
+
         # Facing scale
+
         painter.scale(self.facing, 1.0)
-        
+
+
+
         # Easing & Kinematics
+
         scale_y = 1.0
+
         scale_x = 1.0
+
         y_offset = 0.0
+
         torso_tilt = 0.0
+
         head_lag = 0.0
+
         hat_lag = 0.0
+
         hat_tilt = 0.0
-        
+
+
+
         # Gait/Limb parameters
+
         foot_x_l = -10.0
+
         foot_y_l = 0.0
+
         foot_x_r = 10.0
+
         foot_y_r = 0.0
+
         arm_mode = 'hips'
+
         rubber_stretch_ratio = 0.0
-        
+
+
+
         # Facial Expression Defaults
+
         expression = 'normal'
+
         mouth_expression = 'smile'
-        
+
+
+
         # Natural Randomized Blinking
+
         if t - self._last_blink_time > self._blink_interval:
+
             self._last_blink_time = t
+
             self._blink_interval = random.uniform(2.5, 4.5)
+
         is_blinking = (t - self._last_blink_time) < 0.18
-        
+
+
+
         # Palettes for Gear modes
+
         skin_color = self.c_skin
+
+        skin_shadow_color = self.c_skin_shadow
+
         hair_color = self.c_hair
+
         outline_color = self.c_outline
+
+        vest_color = self.c_vest
+
+        shorts_color = self.c_shorts
+
+        cuff_color = self.c_cuff
+
+        sandals_color = self.c_sandals
+
         is_gear5 = (effective_action == 'gear5')
 
+
+
         # ====================================================
+
         # SPECIAL ACTIONS
+
         # ====================================================
+
         if effective_action == 'gum_stretch':
+
             # Gum-Gum Pistol animation sequence
+
             st = self.special_timer
+
             arm_mode = 'gum_stretch'
-            if st < 0.4:  # Preparation: pull back
+
+            if st < 0.4:
+
+                # Preparation: pull back
+
                 prog = st / 0.4
+
                 rubber_stretch_ratio = -0.35 * smoothstep(prog)
+
                 scale_x = 1.06
+
                 scale_y = 0.94
+
                 y_offset = 2
+
                 expression = 'determined'
+
                 mouth_expression = 'determined'
+
                 hat_tilt = -5 * prog
-            elif st < 0.9:  # Rapid extension with overshoot
+
+            elif st < 0.9:
+
+                # Rapid extension with overshoot
+
                 prog = (st - 0.4) / 0.5
+
                 eased = ease_out_back(min(1.0, prog * 1.25))
+
                 rubber_stretch_ratio = eased * 1.6
+
                 scale_x = 0.95
+
                 scale_y = 1.05
+
                 y_offset = -3
+
                 expression = 'determined'
+
                 mouth_expression = 'wide_grin'
+
                 hat_tilt = 8 * prog
-            elif st < 1.4:  # Hold at extension
+
+            elif st < 1.4:
+
+                # Hold at extension
+
                 rubber_stretch_ratio = 1.6
+
                 expression = 'determined'
+
                 mouth_expression = 'wide_grin'
+
                 hat_tilt = 6
-            else:  # Rubber recoil & return to idle
+
+            else:
+
+                # Rubber recoil & return to idle
+
                 prog = min(1.0, (st - 1.4) / 0.8)
+
                 rubber_stretch_ratio = 1.6 * (1.0 - smoothstep(prog))
+
                 bounce = math.sin(prog * math.pi * 3) * (1.0 - prog) * 0.12
+
                 scale_x = 1.0 + bounce
+
                 scale_y = 1.0 - bounce
+
                 expression = 'happy'
+
                 mouth_expression = 'smile'
-                
+
+
+
         elif effective_action == 'gear2':
+
             # Gear 2: Second Gear (Pumped up red hue, steam, crouching ready stance)
+
             st = self.special_timer
+
             skin_color = QColor(255, 195, 185)  # Flushed pinkish
+
             scale_y = 0.88 + 0.04 * math.sin(st * 16.0)
+
             scale_x = 1.10 - 0.02 * math.sin(st * 16.0)
+
             y_offset = 5.0
+
             torso_tilt = 4.0
+
             hat_tilt = -6.0
+
             arm_mode = 'gear2_ready'
+
             expression = 'determined'
+
             mouth_expression = 'determined'
-            
+
+
+
         elif effective_action == 'gear3':
+
             # Gear 3: Third Gear (Gigant Pistol balloon fist)
+
             st = self.special_timer
+
             arm_mode = 'gear3_giant'
+
             scale_y = 0.94 + 0.03 * math.sin(st * 8.0)
+
             scale_x = 1.06
+
             y_offset = 2.0
+
             expression = 'determined'
+
             mouth_expression = 'wide_grin'
+
             hat_tilt = -8.0
-            
+
+
+
         elif effective_action == 'gear5':
-            # Gear 5: Sun God Nika (Pure white cloud hair silhouette, ringed eyes, elastic laugh)
+
+            # Gear 5: complete white Nika silhouette, open laughing face, cloud ring.
+
             st = self.special_timer
-            hair_color = QColor(255, 255, 255)
+
+            white = QColor(255, 255, 255)
+
+            skin_color = white
+
+            skin_shadow_color = QColor(238, 238, 238)
+
+            hair_color = white
+
+            vest_color = white
+
+            shorts_color = white
+
+            cuff_color = white
+
+            sandals_color = white
+
             bounce = abs(math.sin(st * 7.5)) * 14.0
+
             y_offset = -bounce
-            scale_y = 1.08 if bounce > 4.0 else 0.90
-            scale_x = 0.92 if bounce > 4.0 else 1.12
+
+            scale_y = 1.08 if bounce > 4.0 else 0.92
+
+            scale_x = 0.94 if bounce > 4.0 else 1.08
+
             torso_tilt = math.sin(st * 5.0) * 5.0
-            hat_tilt = math.sin(st * 7.5) * 8.0
+
+            hat_tilt = 0.0
+
             arm_mode = 'gear5_dance'
-            expression = 'laughing'
+
+            expression = 'gear5_laugh'
+
             mouth_expression = 'laughing'
-            
+
+
+
         # ====================================================
+
         # NORMAL STATES
+
         # ====================================================
+
         elif state == 'wander':
+
             # 4-Phase Chibi Walk Cycle
+
             walk_speed = 7.5
+
             walk_phase = (t * walk_speed) % (math.pi * 2.0)
+
+
+
             stride = math.sin(walk_phase)
+
             stride_opp = math.sin(walk_phase + math.pi)
+
+
+
             lift_l = max(0.0, stride)
+
             lift_r = max(0.0, stride_opp)
-            
+
+
+
             body_bob = -abs(math.sin(walk_phase)) * 2.8
+
             y_offset = body_bob
+
+
+
             foot_y_l = -lift_l * 5.5
+
             foot_y_r = -lift_r * 5.5
+
             foot_x_l = -10.0 + stride * 4.0
+
             foot_x_r = 10.0 + stride_opp * 4.0
+
+
+
             torso_tilt = stride * 2.0
+
             head_lag = -stride * 1.4
+
             hat_lag = -stride * 2.8
+
             hat_tilt = hat_lag
+
+
+
             arm_mode = 'walk_cycle'
+
             expression = 'blink' if is_blinking else 'normal'
+
             mouth_expression = 'smile'
-            
+
+
+
         elif state == 'idle':
+
             # Idle breathing & subtle weight shift
+
             breath = math.sin(t * 3.0)
+
             scale_y = 1.0 + 0.024 * breath
+
             scale_x = 1.0 - 0.012 * breath
+
             hat_tilt = breath * 2.2
+
             arm_mode = 'hips'
+
             expression = 'blink' if is_blinking else 'normal'
+
             mouth_expression = 'smile'
-            
+
+
+
         elif state == 'celebrate':
+
             # Joyful celebration jump
+
             jump_cycle = (t * 2.2) % 1.5
+
             if jump_cycle < 0.25:
+
                 scale_y = 0.88
+
                 scale_x = 1.12
+
                 y_offset = 3.0
+
                 hat_tilt = -3.0
+
             elif jump_cycle < 0.95:
+
                 jump_t = (jump_cycle - 0.25) / 0.70
+
                 y_offset = -28.0 * math.sin(jump_t * math.pi)
+
                 scale_y = 1.10
+
                 scale_x = 0.92
+
                 hat_tilt = -10.0 * (1.0 - jump_t)
+
             else:
+
                 scale_y = 0.94
+
                 scale_x = 1.06
+
                 y_offset = 2.0
+
             arm_mode = 'celebrate'
+
             expression = 'happy'
+
             mouth_expression = 'wide_grin'
-            
+
+
+
         elif state in ['eat', 'hungry']:
+
             scale_y = 0.96 + 0.03 * math.sin(t * 10.0)
+
             scale_x = 1.04
+
             y_offset = -4.0 * abs(math.sin(t * 10.0))
+
             arm_mode = 'meat'
+
             expression = 'excited'
+
             mouth_expression = 'meat'
-            
+
+
+
         elif state in ['sleep', 'exhausted']:
+
             scale_y = 0.90 + 0.015 * math.sin(t * 2.0)
+
             scale_x = 1.06
+
             y_offset = 8.0
+
             hat_tilt = 12.0
+
             arm_mode = 'hips'
+
             expression = 'sleep'
+
             mouth_expression = 'closed'
-            
+
+
+
         elif state == 'wake':
+
             wake_phase = min(1.0, t / 1.5)
+
             if wake_phase < 0.4:
+
                 scale_y = 0.92
+
                 expression = 'sleep'
+
                 mouth_expression = 'o_mouth'
+
             elif wake_phase < 0.7:
+
                 scale_y = 1.08
+
                 scale_x = 0.94
+
                 y_offset = -8.0
+
                 hat_tilt = -6.0
+
                 expression = 'surprised'
+
                 mouth_expression = 'wide_grin'
+
             else:
+
                 scale_y = 1.0
+
                 expression = 'happy'
+
                 mouth_expression = 'smile'
-                
+
+
+
         elif state == 'focus':
+
             scale_y = 0.97
+
             scale_x = 1.03
+
             y_offset = 3.0
+
             arm_mode = 'type'
+
             expression = 'focused'
+
             mouth_expression = 'determined'
-            
+
+
+
         elif state in ['think', 'curious']:
+
             scale_y = 0.98
+
             scale_x = 1.02
+
             torso_tilt = 4.0
+
             head_lag = 4.0
+
             hat_tilt = 6.0
+
             arm_mode = 'think'
+
             expression = 'curious'
+
             mouth_expression = 'smile'
-            
+
+
+
         elif state in ['annoyed']:
+
             scale_y = 0.96
+
             scale_x = 1.04
+
             torso_tilt = -3.0
+
             arm_mode = 'hips'
+
             expression = 'annoyed'
+
             mouth_expression = 'annoyed'
-            
+
+
+
         elif state in ['drag', 'react_drag']:
+
             scale_y = 1.15
+
             scale_x = 0.88
+
             y_offset = -12.0
+
             hat_tilt = -8.0
+
             arm_mode = 'drag'
+
             expression = 'surprised'
+
             mouth_expression = 'o_mouth'
-            
+
+
+
         elif state in ['react_click']:
+
             y_offset = -14.0 * math.sin(t * 15.0) if t < 0.25 else 0.0
+
             hat_tilt = -8.0 * math.sin(t * 15.0) if t < 0.25 else 0.0
+
             expression = 'happy'
+
             mouth_expression = 'wide_grin'
 
-        # ----------------------------------------------------
-        # 1. Contact Shadow
-        # ----------------------------------------------------
-        self.draw_contact_shadow(painter, y_offset=y_offset, width=54.0, alpha=45)
-        
-        # Apply root kinematic transformations
-        painter.translate(0, y_offset)
-        painter.scale(scale_x, scale_y)
-        
-        # ----------------------------------------------------
-        # 2. LEGS & FEET (Layered under torso)
-        # ----------------------------------------------------
-        painter.setPen(QPen(outline_color, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        
-        # Blue Shorts Base
-        painter.setBrush(self.c_shorts)
-        shorts_path = QPainterPath()
-        shorts_path.moveTo(-18, -48)
-        shorts_path.lineTo(18, -48)
-        shorts_path.lineTo(20, -28)
-        shorts_path.lineTo(4, -28)
-        shorts_path.lineTo(0, -36)
-        shorts_path.lineTo(-4, -28)
-        shorts_path.lineTo(-20, -28)
-        shorts_path.closeSubpath()
-        painter.drawPath(shorts_path)
-        
-        # White Fuzzy Cuffs
-        painter.setBrush(self.c_cuff)
-        painter.drawRoundedRect(QRectF(-22, -30, 18, 7), 3, 3)
-        painter.drawRoundedRect(QRectF(4, -30, 18, 7), 3, 3)
-        
-        # Left Leg & Foot
-        painter.setBrush(skin_color)
-        painter.drawRoundedRect(QRectF(foot_x_l - 4, -24 + foot_y_l, 9, 18), 4, 4)
-        # Sandal
-        painter.setBrush(self.c_sandals)
-        painter.drawRoundedRect(QRectF(foot_x_l - 7, -7 + foot_y_l, 14, 5), 2.5, 2.5)
-        # Sandal strap
-        painter.setPen(QPen(self.c_vest, 1.4))
-        painter.drawLine(QPointF(foot_x_l - 3, -7 + foot_y_l), QPointF(foot_x_l, -10 + foot_y_l))
-        painter.drawLine(QPointF(foot_x_l + 3, -7 + foot_y_l), QPointF(foot_x_l, -10 + foot_y_l))
-        painter.setPen(QPen(outline_color, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        
-        # Right Leg & Foot
-        painter.setBrush(skin_color)
-        painter.drawRoundedRect(QRectF(foot_x_r - 5, -24 + foot_y_r, 9, 18), 4, 4)
-        # Sandal
-        painter.setBrush(self.c_sandals)
-        painter.drawRoundedRect(QRectF(foot_x_r - 7, -7 + foot_y_r, 14, 5), 2.5, 2.5)
-        # Sandal strap
-        painter.setPen(QPen(self.c_vest, 1.4))
-        painter.drawLine(QPointF(foot_x_r - 3, -7 + foot_y_r), QPointF(foot_x_r, -10 + foot_y_r))
-        painter.drawLine(QPointF(foot_x_r + 3, -7 + foot_y_r), QPointF(foot_x_r, -10 + foot_y_r))
-        painter.setPen(QPen(outline_color, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+
 
         # ----------------------------------------------------
-        # 3. TORSO & RED OPEN VEST
+
+        # 1. Contact Shadow / Gear 5 Cloud Ring
+
         # ----------------------------------------------------
-        painter.save()
-        painter.rotate(torso_tilt)
-        
-        # Bare chest/torso
+
+        self.draw_contact_shadow(painter, y_offset=y_offset, width=54.0, alpha=45)
+
+        if is_gear5:
+
+            self._draw_gear5_cloud_ring(painter, front=False, t=t)
+
+
+
+        # Apply root kinematic transformations
+
+        painter.translate(0, y_offset)
+
+        painter.scale(scale_x, scale_y)
+
+
+
+        # ----------------------------------------------------
+
+        # 2. LEGS & FEET (Layered under torso)
+
+        # ----------------------------------------------------
+
+        painter.setPen(QPen(outline_color, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+
+
+
+        # Blue Shorts Base
+
+        painter.setBrush(shorts_color)
+
+        shorts_path = QPainterPath()
+
+        shorts_path.moveTo(-18, -48)
+
+        shorts_path.lineTo(18, -48)
+
+        shorts_path.lineTo(20, -28)
+
+        shorts_path.lineTo(4, -28)
+
+        shorts_path.lineTo(0, -36)
+
+        shorts_path.lineTo(-4, -28)
+
+        shorts_path.lineTo(-20, -28)
+
+        shorts_path.closeSubpath()
+
+        painter.drawPath(shorts_path)
+
+
+
+        # White Fuzzy Cuffs
+
+        painter.setBrush(cuff_color)
+
+        painter.drawRoundedRect(QRectF(-22, -30, 18, 7), 3, 3)
+
+        painter.drawRoundedRect(QRectF(4, -30, 18, 7), 3, 3)
+
+
+
+        # Left Leg & Foot
+
         painter.setBrush(skin_color)
+
+        painter.drawRoundedRect(QRectF(foot_x_l - 4, -24 + foot_y_l, 9, 18), 4, 4)
+
+        # Sandal
+
+        painter.setBrush(sandals_color)
+
+        painter.drawRoundedRect(QRectF(foot_x_l - 7, -7 + foot_y_l, 14, 5), 2.5, 2.5)
+
+        # Sandal strap
+
+        painter.setPen(QPen(vest_color, 1.4))
+
+        painter.drawLine(QPointF(foot_x_l - 3, -7 + foot_y_l), QPointF(foot_x_l, -10 + foot_y_l))
+
+        painter.drawLine(QPointF(foot_x_l + 3, -7 + foot_y_l), QPointF(foot_x_l, -10 + foot_y_l))
+
+        painter.setPen(QPen(outline_color, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+
+
+
+        # Right Leg & Foot
+
+        painter.setBrush(skin_color)
+
+        painter.drawRoundedRect(QRectF(foot_x_r - 5, -24 + foot_y_r, 9, 18), 4, 4)
+
+        # Sandal
+
+        painter.setBrush(sandals_color)
+
+        painter.drawRoundedRect(QRectF(foot_x_r - 7, -7 + foot_y_r, 14, 5), 2.5, 2.5)
+
+        # Sandal strap
+
+        painter.setPen(QPen(vest_color, 1.4))
+
+        painter.drawLine(QPointF(foot_x_r - 3, -7 + foot_y_r), QPointF(foot_x_r, -10 + foot_y_r))
+
+        painter.drawLine(QPointF(foot_x_r + 3, -7 + foot_y_r), QPointF(foot_x_r, -10 + foot_y_r))
+
+        painter.setPen(QPen(outline_color, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+
+
+
+        # ----------------------------------------------------
+
+        # 3. TORSO & RED OPEN VEST
+
+        # ----------------------------------------------------
+
+        painter.save()
+
+        painter.rotate(torso_tilt)
+
+
+
+        # Bare chest/torso
+
+        painter.setBrush(skin_color)
+
         painter.drawRoundedRect(QRectF(-17, -84, 34, 40), 10, 10)
-        
+
+
+
         # Red sleeveless open vest
-        painter.setBrush(self.c_vest)
+
+        painter.setBrush(vest_color)
+
         vest_l = QPainterPath()
+
         vest_l.moveTo(-18, -84)
+
         vest_l.lineTo(-8, -84)
+
         vest_l.lineTo(-14, -48)
+
         vest_l.lineTo(-19, -48)
+
         vest_l.closeSubpath()
+
         painter.drawPath(vest_l)
-        
+
+
+
         vest_r = QPainterPath()
+
         vest_r.moveTo(18, -84)
+
         vest_r.lineTo(8, -84)
+
         vest_r.lineTo(14, -48)
+
         vest_r.lineTo(19, -48)
+
         vest_r.closeSubpath()
+
         painter.drawPath(vest_r)
-        
+
+
+
         # Yellow button accents
-        painter.setBrush(QColor(245, 215, 60))
+
+        painter.setBrush(white if is_gear5 else QColor(245, 215, 60))
+
         painter.drawEllipse(QRectF(-15, -74, 3.5, 3.5))
+
         painter.drawEllipse(QRectF(-16, -60, 3.5, 3.5))
 
+
+
         # ----------------------------------------------------
+
         # 4. ARMS & RUBBER DEFORMATIONS
+
         # ----------------------------------------------------
+
         shoulder_l = (-17.0, -80.0)
+
         shoulder_r = (17.0, -80.0)
-        
+
+
+
         if arm_mode == 'walk_cycle':
+
             # Opposite phase arm swings
+
             walk_phase = (t * 7.5) % (math.pi * 2.0)
+
             stride = math.sin(walk_phase)
+
             arm_swing_l = -stride * 12.0
+
             arm_swing_r = stride * 12.0
+
+
+
             target_l = (-24.0 + stride * 4.0, -60.0 + arm_swing_l)
+
             target_r = (24.0 - stride * 4.0, -60.0 + arm_swing_r)
-            draw_rubber_arm(painter, shoulder_l, target_l, width=7.5, bend_override=stride * 4.0, outline_col=outline_color, skin_col=skin_color)
-            draw_rubber_arm(painter, shoulder_r, target_r, width=7.5, bend_override=-stride * 4.0, outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_l, target_l, width=7.5, bend_override=stride * 4.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_r, target_r, width=7.5, bend_override=-stride * 4.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
             # Fists
+
             painter.setBrush(skin_color)
+
             painter.drawEllipse(QRectF(target_l[0] - 5, target_l[1] - 5, 10, 10))
+
             painter.drawEllipse(QRectF(target_r[0] - 5, target_r[1] - 5, 10, 10))
-            
+
+
+
         elif arm_mode == 'gum_stretch':
+
             # Left arm on hip
+
             target_l = (-26.0, -68.0)
-            draw_rubber_arm(painter, shoulder_l, target_l, width=7.5, bend_override=-5.0, outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_l, target_l, width=7.5, bend_override=-5.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
             painter.setBrush(skin_color)
+
             painter.drawEllipse(QRectF(-31, -73, 10, 10))
-            
+
+
+
             # Right arm: rubber stretch trajectory
+
             target_x = 24.0 + rubber_stretch_ratio * 75.0
+
             target_y = -75.0 - rubber_stretch_ratio * 6.0
-            draw_rubber_arm(painter, shoulder_r, (target_x, target_y), width=8.5, bend_override=8.0, outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_r, (target_x, target_y), width=8.5, bend_override=8.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
             painter.setBrush(skin_color)
+
             fist_sz = 14.0 + min(6.0, abs(rubber_stretch_ratio) * 4.0)
+
             painter.drawEllipse(QRectF(target_x - fist_sz / 2.0, target_y - fist_sz / 2.0, fist_sz, fist_sz))
-            
+
+
+
         elif arm_mode == 'gear2_ready':
+
             # Crouching three-point stance
+
             target_l = (-24.0, -42.0)
+
             target_r = (24.0, -42.0)
-            draw_rubber_arm(painter, shoulder_l, target_l, width=8.0, bend_override=-6.0, outline_col=outline_color, skin_col=skin_color)
-            draw_rubber_arm(painter, shoulder_r, target_r, width=8.0, bend_override=6.0, outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_l, target_l, width=8.0, bend_override=-6.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_r, target_r, width=8.0, bend_override=6.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
             painter.setBrush(skin_color)
+
             painter.drawEllipse(QRectF(target_l[0] - 6, target_l[1] - 6, 12, 12))
+
             painter.drawEllipse(QRectF(target_r[0] - 6, target_r[1] - 6, 12, 12))
-            
+
+
+
         elif arm_mode == 'gear3_giant':
+
             # Left arm back
+
             target_l = (-26.0, -70.0)
-            draw_rubber_arm(painter, shoulder_l, target_l, width=7.5, bend_override=-4.0, outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_l, target_l, width=7.5, bend_override=-4.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
             painter.drawEllipse(QRectF(-31, -75, 10, 10))
-            
+
+
+
             # Right arm: GIGANT FIST!
+
             target_r = (48.0, -68.0)
-            draw_rubber_arm(painter, shoulder_r, target_r, width=15.0, bend_override=10.0, outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_r, target_r, width=15.0, bend_override=10.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
             # Giant fist
+
             painter.setBrush(skin_color)
+
             painter.drawEllipse(QRectF(target_r[0] - 12, target_r[1] - 20, 36, 38))
+
             # Giant knuckles
+
             painter.setPen(QPen(outline_color, 2.0))
+
             painter.drawLine(QPointF(target_r[0] + 4, target_r[1] - 12), QPointF(target_r[0] + 16, target_r[1] - 12))
+
             painter.drawLine(QPointF(target_r[0] + 4, target_r[1] - 2), QPointF(target_r[0] + 18, target_r[1] - 2))
+
             painter.drawLine(QPointF(target_r[0] + 4, target_r[1] + 8), QPointF(target_r[0] + 16, target_r[1] + 8))
+
             painter.setPen(QPen(outline_color, 1.8))
-            
+
+
+
         elif arm_mode == 'gear5_dance':
+
             # Joyful floating arms
+
             wave_l = math.sin(t * 8.0) * 14.0
+
             wave_r = math.cos(t * 8.0) * 14.0
+
             target_l = (-32.0, -90.0 + wave_l)
+
             target_r = (32.0, -90.0 + wave_r)
-            draw_rubber_arm(painter, shoulder_l, target_l, width=8.5, bend_override=wave_l * 0.5, outline_col=outline_color, skin_col=skin_color)
-            draw_rubber_arm(painter, shoulder_r, target_r, width=8.5, bend_override=wave_r * 0.5, outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_l, target_l, width=8.5, bend_override=wave_l * 0.5,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_r, target_r, width=8.5, bend_override=wave_r * 0.5,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
             painter.setBrush(skin_color)
+
             painter.drawEllipse(QRectF(target_l[0] - 6, target_l[1] - 6, 12, 12))
+
             painter.drawEllipse(QRectF(target_r[0] - 6, target_r[1] - 6, 12, 12))
-            
+
+
+
         elif arm_mode == 'celebrate':
+
             # Double raised victory arms
+
             target_l = (-32.0, -118.0)
+
             target_r = (32.0, -118.0)
-            draw_rubber_arm(painter, shoulder_l, target_l, width=7.5, bend_override=-10.0, outline_col=outline_color, skin_col=skin_color)
-            draw_rubber_arm(painter, shoulder_r, target_r, width=7.5, bend_override=10.0, outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_l, target_l, width=7.5, bend_override=-10.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_r, target_r, width=7.5, bend_override=10.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
             painter.setBrush(skin_color)
+
             painter.drawEllipse(QRectF(-38, -125, 12, 12))
+
             painter.drawEllipse(QRectF(26, -125, 12, 12))
-            
+
+
+
         elif arm_mode == 'meat':
+
             # Holding bone meat up to mouth
+
             target_l = (-20.0, -78.0)
+
             target_r = (18.0, -78.0)
-            draw_rubber_arm(painter, shoulder_l, target_l, width=7.5, bend_override=-4.0, outline_col=outline_color, skin_col=skin_color)
-            draw_rubber_arm(painter, shoulder_r, target_r, width=7.5, bend_override=4.0, outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_l, target_l, width=7.5, bend_override=-4.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_r, target_r, width=7.5, bend_override=4.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
             painter.setBrush(skin_color)
+
             painter.drawEllipse(QRectF(-25, -83, 10, 10))
+
             painter.drawEllipse(QRectF(13, -83, 10, 10))
+
+
+
             # Meat Prop
+
             mx, my = 20.0, -88.0
+
             painter.setBrush(self.c_bone)
+
             painter.drawRoundedRect(QRectF(mx - 14, my - 2, 28, 5), 2.5, 2.5)
+
             painter.drawEllipse(QRectF(mx - 18, my - 5, 7, 5))
+
             painter.drawEllipse(QRectF(mx - 18, my, 7, 5))
+
             painter.drawEllipse(QRectF(mx + 11, my - 5, 7, 5))
+
             painter.drawEllipse(QRectF(mx + 11, my, 7, 5))
+
             painter.setBrush(self.c_meat)
+
             painter.drawRoundedRect(QRectF(mx - 10, my - 11, 20, 22), 7, 7)
-            
+
+
+
         elif arm_mode == 'drag':
+
             # Dragging: arms stretching upward toward cursor
+
             target_l = (-22.0, -112.0)
+
             target_r = (22.0, -112.0)
-            draw_rubber_arm(painter, shoulder_l, target_l, width=7.0, bend_override=-4.0, outline_col=outline_color, skin_col=skin_color)
-            draw_rubber_arm(painter, shoulder_r, target_r, width=7.0, bend_override=4.0, outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_l, target_l, width=7.0, bend_override=-4.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_r, target_r, width=7.0, bend_override=4.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
             painter.setBrush(skin_color)
+
             painter.drawEllipse(QRectF(-27, -117, 10, 10))
+
             painter.drawEllipse(QRectF(17, -117, 10, 10))
-            
+
+
+
         elif arm_mode == 'type':
+
             # Typing posture: hands hopping forward
+
             tbob = math.sin(t * 16.0) * 4.0
+
             target_l = (-14.0, -68.0 + tbob)
+
             target_r = (14.0, -68.0 - tbob)
-            draw_rubber_arm(painter, shoulder_l, target_l, width=7.5, bend_override=-3.0, outline_col=outline_color, skin_col=skin_color)
-            draw_rubber_arm(painter, shoulder_r, target_r, width=7.5, bend_override=3.0, outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_l, target_l, width=7.5, bend_override=-3.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_r, target_r, width=7.5, bend_override=3.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
             painter.setBrush(skin_color)
+
             painter.drawEllipse(QRectF(target_l[0] - 5, target_l[1] - 5, 10, 10))
+
             painter.drawEllipse(QRectF(target_r[0] - 5, target_r[1] - 5, 10, 10))
-            
+
+
+
         else:  # 'hips'
+
             target_l = (-28.0, -66.0)
+
             target_r = (28.0, -66.0)
-            draw_rubber_arm(painter, shoulder_l, target_l, width=7.5, bend_override=-8.0, outline_col=outline_color, skin_col=skin_color)
-            draw_rubber_arm(painter, shoulder_r, target_r, width=7.5, bend_override=8.0, outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_l, target_l, width=7.5, bend_override=-8.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
+            draw_rubber_arm(painter, shoulder_r, target_r, width=7.5, bend_override=8.0,
+
+                            outline_col=outline_color, skin_col=skin_color)
+
             painter.setBrush(skin_color)
+
             painter.drawEllipse(QRectF(-33, -71, 10, 10))
+
             painter.drawEllipse(QRectF(23, -71, 10, 10))
+
+
 
         painter.restore()  # End Torso tilt
 
+
+
         # ----------------------------------------------------
+
         # 5. HEAD & HAIR
+
         # ----------------------------------------------------
+
         head_y = -115.0
+
+
+
         painter.save()
+
         painter.translate(0, head_lag)
-        
-        # Back messy hair
+
+
+
+        # Back hair. Gear 5 uses a larger all-white cloud silhouette rather than black hair.
+
         painter.setBrush(hair_color)
+
         hair_back = QPainterPath()
-        hair_back.moveTo(-34, head_y - 12)
-        hair_back.lineTo(-44, head_y + 2)
-        hair_back.lineTo(-34, head_y + 12)
-        hair_back.lineTo(-42, head_y + 22)
-        hair_back.lineTo(-28, head_y + 20)
-        hair_back.lineTo(28, head_y + 20)
-        hair_back.lineTo(42, head_y + 22)
-        hair_back.lineTo(34, head_y + 12)
-        hair_back.lineTo(44, head_y + 2)
-        hair_back.lineTo(34, head_y - 12)
-        hair_back.closeSubpath()
-        painter.drawPath(hair_back)
-        
-        # Gear 5 extra floating cloud tufts
+
         if is_gear5:
-            painter.setBrush(QColor(255, 255, 255, 230))
-            painter.setPen(QPen(QColor(210, 200, 235), 1.5))
-            for hx, hy in [(-42, head_y - 8), (42, head_y - 8), (-38, head_y + 16), (38, head_y + 16)]:
-                painter.drawEllipse(QRectF(hx - 10, hy - 10, 20, 20))
-            painter.setPen(QPen(outline_color, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+
+            hair_back.moveTo(-32, head_y + 18)
+
+            hair_back.cubicTo(-48, head_y + 18, -52, head_y + 4, -43, head_y - 4)
+
+            hair_back.cubicTo(-54, head_y - 14, -46, head_y - 27, -33, head_y - 25)
+
+            hair_back.cubicTo(-35, head_y - 42, -21, head_y - 48, -10, head_y - 35)
+
+            hair_back.cubicTo(0, head_y - 52, 14, head_y - 48, 18, head_y - 33)
+
+            hair_back.cubicTo(35, head_y - 45, 46, head_y - 34, 43, head_y - 21)
+
+            hair_back.cubicTo(56, head_y - 18, 56, head_y - 3, 44, head_y + 4)
+
+            hair_back.cubicTo(53, head_y + 18, 40, head_y + 25, 28, head_y + 18)
+
+            hair_back.cubicTo(10, head_y + 26, -12, head_y + 27, -32, head_y + 18)
+
+            hair_back.closeSubpath()
+
+        else:
+
+            hair_back.moveTo(-34, head_y - 12)
+
+            hair_back.lineTo(-44, head_y + 2)
+
+            hair_back.lineTo(-34, head_y + 12)
+
+            hair_back.lineTo(-42, head_y + 22)
+
+            hair_back.lineTo(-28, head_y + 20)
+
+            hair_back.lineTo(28, head_y + 20)
+
+            hair_back.lineTo(42, head_y + 22)
+
+            hair_back.lineTo(34, head_y + 12)
+
+            hair_back.lineTo(44, head_y + 2)
+
+            hair_back.lineTo(34, head_y - 12)
+
+            hair_back.closeSubpath()
+
+        painter.drawPath(hair_back)
+
+
 
         # Chibi Head Base
+
         painter.setBrush(skin_color)
+
         painter.drawRoundedRect(QRectF(-36, head_y - 25, 72, 54), 24, 24)
-        
+
+
+
         # Ears
+
         painter.drawEllipse(QRectF(-40, head_y - 6, 10, 14))
+
         painter.drawEllipse(QRectF(30, head_y - 6, 10, 14))
-        
-        # Front messy bangs
+
+
+
+        # Front bangs. Gear 5 has rounded cloud-like locks framing the face.
+
         painter.setBrush(hair_color)
+
         hair_front = QPainterPath()
-        hair_front.moveTo(-36, head_y - 12)
-        hair_front.lineTo(-28, head_y - 2)
-        hair_front.lineTo(-20, head_y - 10)
-        hair_front.lineTo(-10, head_y + 2)
-        hair_front.lineTo(0, head_y - 8)
-        hair_front.lineTo(10, head_y + 2)
-        hair_front.lineTo(20, head_y - 10)
-        hair_front.lineTo(28, head_y - 2)
-        hair_front.lineTo(36, head_y - 12)
-        hair_front.lineTo(30, head_y - 24)
-        hair_front.lineTo(-30, head_y - 24)
-        hair_front.closeSubpath()
+
+        if is_gear5:
+
+            hair_front.moveTo(-37, head_y - 17)
+
+            hair_front.cubicTo(-28, head_y - 30, -17, head_y - 27, -11, head_y - 17)
+
+            hair_front.cubicTo(-5, head_y - 29, 5, head_y - 31, 11, head_y - 17)
+
+            hair_front.cubicTo(18, head_y - 28, 30, head_y - 27, 37, head_y - 17)
+
+            hair_front.cubicTo(27, head_y - 6, 18, head_y - 4, 10, head_y - 12)
+
+            hair_front.cubicTo(5, head_y - 2, -5, head_y - 2, -10, head_y - 12)
+
+            hair_front.cubicTo(-18, head_y - 4, -28, head_y - 6, -37, head_y - 17)
+
+            hair_front.closeSubpath()
+
+        else:
+
+            hair_front.moveTo(-36, head_y - 12)
+
+            hair_front.lineTo(-28, head_y - 2)
+
+            hair_front.lineTo(-20, head_y - 10)
+
+            hair_front.lineTo(-10, head_y + 2)
+
+            hair_front.lineTo(0, head_y - 8)
+
+            hair_front.lineTo(10, head_y + 2)
+
+            hair_front.lineTo(20, head_y - 10)
+
+            hair_front.lineTo(28, head_y - 2)
+
+            hair_front.lineTo(36, head_y - 12)
+
+            hair_front.lineTo(30, head_y - 24)
+
+            hair_front.lineTo(-30, head_y - 24)
+
+            hair_front.closeSubpath()
+
         painter.drawPath(hair_front)
 
+
+
         # ----------------------------------------------------
+
         # 6. FACIAL EXPRESSIONS & SIGNATURE SCAR
+
         # ----------------------------------------------------
+
         eye_y = head_y + 2.0
-        
-        # Blush
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(self.c_blush)
-        painter.drawEllipse(QRectF(-26, eye_y + 5, 11, 6))
-        painter.drawEllipse(QRectF(15, eye_y + 5, 11, 6))
+
+
+
+        # Blush is omitted in Gear 5 so the transformed silhouette stays completely white.
+
+        if not is_gear5:
+
+            painter.setPen(Qt.NoPen)
+
+            painter.setBrush(self.c_blush)
+
+            painter.drawEllipse(QRectF(-26, eye_y + 5, 11, 6))
+
+            painter.drawEllipse(QRectF(15, eye_y + 5, 11, 6))
+
         painter.setPen(QPen(outline_color, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        
+
+
+
         # Signature Scar under left eye
+
         painter.save()
+
         painter.setPen(QPen(QColor(154, 59, 59), 1.6, Qt.SolidLine, Qt.RoundCap))
+
         painter.drawLine(QPointF(-20, eye_y + 9), QPointF(-10, eye_y + 9))
+
         painter.drawLine(QPointF(-17, eye_y + 7), QPointF(-17, eye_y + 11))
+
         painter.drawLine(QPointF(-13, eye_y + 7), QPointF(-13, eye_y + 11))
+
         painter.restore()
 
+
+
         # Eyes
+
         if expression in ['sleep']:
+
             # (^ ^) curved eyes
+
             p_l = QPainterPath()
+
             p_l.moveTo(-24, eye_y + 2)
+
             p_l.quadTo(-16, eye_y - 5, -8, eye_y + 2)
+
             painter.drawPath(p_l)
+
+
+
             p_r = QPainterPath()
+
             p_r.moveTo(8, eye_y + 2)
+
             p_r.quadTo(16, eye_y - 5, 24, eye_y + 2)
+
             painter.drawPath(p_r)
+
+
+
         elif is_blinking or expression == 'blink':
+
             # Blinking line eyes
+
             painter.drawLine(QPointF(-24, eye_y), QPointF(-8, eye_y))
+
             painter.drawLine(QPointF(8, eye_y), QPointF(24, eye_y))
+
+
+
         else:
+
             # Large expressive round anime eyes
+
             eye_w = 14.0
+
             eye_h = 17.0
+
             painter.setBrush(Qt.white)
+
             painter.drawEllipse(QRectF(-23, eye_y - 8, eye_w, eye_h))
+
             painter.drawEllipse(QRectF(9, eye_y - 8, eye_w, eye_h))
-            
-            # Iris/Pupil
-            pupil_col = QColor(220, 38, 38) if is_gear5 else self.c_hair
-            painter.setBrush(pupil_col)
-            painter.drawEllipse(QRectF(-19, eye_y - 5, 8.5, 11.5))
-            painter.drawEllipse(QRectF(11, eye_y - 5, 8.5, 11.5))
-            
-            # Cute white highlight dots
+
+
+
+            if is_gear5:
+
+                # Gear 5 eyes: always OPEN, oversized, bright, with concentric ringed pupils.
+
+                painter.setPen(QPen(QColor(170, 32, 32), 2.0))
+
+                painter.setBrush(QColor(255, 92, 92))
+
+                painter.drawEllipse(QRectF(-22, eye_y - 9, 18, 20))
+
+                painter.drawEllipse(QRectF(8, eye_y - 9, 18, 20))
+
+                painter.setPen(QPen(outline_color, 1.4))
+
+                painter.setBrush(QColor(32, 24, 24))
+
+                painter.drawEllipse(QRectF(-18, eye_y - 5, 9, 12))
+
+                painter.drawEllipse(QRectF(9, eye_y - 5, 9, 12))
+
+            else:
+
+                painter.setBrush(self.c_hair)
+
+                painter.drawEllipse(QRectF(-19, eye_y - 5, 8.5, 11.5))
+
+                painter.drawEllipse(QRectF(11, eye_y - 5, 8.5, 11.5))
+
+
+
+            # White highlights keep the eyes lively and unmistakably open.
+
             painter.setPen(Qt.NoPen)
+
             painter.setBrush(Qt.white)
+
             painter.drawEllipse(QRectF(-17, eye_y - 4, 3.5, 3.5))
+
             painter.drawEllipse(QRectF(13, eye_y - 4, 3.5, 3.5))
+
             painter.drawEllipse(QRectF(-15, eye_y + 1, 2.0, 2.0))
+
             painter.drawEllipse(QRectF(15, eye_y + 1, 2.0, 2.0))
+
             painter.setPen(QPen(outline_color, 1.8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
 
+
+
         # Eyebrows
+
         if expression == 'determined':
+
             painter.drawLine(QPointF(-24, eye_y - 10), QPointF(-10, eye_y - 6))
+
             painter.drawLine(QPointF(24, eye_y - 10), QPointF(10, eye_y - 6))
+
         elif expression == 'annoyed':
+
             painter.drawLine(QPointF(-24, eye_y - 11), QPointF(-9, eye_y - 7))
+
             painter.drawLine(QPointF(24, eye_y - 7), QPointF(9, eye_y - 11))
+
+        elif expression == 'gear5_laugh':
+
+            painter.drawLine(QPointF(-23, eye_y - 14), QPointF(-9, eye_y - 11))
+
+            painter.drawLine(QPointF(9, eye_y - 11), QPointF(23, eye_y - 14))
+
         else:
+
             painter.drawLine(QPointF(-23, eye_y - 11), QPointF(-9, eye_y - 12))
+
             painter.drawLine(QPointF(9, eye_y - 12), QPointF(23, eye_y - 11))
 
+
+
         # Mouth
+
         mouth_y = head_y + 16.0
-        if mouth_expression in ['wide_grin', 'laughing']:
-            # Big joyful open toothy smile
+
+        if mouth_expression == 'laughing':
+
+            # Gear 5: unmistakable huge laughing mouth with dark interior, teeth, and tongue.
+
             m_path = QPainterPath()
-            m_path.moveTo(-16, mouth_y - 2)
-            m_path.quadTo(0, mouth_y + 12, 16, mouth_y - 2)
+
+            m_path.moveTo(-18, mouth_y - 3)
+
+            m_path.cubicTo(-9, mouth_y + 13, 9, mouth_y + 13, 18, mouth_y - 3)
+
+            m_path.cubicTo(10, mouth_y + 1, -10, mouth_y + 1, -18, mouth_y - 3)
+
             m_path.closeSubpath()
-            painter.setBrush(Qt.white)
-            painter.drawPath(m_path)
-            # Tooth line
-            painter.drawLine(QPointF(-14, mouth_y + 2), QPointF(14, mouth_y + 2))
-        elif mouth_expression == 'o_mouth':
-            painter.setBrush(QColor(180, 50, 50))
-            painter.drawEllipse(QRectF(-5, mouth_y - 2, 10, 11))
-        elif mouth_expression == 'determined':
-            painter.drawLine(QPointF(-10, mouth_y + 2), QPointF(10, mouth_y + 1))
-        elif mouth_expression == 'closed':
-            painter.drawLine(QPointF(-6, mouth_y + 2), QPointF(6, mouth_y + 2))
-        else:
-            # Classic cheerful Luffy smile
-            m_path = QPainterPath()
-            m_path.moveTo(-11, mouth_y)
-            m_path.quadTo(0, mouth_y + 6, 11, mouth_y)
+
+            painter.setPen(QPen(outline_color, 1.8))
+
+            painter.setBrush(QColor(38, 24, 25))
+
             painter.drawPath(m_path)
 
+            painter.setPen(Qt.NoPen)
+
+            painter.setBrush(Qt.white)
+
+            painter.drawRoundedRect(QRectF(-14, mouth_y - 1, 28, 6), 3, 3)
+
+            painter.setBrush(QColor(245, 105, 125))
+
+            painter.drawEllipse(QRectF(-9, mouth_y + 5, 18, 7))
+
+            painter.setPen(QPen(outline_color, 1.6))
+
+        elif mouth_expression == 'wide_grin':
+
+            m_path = QPainterPath()
+
+            m_path.moveTo(-16, mouth_y - 2)
+
+            m_path.quadTo(0, mouth_y + 12, 16, mouth_y - 2)
+
+            m_path.closeSubpath()
+
+            painter.setBrush(Qt.white)
+
+            painter.drawPath(m_path)
+
+            painter.drawLine(QPointF(-14, mouth_y + 2), QPointF(14, mouth_y + 2))
+
+        elif mouth_expression == 'o_mouth':
+
+            painter.setBrush(QColor(180, 50, 50))
+
+            painter.drawEllipse(QRectF(-5, mouth_y - 2, 10, 11))
+
+        elif mouth_expression == 'determined':
+
+            painter.drawLine(QPointF(-10, mouth_y + 2), QPointF(10, mouth_y + 1))
+
+        elif mouth_expression == 'closed':
+
+            painter.drawLine(QPointF(-6, mouth_y + 2), QPointF(6, mouth_y + 2))
+
+        else:
+
+            # Classic cheerful Luffy smile
+
+            m_path = QPainterPath()
+
+            m_path.moveTo(-11, mouth_y)
+
+            m_path.quadTo(0, mouth_y + 6, 11, mouth_y)
+
+            painter.drawPath(m_path)
+
+
+
         # ----------------------------------------------------
+
         # 7. STRAW HAT WITH SECONDARY MOTION
+
         # ----------------------------------------------------
-        painter.save()
-        # Secondary tilt & lag
-        painter.translate(0, head_y - 24)
-        painter.rotate(hat_tilt)
-        
-        # Hat Brim
-        painter.setBrush(self.c_hat)
-        painter.drawEllipse(QRectF(-48, -7, 96, 20))
-        
-        # Red Ribbon Band
-        painter.setBrush(self.c_hat_band)
-        painter.drawRoundedRect(QRectF(-26, -15, 52, 11), 3, 3)
-        
-        # Hat Crown (Dome)
-        painter.setBrush(self.c_hat)
-        crown_path = QPainterPath()
-        crown_path.moveTo(-25, -12)
-        crown_path.quadTo(0, -38, 25, -12)
-        crown_path.closeSubpath()
-        painter.drawPath(crown_path)
-        
-        # Straw Hat texture line
-        painter.setPen(QPen(self.c_hat_dark, 1.2))
-        painter.drawArc(QRectF(-20, -30, 40, 24), 30 * 16, 120 * 16)
-        painter.restore()  # End Hat
-        
+
+        if not is_gear5:
+
+            painter.save()
+
+            # Secondary tilt & lag
+
+            painter.translate(0, head_y - 24)
+
+            painter.rotate(hat_tilt)
+
+
+
+            # Hat Brim
+
+            painter.setBrush(self.c_hat)
+
+            painter.drawEllipse(QRectF(-48, -7, 96, 20))
+
+
+
+            # Red Ribbon Band
+
+            painter.setBrush(self.c_hat_band)
+
+            painter.drawRoundedRect(QRectF(-26, -15, 52, 11), 3, 3)
+
+
+
+            # Hat Crown (Dome)
+
+            painter.setBrush(self.c_hat)
+
+            crown_path = QPainterPath()
+
+            crown_path.moveTo(-25, -12)
+
+            crown_path.quadTo(0, -38, 25, -12)
+
+            crown_path.closeSubpath()
+
+            painter.drawPath(crown_path)
+
+
+
+            # Straw Hat texture line
+
+            painter.setPen(QPen(self.c_hat_dark, 1.2))
+
+            painter.drawArc(QRectF(-20, -30, 40, 24), 30 * 16, 120 * 16)
+
+            painter.restore()  # End Hat
+
+        else:
+
+            # No yellow/red hat in Gear 5. The cloud hair and white ring define the transformed silhouette.
+
+            pass
+
+
+
         painter.restore()  # End Head
 
+
+
+        if is_gear5:
+
+            # Small foreground piece of the cloud ribbon so the ring visibly wraps around the torso.
+
+            self._draw_gear5_cloud_ring(painter, front=True, t=t)
+
+
+
         # ----------------------------------------------------
+
         # 8. ACTIVE PARTICLES
+
         # ----------------------------------------------------
+
         for p in self.particles:
+
             p.draw(painter)
+
+
 
         painter.restore()  # End Root
 

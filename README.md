@@ -7,9 +7,9 @@ An interactive, animated Windows desktop companion application built with Python
 - **12 Unique Companions**:
   - Dragon Companion
   - Puppy Dog
-  - Luffy (with rubber body physics, Gear 2, Gear 3, and Gear 5 Sun God Nika forms)
+  - Luffy (with rubber body physics, Gear 2, Gear 3, and Gear 5 Sun God Nika complete vector rebuild)
   - Orange Tabby Cat & Ghibli Tuxedo Cat (plus Duo mode)
-  - 6 Procedural Chibi Animals: Kitsune Fox, Chibi Bunny, Waddling Penguin, Cheeky Hamster, Wise Owl, and Sleepy Panda.
+  - 6 Procedural Chibi Animals (Design V2): Kitsune Fox, Chibi Bunny, Waddling Penguin, Cheeky Hamster, Wise Owl, and Sleepy Panda.
 - **Pure Vector QPainter Rendering**: Crystal-clear scaling at any DPI with zero pixelation.
 - **Autonomous & Reactive Behaviors**: Wandering, idle breathing, eating, sleeping, celebrating, focus modes, and physics-driven dragging.
 - **Productivity & Utilities**: Integrated Pomodoro timer, typing companion engine, video playback sleep detection, and weather integration.
