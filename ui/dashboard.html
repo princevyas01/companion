@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Companion Control Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+:root {
+    --bg: #0B0D11;
+    --panel: #12151A;
+    --panel-2: #171B22;
+    --panel-hover: #1B2028;
+    --border: #252B34;
+    --border-hover: #39414D;
+
+    --text: #F2F4F7;
+    --muted: #9199A7;
+
+    --accent: #E8EBF0;
+    --accent-text: #101216;
+
+    --success: #65D391;
+    --danger: #FF7885;
+
+    --radius-lg: 18px;
+    --radius-md: 13px;
+    --radius-sm: 10px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+    background: var(--bg);
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 32px 18px 48px;
+
+    background:
+        radial-gradient(
+            circle at top,
+            rgba(255,255,255,0.035),
+            transparent 34%
+        ),
+        var(--bg);
+
+    color: var(--text);
+
+    font-family:
+        "Segoe UI",
+        Inter,
+        system-ui,
+        sans-serif;
+
+    -webkit-font-smoothing: antialiased;
+}
+
+.dashboard-container {
+    width: min(1060px, 100%);
+    margin: 0 auto;
+
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 16px;
+}
+
+.panel {
+    background: linear-gradient(
+        180deg,
+        rgba(255,255,255,0.015),
+        transparent
+    ), var(--panel);
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+
+    padding: 22px;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 16px;
+
+    box-shadow:
+        0 10px 28px rgba(0,0,0,0.18);
+}
+
+.header-panel,
+.full-width {
+    grid-column: 1 / -1;
+}
+
+.header-panel {
+    min-height: 88px;
+
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 20px;
+}
+
+h1 {
+    margin: 0;
+
+    font-size: 25px;
+    line-height: 1.2;
+    font-weight: 750;
+
+    letter-spacing: -0.03em;
+}
+
+h2 {
+    margin: 0;
+
+    font-size: 12px;
+    line-height: 1.2;
+    font-weight: 750;
+
+    color: var(--muted);
+
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.subtitle {
+    margin-top: 5px;
+
+    color: var(--muted);
+
+    font-size: 13px;
+}
+
+.status-container {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+
+    gap: 9px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 8px 11px;
+
+    border-radius: 999px;
+
+    background: rgba(101, 211, 145, 0.08);
+    color: var(--success);
+
+    border: 1px solid rgba(101, 211, 145, 0.16);
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: currentColor;
+
+    box-shadow: 0 0 0 4px rgba(101,211,145,0.06);
+}
+
+button {
+    min-height: 38px;
+
+    background: var(--panel-2);
+
+    border: 1px solid var(--border);
+
+    color: var(--text);
+
+    padding: 0 14px;
+
+    border-radius: var(--radius-sm);
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 650;
+
+    cursor: pointer;
+
+    transition:
+        background 140ms ease,
+        border-color 140ms ease,
+        transform 100ms ease,
+        box-shadow 140ms ease;
+}
+
+button:hover:not(:disabled) {
+    background: var(--panel-hover);
+    border-color: var(--border-hover);
+
+    box-shadow:
+        0 5px 14px rgba(0,0,0,0.14);
+}
+
+button:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+button:disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+}
+
+button.primary {
+    background: var(--accent);
+    color: var(--accent-text);
+
+    border-color: transparent;
+}
+
+button.primary:hover:not(:disabled) {
+    background: #FFFFFF;
+
+    box-shadow:
+        0 6px 18px rgba(255,255,255,0.06);
+}
+
+button.danger {
+    color: var(--danger);
+
+    background: rgba(255,120,133,0.055);
+
+    border-color: rgba(255,120,133,0.16);
+}
+
+button.danger:hover:not(:disabled) {
+    background: rgba(255,120,133,0.09);
+    border-color: rgba(255,120,133,0.30);
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+.input-group.horizontal {
+    flex-direction: row;
+    align-items: center;
+
+    gap: 10px;
+}
+
+label {
+    color: var(--muted);
+
+    font-size: 12px;
+    font-weight: 650;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+
+    min-height: 40px;
+
+    background: #0F1217;
+
+    color: var(--text);
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius-sm);
+
+    padding: 0 12px;
+
+    font-family: inherit;
+    font-size: 13px;
+
+    outline: none;
+
+    transition:
+        border-color 140ms ease,
+        background 140ms ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+    border-color: #4B5564;
+    background: #11151B;
+}
+
+input[type="range"] {
+    width: 100%;
+    accent-color: #DCE1E8;
+}
+
+input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+
+    margin: 0;
+
+    accent-color: #E7E9ED;
+}
+
+.row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.flex-1 {
+    flex: 1;
+    min-width: 0;
+}
+
+.btn-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fill, minmax(135px, 1fr));
+
+    gap: 9px;
+}
+
+#dynamicActions {
+    margin-top: 2px;
+}
+
+#dynamicActions button {
+    min-height: 42px;
+}
+
+.panel:hover {
+    border-color: #2B313B;
+}
+
+@media (max-width: 780px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
+    }
+
+    .header-panel,
+    .full-width {
+        grid-column: auto;
+    }
+
+    .header-panel {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .status-container {
+        justify-content: flex-start;
+        width: 100%;
+    }
+}
+
+@media (max-width: 560px) {
+    body {
+        padding: 18px 12px 32px;
+    }
+
+    .panel {
+        padding: 17px;
+    }
+
+    .row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    button {
+        width: 100%;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <div class="panel header-panel">
+        <div>
+            <h1>Companion Control Center</h1>
+            <div class="subtitle">System Management & Configuration</div>
+        </div>
+        <div class="status-container">
+            <div id="statusBadge" class="status-badge">
+                <span class="status-dot"></span><span id="statusText">Active</span>
+            </div>
+            <button onclick="petPower('start')">Start System</button>
+            <button class="danger" onclick="petPower('stop')">Stop System</button>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>Character Configuration</h2>
+        <div class="input-group">
+            <label>Active Profile</label>
+            <select id="characterSelect" onchange="switchCharacter(this.value)">
+                <option value="dragon">Baby Dragon</option>
+                <option value="dog">Puppy Dog</option>
+                <option value="cat_orange">Ginger Tabby Cat</option>
+                <option value="cat_tuxedo">Tuxedo Cat</option>
+                <option value="cats_duo">Cat Duo</option>
+                <option value="luffy">Monkey D. Luffy</option>
+                <option value="fox">Chibi Red Fox</option>
+                <option value="rabbit">Chibi Snow Bunny</option>
+                <option value="penguin">Chibi Penguin</option>
+                <option value="hamster">Chibi Hamster</option>
+                <option value="owl">Chibi Barn Owl</option>
+                <option value="panda">Chibi Giant Panda</option>
+            </select>
+        </div>
+        <div class="input-group horizontal" style="margin-top: 8px;">
+            <button onclick="moodAction('feed')">Feed Companion</button>
+            <button onclick="moodAction('annoy')">Annoy Companion</button>
+        </div>
+        <div id="dynamicActions">
+            <!-- Dynamic action buttons will be injected here -->
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>System Settings</h2>
+        <div class="input-group horizontal">
+            <input type="checkbox" id="videoSleepToggle" checked onchange="toggleVideoSleep()">
+            <label for="videoSleepToggle">Auto-sleep during video playback</label>
+        </div>
+        <div class="input-group horizontal">
+            <input type="checkbox" id="autostartToggle" onchange="updateAutostart()">
+            <label for="autostartToggle">Initialize on system startup</label>
+        </div>
+        <div class="input-group" style="margin-top: 12px;">
+            <label>Wander Frequency</label>
+            <input type="range" id="wanderChance" min="0" max="0.1" step="0.01" value="0.02" onchange="updateSettings()">
+        </div>
+    </div>
+
+    <div class="panel full-width">
+        <h2>Communications (AI Chat)</h2>
+        <div class="row">
+            <input type="text" id="msgInput" class="flex-1" placeholder="Enter message payload..." onkeypress="if(event.key === 'Enter') sendChat()">
+            <button class="primary" id="btnSendAI" onclick="sendChat()">Transmit</button>
+            <button id="btnClear" onclick="clearChat()">Clear Memory</button>
+            <button onclick="sendMessage()">Force Output</button>
+        </div>
+    </div>
+
+    <div class="panel full-width">
+        <h2>Focus Timer (Pomodoro)</h2>
+        <div class="row" style="margin-bottom: 16px;">
+            <div class="input-group flex-1">
+                <label>Work Interval (Minutes)</label>
+                <input type="number" id="workMins" value="25" min="1">
+            </div>
+            <div class="input-group flex-1">
+                <label>Break Interval (Minutes)</label>
+                <input type="number" id="breakMins" value="5" min="1">
+            </div>
+        </div>
+        <div class="row">
+            <button class="primary" onclick="startPomodoro()">Initiate Session</button>
+            <button onclick="stopPomodoro()">Terminate Timer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = 'http://localhost:8080/api';
+
+    async function post(endpoint, data) {
+        try {
+            const res = await fetch(`${API_BASE}${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const json = await res.json();
+            updateStatusUI(json);
+        } catch (e) {
+            console.error('Error connecting to Companion API', e);
+        }
+    }
+
+    async function fetchInfo() {
+        try {
+            const res = await fetch(`${API_BASE}/info`);
+            const json = await res.json();
+            updateInfoUI(json);
+            updateStatusUI(json);
+        } catch (e) {
+            console.error('Error fetching Companion info', e);
+        }
+    }
+
+    const ACTION_LABELS = {
+        'celebrate': 'Celebrate',
+        'fire_breathe': 'Fire Breath',
+        'think': 'Think',
+        'wander': 'Wander',
+        'sleep': 'Sleep',
+        'exhausted': 'Exhausted',
+        'focus': 'Focus',
+        'type': 'Type',
+        'wake': 'Wake Up',
+        'curious': 'Curious',
+        'gum_stretch': 'Gum Stretch',
+        'gear2': 'Gear 2',
+        'gear3': 'Gear 3',
+        'gear5': 'Gear 5',
+        'jump': 'Jump',
+        'bark': 'Bark',
+        'meow': 'Meow',
+        'happy': 'Happy',
+        'pounce': 'Pounce',
+        'clean': 'Clean Paw',
+        'eat': 'Eat'
+    };
+
+    function updateInfoUI(json) {
+        if (!json || !json.character) return;
+        
+        // Update character select dropdown options dynamically if provided
+        const charSelect = document.getElementById('characterSelect');
+        if (json.characters && Array.isArray(json.characters) && json.characters.length > 0) {
+            const currentOptions = Array.from(charSelect.options).map(o => o.value);
+            const newKeys = json.characters.map(c => c.id || c.name);
+            if (currentOptions.join(',') !== newKeys.join(',')) {
+                charSelect.innerHTML = '';
+                json.characters.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id || c.name;
+                    opt.textContent = c.display_name || c.name;
+                    charSelect.appendChild(opt);
+                });
+            }
+        }
+        charSelect.value = json.character;
+        
+        // Render dynamic actions
+        const actionsContainer = document.getElementById('dynamicActions');
+        actionsContainer.innerHTML = '<label style="margin-bottom:8px; display:block;">Supported Actions</label>';
+        
+        const btnGrid = document.createElement('div');
+        btnGrid.className = 'btn-grid';
+        
+        if (json.supported_actions && json.supported_actions.length > 0) {
+            json.supported_actions.forEach(action => {
+                const btn = document.createElement('button');
+                btn.innerText = ACTION_LABELS[action] || action.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                btn.onclick = () => forceState(action);
+                btnGrid.appendChild(btn);
+            });
+        } else {
+            btnGrid.innerHTML = '<span style="color:var(--text-secondary); font-size:13px;">No specific actions available for this profile.</span>';
+        }
+        
+        actionsContainer.appendChild(btnGrid);
+    }
+
+    function updateStatusUI(json) {
+        if (!json) return;
+        const statusBadge = document.getElementById('statusBadge');
+        const statusText = document.getElementById('statusText');
+        if (json.is_stopped) {
+            statusBadge.style.background = 'rgba(220, 53, 69, 0.1)';
+            statusBadge.style.color = 'var(--danger)';
+            statusBadge.style.borderColor = 'rgba(220, 53, 69, 0.2)';
+            statusText.innerText = 'System Stopped';
+        } else {
+            statusBadge.style.background = 'rgba(40, 167, 69, 0.1)';
+            statusBadge.style.color = 'var(--success)';
+            statusBadge.style.borderColor = 'rgba(40, 167, 69, 0.2)';
+            statusText.innerText = 'System Active';
+        }
+        if (json.sleep_on_video !== undefined) {
+            document.getElementById('videoSleepToggle').checked = json.sleep_on_video;
+        }
+    }
+
+    function petPower(action) { post('/pet_power', { action }); }
+    function forceState(state) { post('/force_state', { state }); }
+    
+    function sendMessage() {
+        const input = document.getElementById('msgInput');
+        if(input.value.trim() !== "") {
+            post('/say', { message: input.value });
+            input.value = "";
+        }
+    }
+
+    async function sendChat() {
+        const input = document.getElementById('msgInput');
+        if(input.value.trim() !== "") {
+            const btnSend = document.getElementById('btnSendAI');
+            const btnClear = document.getElementById('btnClear');
+            btnSend.disabled = true;
+            btnClear.disabled = true;
+            input.disabled = true;
+            
+            await post('/chat', { message: input.value });
+            
+            input.value = "";
+            btnSend.disabled = false;
+            btnClear.disabled = false;
+            input.disabled = false;
+            input.focus();
+        }
+    }
+
+    function clearChat() { post('/clear_chat', {}); }
+    function moodAction(action) { post('/mood', { action }); }
+    
+    function switchCharacter(character) { 
+        post('/character', { character }); 
+        setTimeout(fetchInfo, 500); // refresh UI for new character actions
+    }
+    
+    function toggleVideoSleep() {
+        const enable = document.getElementById('videoSleepToggle').checked;
+        post('/video_sleep', { enable });
+    }
+
+    function startPomodoro() {
+        const work = parseInt(document.getElementById('workMins').value);
+        const brk = parseInt(document.getElementById('breakMins').value);
+        post('/pomodoro', { action: 'start', work, break: brk });
+    }
+
+    function stopPomodoro() { post('/pomodoro', { action: 'stop' }); }
+    function updateAutostart() { post('/autostart', { enable: document.getElementById('autostartToggle').checked }); }
+    function updateSettings() { post('/settings', { wander_chance: parseFloat(document.getElementById('wanderChance').value) }); }
+
+    // Initial load
+    fetchInfo();
+    // Poll status every 5 seconds
+    setInterval(fetchInfo, 5000);
+</script>
+
+</body>
+</html>
