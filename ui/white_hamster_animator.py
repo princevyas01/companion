@@ -1,10 +1,7 @@
-"""
-Exact reference-sprite renderer for the user's White Meme Hamster.
+"""Exact source-sprite renderer for the user's White Meme Hamster.
 
-This renderer deliberately does NOT redraw the character with QPainter geometry.
-It uses the six user-supplied reference drawings as the visual source of truth,
-removing only the outside white background while preserving the enclosed white
-body pixels and every original imperfection.
+The character artwork itself is never procedurally redrawn. The renderer loads
+the clean hand-drawn source frames and animates the complete image.
 """
 import math
 import sys
@@ -12,22 +9,29 @@ from collections import deque
 from pathlib import Path
 
 from PyQt5.QtCore import Qt, QRectF
-from PyQt5.QtGui import QImage, QPainter, QPixmap, QColor
+from PyQt5.QtGui import QImage, QPixmap, QColor
 
 
 class WhiteHamsterAnimator:
-    """Reference-sprite animator. Facial art is never recreated procedurally."""
+    """Exact source-sprite animation. No procedural facial reconstruction."""
 
     ONE_SHOT_DURATIONS = {
-        "laugh": 1.80,
-        "smile": 1.50,
-        "neutral": 1.50,
-        "tongue_out": 1.80,
-        "halo": 2.80,
-        "costume": 4.50,
-        "jump": 1.15,
-        "celebrate": 1.80,
-        "react_click": 1.20,
+        "laugh": 2.25,
+        "smile": 2.25,
+        "neutral": 2.25,
+        "tongue_out": 2.25,
+        "halo": 3.25,
+        "costume": 3.25,
+        "jump": 1.20,
+        "celebrate": 2.25,
+        "react_click": 1.60,
+        "happy": 2.25,
+        "think": 2.25,
+        "annoyed": 2.25,
+        "focus": 2.25,
+        "type": 2.25,
+        "sleep": 2.25,
+        "wake": 1.40,
     }
 
     FRAME_FILES = {
@@ -38,6 +42,8 @@ class WhiteHamsterAnimator:
         "halo": "halo.png",
         "costume": "costume.png",
     }
+
+    DEFAULT_EXPRESSION = "laugh"
 
     def __init__(self, state_machine, asset_dir=None):
         self.state_machine = state_machine
@@ -50,11 +56,14 @@ class WhiteHamsterAnimator:
             meipass_dir = Path(sys._MEIPASS) / "assets" / "white_hamster"
             if meipass_dir.exists():
                 default_dir = meipass_dir
+
         self.asset_dir = Path(asset_dir) if asset_dir else default_dir
         self.frames = {}
         self._load_frames()
 
     def set_facing(self, direction):
+        # Compatibility with the existing wander engine.
+        # The hand-drawn source is intentionally asymmetric and is never mirrored.
         self.facing = 1 if direction >= 0 else -1
 
     def clear_special(self):
@@ -67,21 +76,19 @@ class WhiteHamsterAnimator:
 
     @staticmethod
     def _near_white(pixel: QColor):
-        # Only treat very light pixels as removable background.
-        # This is intentionally conservative so pink cheeks and anti-aliased
-        # dark linework are not destroyed.
-        return pixel.alpha() > 0 and pixel.red() >= 242 and pixel.green() >= 242 and pixel.blue() >= 242
+        return (
+            pixel.alpha() > 0
+            and pixel.red() >= 242
+            and pixel.green() >= 242
+            and pixel.blue() >= 242
+        )
 
     @classmethod
     def _remove_connected_white_background(cls, image: QImage):
-        """Remove only near-white pixels connected to the image border.
-
-        The hamster's white body is enclosed by its dark hand-drawn outline, so
-        enclosed white pixels remain opaque. This preserves the white character
-        while removing the screenshot/background rectangle.
-        """
+        """Remove only near-white pixels connected to the outer border."""
         image = image.convertToFormat(QImage.Format_ARGB32)
         w, h = image.width(), image.height()
+
         if w <= 0 or h <= 0:
             return image
 
@@ -104,6 +111,7 @@ class WhiteHamsterAnimator:
             visit(x, 0)
             if h > 1:
                 visit(x, h - 1)
+
         for y in range(h):
             visit(0, y)
             if w > 1:
@@ -125,9 +133,9 @@ class WhiteHamsterAnimator:
                 if removable[idx(x, y)]:
                     image.setPixelColor(x, y, QColor(0, 0, 0, 0))
 
-        # Trim transparent-only margins. This does not alter opaque pixels.
         left, top = w, h
         right, bottom = -1, -1
+
         for y in range(h):
             for x in range(w):
                 if image.pixelColor(x, y).alpha() > 0:
@@ -135,43 +143,74 @@ class WhiteHamsterAnimator:
                     top = min(top, y)
                     right = max(right, x)
                     bottom = max(bottom, y)
+
         if right < left or bottom < top:
             return image
+
         return image.copy(left, top, right - left + 1, bottom - top + 1)
 
     def _load_frames(self):
         missing = []
+
         for state, filename in self.FRAME_FILES.items():
             path = self.asset_dir / filename
             image = QImage(str(path))
+
             if image.isNull():
                 missing.append(str(path))
                 continue
+
             cleaned = self._remove_connected_white_background(image)
             self.frames[state] = QPixmap.fromImage(cleaned, Qt.AutoColor)
+
         if missing:
             raise FileNotFoundError(
-                "White Meme Hamster reference assets missing:\n" + "\n".join(missing)
+                "White Meme Hamster reference assets missing:\n"
+                + "\n".join(missing)
             )
 
     def _expression_for_state(self, state):
-        if state in ("laugh", "celebrate", "react_click"):
+        # DEFAULT IS THE HUMOROUS LAUGH SOURCE.
+        if state in (
+            "idle",
+            "wake",
+            "wander",
+            "laugh",
+            "celebrate",
+            "react_click",
+            "happy",
+        ):
             return "laugh"
+
         if state == "jump":
             return "laugh"
-        if state in ("neutral", "think", "annoyed", "exhausted", "focus", "type", "sleep"):
+
+        if state in (
+            "neutral",
+            "think",
+            "annoyed",
+            "exhausted",
+            "focus",
+            "type",
+            "sleep",
+        ):
             return "neutral"
+
         if state == "tongue_out":
             return "tongue_out"
+
         if state == "halo":
             return "halo"
-        if state in ("costume",):
+
+        if state == "costume":
             return "costume"
-        return "smile"
+
+        return self.DEFAULT_EXPRESSION
 
     def update(self):
         state = self.state_machine.get_state()
         dt = 0.025
+
         if state != self._last_state:
             self.elapsed = 0.0
             self._last_state = state
@@ -179,73 +218,68 @@ class WhiteHamsterAnimator:
             self.elapsed += dt
 
         duration = self.ONE_SHOT_DURATIONS.get(state)
+
         if duration is not None and self.elapsed >= duration:
             self.state_machine.force_state("idle")
             self.elapsed = 0.0
             self._last_state = "idle"
 
-    def _draw_shadow(self, painter, y_offset):
-        width = 160.0 * max(0.55, 1.0 - min(abs(y_offset) / 90.0, 0.50))
-        painter.save()
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(QColor(0, 0, 0, 42))
-        painter.drawEllipse(QRectF(-width / 2, -3.5, width, 7))
-        painter.restore()
-
     def draw(self, painter, rect):
         state = self.state_machine.get_state()
         expression = self._expression_for_state(state)
-        pixmap = self.frames.get(expression) or self.frames["smile"]
+        pixmap = self.frames.get(expression) or self.frames[self.DEFAULT_EXPRESSION]
 
         y_offset = 0.0
         sx = 1.0
         sy = 1.0
-        rotation = 0.0
 
         if state in ("jump", "celebrate"):
-            duration = 1.15 if state == "jump" else 1.80
+            duration = 1.20 if state == "jump" else 2.25
             p = max(0.0, min(1.0, self.elapsed / duration))
-            y_offset = -62.0 * math.sin(p * math.pi)
-            if p < 0.16:
-                u = p / 0.16
-                sx = 1.0 + 0.10 * (1.0 - u)
-                sy = 1.0 - 0.12 * (1.0 - u)
-            elif p > 0.84:
-                u = (p - 0.84) / 0.16
-                sx = 1.0 + 0.14 * u
-                sy = 1.0 - 0.12 * u
+            y_offset = -48.0 * math.sin(p * math.pi)
+
+            if p < 0.14:
+                u = p / 0.14
+                sx = 1.0 + 0.045 * (1.0 - u)
+                sy = 1.0 - 0.035 * (1.0 - u)
+            elif p > 0.86:
+                u = (p - 0.86) / 0.14
+                sx = 1.0 + 0.05 * u
+                sy = 1.0 - 0.04 * u
             else:
-                sx = 0.93
-                sy = 1.08
-            rotation = math.sin(p * math.pi * 2.0) * 3.0
+                sx = 0.985
+                sy = 1.015
+
         elif state == "wander":
-            phase = self.elapsed * 5.5
-            y_offset = -abs(math.sin(phase)) * 3.0
-            rotation = math.sin(phase) * 1.5
-        elif state in ("focus", "type", "costume"):
-            y_offset = math.sin(self.elapsed * 2.5) * 1.0
+            phase = self.elapsed * 5.0
+            y_offset = -abs(math.sin(phase)) * 2.0
+
+        elif state in ("halo", "costume"):
+            y_offset = math.sin(self.elapsed * 2.0) * 0.7
+
         elif state == "sleep":
-            sy = 0.97
-            sx = 1.04
-            y_offset = 3.0
+            y_offset = 2.0
 
         painter.save()
-        # Deliberately do NOT enable antialiasing or SmoothPixmapTransform.
-        # The source artwork is hand-drawn/low-resolution and its imperfections
-        # are part of the design.
-        painter.translate(rect.center().x(), rect.bottom())
-        painter.scale(self.facing, 1.0)
-        self._draw_shadow(painter, y_offset)
+
+        # NEVER mirror the actual hand-drawn artwork.
+        painter.translate(rect.center().x(), rect.bottom() - 2.0)
         painter.translate(0.0, y_offset)
-        painter.rotate(rotation)
         painter.scale(sx, sy)
 
-        target_h = max(175.0, min(float(rect.height()) * 1.15, 300.0))
-        scaled = pixmap.scaledToHeight(max(1, int(target_h)), Qt.FastTransformation)
+        # The source must remain inside the normal pet rectangle.
+        max_h = max(120.0, float(rect.height()) - 4.0)
+        target_h = min(160.0, max_h)
+
+        scaled = pixmap.scaledToHeight(
+            max(1, int(round(target_h))),
+            Qt.FastTransformation,
+        )
+
         painter.drawPixmap(
             int(-scaled.width() / 2),
             -scaled.height(),
             scaled,
         )
-        painter.restore()
 
+        painter.restore()
