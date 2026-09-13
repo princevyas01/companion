@@ -116,14 +116,6 @@ class DragonCompanionWindow(QWidget):
         self.is_stopped = False
         self._was_watching_video = False
         
-        # White Hamster Autonomous Controllers
-        self._white_expression_cycle = ("laugh","smile","neutral","tongue_out","halo","costume")
-        self._white_expression_index = 0
-        self._white_expression_elapsed = 0.0
-        self._white_jump_elapsed = 0.0
-        self._white_wander_elapsed = 0.0
-        self._white_next_wander = 11.0
-        
         # Main Loop
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
@@ -160,6 +152,14 @@ class DragonCompanionWindow(QWidget):
         self.wander_target = None
         self._wander_float_x = None
         self._wander_float_y = None
+        
+        # White Meme Hamster dedicated autonomous desktop movement.
+        self._white_auto_wander_active = False
+        self._white_auto_wander_target = None
+        self._white_auto_wander_x = None
+        self._white_auto_wander_y = None
+        self._white_auto_wander_clock = 0.0
+        self._white_auto_next_wander = random.uniform(9.0, 15.0)
         
         self.setup_tray()
         
@@ -271,19 +271,15 @@ class DragonCompanionWindow(QWidget):
     def switch_character_safe(self, name):
         if hasattr(self.animator, "clear_special"):
             self.animator.clear_special()
+        self._reset_white_hamster_autonomous_movement()
         self._wander_float_x = None
         self._wander_float_y = None
         self.current_character = name
 
         if name == "white_hamster":
-            self._white_expression_cycle = ("laugh","smile","neutral","tongue_out","halo","costume")
-            self._white_expression_index = 0
-            self._white_expression_elapsed = 0.0
-            self._white_jump_elapsed = 0.0
-            self._white_wander_elapsed = 0.0
-            self._white_next_wander = 11.0
             self.animator = self.chibi_animators["white_hamster"]
-            self.animator.set_expression("laugh")
+            if hasattr(self.animator, "reset_animation"):
+                self.animator.reset_animation()
             self.state_machine.force_state("idle")
             self.update()
             return
@@ -307,26 +303,23 @@ class DragonCompanionWindow(QWidget):
     @pyqtSlot(str)
     def trigger_anim_safe(self, state):
         if self.current_character == "white_hamster" or isinstance(self.animator, WhiteHamsterAnimator):
-            if state in WhiteHamsterAnimator.EXPRESSIONS:
-                if hasattr(self.animator, "set_expression"):
+            if state in WhiteHamsterAnimator.EXPRESSIONS or state in WhiteHamsterAnimator.ONE_SHOT_DURATIONS:
+                if hasattr(self.animator, "set_expression") and state in WhiteHamsterAnimator.EXPRESSIONS:
                     self.animator.set_expression(state)
-                self._white_expression_elapsed = 0.0
-                if hasattr(self, "_white_expression_cycle") and state in self._white_expression_cycle:
-                    self._white_expression_index = self._white_expression_cycle.index(state)
-                self.state_machine.force_state("idle")
-                self.update()
-                return
-            elif state == "jump":
-                self.state_machine.force_state("jump")
+                if hasattr(self.animator, "manual_action_lock"):
+                    self.animator.manual_action_lock = WhiteHamsterAnimator.ONE_SHOT_DURATIONS.get(state, 2.0)
                 if hasattr(self.animator, "elapsed"):
                     self.animator.elapsed = 0.0
+                self.state_machine.force_state(state)
                 self.update()
                 return
             elif state == "wander":
-                self.wander_target = self._white_wander_target()
-                self._wander_float_x = float(self.x())
-                self._wander_float_y = float(self.y())
-                self.state_machine.force_state("wander")
+                target = self.layout_manager.get_wander_target()
+                self._white_auto_wander_active = True
+                self._white_auto_wander_target = target
+                self._white_auto_wander_x = float(self.x())
+                self._white_auto_wander_y = float(self.y())
+                self._white_auto_wander_clock = 0.0
                 self.update()
                 return
 
@@ -486,53 +479,133 @@ class DragonCompanionWindow(QWidget):
                     self.state_machine.request_state(action)
                     QTimer.singleShot(2200, lambda: self.state_machine.request_state('idle'))
 
-    def _white_wander_target(self):
-        screen = self.layout_manager._screen_rect
-        max_dx = max(140, min(300, self.width() * 1.25))
-        max_dy = max(80, min(180, self.height() * 0.60))
+    def _reset_white_hamster_autonomous_movement(self):
+        self._white_auto_wander_active = False
+        self._white_auto_wander_target = None
+        self._white_auto_wander_x = None
+        self._white_auto_wander_y = None
+        self._white_auto_wander_clock = 0.0
+        self._white_auto_next_wander = random.uniform(9.0, 15.0)
 
-        target_x = self.x() + random.randint(-int(max_dx), int(max_dx))
-        target_y = self.y() + random.randint(-int(max_dy), int(max_dy))
-
-        target_x = max(screen.left() + 20, min(target_x, screen.right() - self.width() - 20))
-        target_y = max(screen.top() + 20, min(target_y, screen.bottom() - self.height() - 20))
-        return QPoint(target_x, target_y)
-
-    def _white_autonomous_tick(self, dt, idle_secs):
+    def _update_white_hamster_autonomous_movement(self):
         if self.current_character != "white_hamster":
             return
-        if self.pomodoro.is_running or self.is_generating or self.typing_engine.timer.isActive():
-            return
-        if idle_secs < 1.25:
+
+        if getattr(self, "is_stopped", False):
             return
 
-        self._white_expression_elapsed += dt
-        if self._white_expression_elapsed >= 7.0:
-            self._white_expression_elapsed -= 7.0
-            self._white_expression_index = (self._white_expression_index + 1) % len(self._white_expression_cycle)
-            self.chibi_animators["white_hamster"].set_expression(
-                self._white_expression_cycle[self._white_expression_index]
+        if self.drag_position is not None:
+            self._white_auto_wander_active = False
+            self._white_auto_wander_target = None
+            self._white_auto_wander_x = None
+            self._white_auto_wander_y = None
+            return
+
+        if self.pomodoro.is_running:
+            return
+
+        if self.typing_engine.timer.isActive():
+            return
+
+        if self.is_generating:
+            return
+
+        if (
+            getattr(self.mood, "sleep_on_video", True)
+            and self.video_detector.is_watching_video()
+        ):
+            self._white_auto_wander_active = False
+            self._white_auto_wander_target = None
+            return
+
+        dt = 0.025
+
+        if not self._white_auto_wander_active:
+            self._white_auto_wander_clock += dt
+
+            if (
+                self._white_auto_wander_clock
+                >= self._white_auto_next_wander
+            ):
+                target = self.layout_manager.get_wander_target()
+
+                current_x = float(self.x())
+                current_y = float(self.y())
+
+                dx = float(target.x()) - current_x
+                dy = float(target.y()) - current_y
+                distance = (dx * dx + dy * dy) ** 0.5
+
+                if distance < 180.0:
+                    self._white_auto_wander_clock = 0.0
+                    self._white_auto_next_wander = random.uniform(
+                        4.0,
+                        7.0,
+                    )
+                    return
+
+                self._white_auto_wander_active = True
+                self._white_auto_wander_target = target
+                self._white_auto_wander_x = current_x
+                self._white_auto_wander_y = current_y
+                self._white_auto_wander_clock = 0.0
+                return
+
+        if (
+            self._white_auto_wander_active
+            and self._white_auto_wander_target is not None
+        ):
+            target = self._white_auto_wander_target
+
+            dx = (
+                float(target.x())
+                - self._white_auto_wander_x
             )
-            self.update()
+            dy = (
+                float(target.y())
+                - self._white_auto_wander_y
+            )
 
-        self._white_jump_elapsed += dt
-        if self._white_jump_elapsed >= 14.0 and self.state_machine.get_state() not in ("jump","drag","react_drag"):
-            self._white_jump_elapsed = 0.0
-            self.state_machine.force_state("jump")
+            distance = (dx * dx + dy * dy) ** 0.5
 
-        self._white_wander_elapsed += dt
-        state = self.state_machine.get_state()
-        if self._white_wander_elapsed >= self._white_next_wander and state not in ("jump","drag","react_drag"):
-            self._white_wander_elapsed = 0.0
-            self._white_next_wander = random.uniform(9.0,15.0)
-            self.wander_target = self._white_wander_target()
-            self._wander_float_x = float(self.x())
-            self._wander_float_y = float(self.y())
-            self.state_machine.force_state("wander")
+            if distance <= 6.0:
+                self._white_auto_wander_active = False
+                self._white_auto_wander_target = None
+                self._white_auto_wander_x = None
+                self._white_auto_wander_y = None
+                self._white_auto_wander_clock = 0.0
+                self._white_auto_next_wander = random.uniform(
+                    9.0,
+                    15.0,
+                )
+                return
+
+            speed = 2.2
+
+            self._white_auto_wander_x += (
+                dx / distance
+            ) * speed
+
+            self._white_auto_wander_y += (
+                dy / distance
+            ) * speed
+
+            direction = 1.0 if dx >= 0 else -1.0
+
+            if hasattr(self.animator, "set_facing"):
+                self.animator.set_facing(direction)
+
+            self.move(
+                int(round(self._white_auto_wander_x)),
+                int(round(self._white_auto_wander_y)),
+            )
 
     def do_behavior_tick(self):
         # Update logic that happens regularly
         if getattr(self, 'is_stopped', False):
+            return
+
+        if self.current_character == "white_hamster":
             return
 
         if self.timer.isActive() and self.idle_timer.isActive():
@@ -646,6 +719,8 @@ class DragonCompanionWindow(QWidget):
     def update_frame(self):
         self.state_machine.tick(0.025)
         self.animator.update()
+        if self.current_character == "white_hamster":
+            self._update_white_hamster_autonomous_movement()
         self.layout_manager.update()
         
         if self.pomodoro.is_running and not self.typing_engine.timer.isActive():
@@ -702,6 +777,9 @@ class DragonCompanionWindow(QWidget):
 
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.LeftButton:
+            if self.current_character == "white_hamster":
+                self._white_auto_wander_active = False
+                self._white_auto_wander_target = None
             self._wander_float_x = None
             self._wander_float_y = None
             self.drag_position = event.globalPos() - self.frameGeometry().topLeft()
