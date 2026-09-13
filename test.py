@@ -154,6 +154,9 @@ class MockTypingEngine:
     def __init__(self):
         self.timer = MockTimer()
 
+    def stop_typing(self):
+        pass
+
 class MockVideoDetector:
     def is_watching_video(self):
         return False
@@ -183,6 +186,24 @@ class MockPetWindow:
         self.is_generating = False
         self.mood = Dummy()
         self.video_detector = MockVideoDetector()
+        self.hidden = False
+        self.wander_target = None
+        self._wander_float_x = None
+        self._wander_float_y = None
+
+    def hide(self):
+        self.hidden = True
+
+    def show(self):
+        self.hidden = False
+
+    def _reset_white_hamster_autonomous_movement(self):
+        self._white_auto_wander_active = False
+        self._white_auto_wander_target = None
+        self._white_auto_wander_x = None
+        self._white_auto_wander_y = None
+        self._white_auto_wander_clock = 0.0
+        self._white_auto_next_wander = 11.0
 
     def update(self):
         self.updated = True
@@ -224,6 +245,30 @@ assert mock_win._white_auto_wander_active is True, "Autonomous wander should act
 init_x = mock_win.x()
 DragonCompanionWindow._update_white_hamster_autonomous_movement(mock_win)
 assert mock_win.x() != init_x or mock_win.y() != 500, "Autonomous wander should move pet position"
+
+# Test stop_pet and start_pet behavior
+DragonCompanionWindow.stop_pet(mock_win)
+assert mock_win.is_stopped is True, "stop_pet must set is_stopped to True"
+assert mock_win._white_auto_wander_active is False, "stop_pet must cancel active wander"
+assert mock_win._white_auto_wander_target is None, "stop_pet must clear wander target"
+assert mock_win.wander_target is None, "stop_pet must clear wander target"
+
+# update_frame and say should do nothing while stopped
+pos_before = (mock_win.x(), mock_win.y())
+DragonCompanionWindow.update_frame(mock_win)
+assert (mock_win.x(), mock_win.y()) == pos_before, "update_frame must not move pet while stopped"
+
+say_called = False
+mock_win.typing_engine.start_typing = lambda *args, **kwargs: globals().update(say_called=True)
+DragonCompanionWindow.say(mock_win, "Should not talk")
+assert not say_called, "say() must not start typing while stopped"
+
+# Test start_pet resumes execution
+mock_win.mood.wake_up_refresh = lambda: None
+mock_win.say = lambda text, force_state=None: DragonCompanionWindow.say(mock_win, text, force_state)
+DragonCompanionWindow.start_pet(mock_win)
+assert mock_win.is_stopped is False, "start_pet must set is_stopped to False"
+assert mock_win.state_machine.get_state() == "wake", "start_pet must force wake state"
 
 # 4. Character profiles and actions
 prof = CHARACTER_PROFILES["white_hamster"]

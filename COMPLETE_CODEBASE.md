@@ -592,7 +592,7 @@ def get_pet_window():
 ## File: `test.py`
 
 **Description:** Test and verification script.  
-**Total Lines:** 261  
+**Total Lines:** 306  
 **Full Path:** `C:\Pet\test.py`
 
 ```python
@@ -752,6 +752,9 @@ class MockTypingEngine:
     def __init__(self):
         self.timer = MockTimer()
 
+    def stop_typing(self):
+        pass
+
 class MockVideoDetector:
     def is_watching_video(self):
         return False
@@ -781,6 +784,24 @@ class MockPetWindow:
         self.is_generating = False
         self.mood = Dummy()
         self.video_detector = MockVideoDetector()
+        self.hidden = False
+        self.wander_target = None
+        self._wander_float_x = None
+        self._wander_float_y = None
+
+    def hide(self):
+        self.hidden = True
+
+    def show(self):
+        self.hidden = False
+
+    def _reset_white_hamster_autonomous_movement(self):
+        self._white_auto_wander_active = False
+        self._white_auto_wander_target = None
+        self._white_auto_wander_x = None
+        self._white_auto_wander_y = None
+        self._white_auto_wander_clock = 0.0
+        self._white_auto_next_wander = 11.0
 
     def update(self):
         self.updated = True
@@ -822,6 +843,30 @@ assert mock_win._white_auto_wander_active is True, "Autonomous wander should act
 init_x = mock_win.x()
 DragonCompanionWindow._update_white_hamster_autonomous_movement(mock_win)
 assert mock_win.x() != init_x or mock_win.y() != 500, "Autonomous wander should move pet position"
+
+# Test stop_pet and start_pet behavior
+DragonCompanionWindow.stop_pet(mock_win)
+assert mock_win.is_stopped is True, "stop_pet must set is_stopped to True"
+assert mock_win._white_auto_wander_active is False, "stop_pet must cancel active wander"
+assert mock_win._white_auto_wander_target is None, "stop_pet must clear wander target"
+assert mock_win.wander_target is None, "stop_pet must clear wander target"
+
+# update_frame and say should do nothing while stopped
+pos_before = (mock_win.x(), mock_win.y())
+DragonCompanionWindow.update_frame(mock_win)
+assert (mock_win.x(), mock_win.y()) == pos_before, "update_frame must not move pet while stopped"
+
+say_called = False
+mock_win.typing_engine.start_typing = lambda *args, **kwargs: globals().update(say_called=True)
+DragonCompanionWindow.say(mock_win, "Should not talk")
+assert not say_called, "say() must not start typing while stopped"
+
+# Test start_pet resumes execution
+mock_win.mood.wake_up_refresh = lambda: None
+mock_win.say = lambda text, force_state=None: DragonCompanionWindow.say(mock_win, text, force_state)
+DragonCompanionWindow.start_pet(mock_win)
+assert mock_win.is_stopped is False, "start_pet must set is_stopped to False"
+assert mock_win.state_machine.get_state() == "wake", "start_pet must force wake state"
 
 # 4. Character profiles and actions
 prof = CHARACTER_PROFILES["white_hamster"]
@@ -2151,7 +2196,7 @@ class WeatherService:
 ## File: `core/web_server.py`
 
 **Description:** Embedded HTTP web server providing local REST API and dashboard interface with dynamic characters endpoint.  
-**Total Lines:** 179  
+**Total Lines:** 186  
 **Full Path:** `C:\Pet\core\web_server.py`
 
 ```python
@@ -2291,9 +2336,9 @@ class PetRequestHandler(BaseHTTPRequestHandler):
         elif self.path == '/api/pet_power':
             action = data.get('action')
             if action == 'start':
-                QMetaObject.invokeMethod(self.server.pet_window, "start_pet_safe", Qt.QueuedConnection)
+                QMetaObject.invokeMethod(self.server.pet_window, "start_pet_safe", Qt.BlockingQueuedConnection)
             elif action == 'stop':
-                QMetaObject.invokeMethod(self.server.pet_window, "stop_pet_safe", Qt.QueuedConnection)
+                QMetaObject.invokeMethod(self.server.pet_window, "stop_pet_safe", Qt.BlockingQueuedConnection)
 
         elif self.path == '/api/video_sleep':
             enabled = bool(data.get('enable', True))
@@ -2327,41 +2372,63 @@ class PetWebServer:
     def __init__(self, pet_window, port=8080):
         self.pet_window = pet_window
         self.port = port
-        self.server = HTTPServer(('127.0.0.1', self.port), PetRequestHandler)
-        self.server.pet_window = self.pet_window
-        
-        self.thread = threading.Thread(target=self.server.serve_forever)
-        self.thread.daemon = True
-        self.thread.start()
-        print(f"Web dashboard running at http://localhost:{self.port}")
+        self.server = None
+        for p in [port, port + 1, port + 2]:
+            try:
+                self.server = HTTPServer(('127.0.0.1', p), PetRequestHandler)
+                self.port = p
+                break
+            except OSError:
+                continue
+        if self.server:
+            self.server.pet_window = self.pet_window
+            self.thread = threading.Thread(target=self.server.serve_forever)
+            self.thread.daemon = True
+            self.thread.start()
+            print(f"Web dashboard running at http://localhost:{self.port}")
+
 ```
 
 <a id="coresingleinstancepy"></a>
 ## File: `core/single_instance.py`
 
 **Description:** Windows mutex/socket single-instance enforcement.  
-**Total Lines:** 39  
+**Total Lines:** 53  
 **Full Path:** `C:\Pet\core\single_instance.py`
 
 ```python
-from PyQt5.QtNetwork import QLocalServer, QLocalSocket
 import sys
+import ctypes
+from PyQt5.QtNetwork import QLocalServer, QLocalSocket
 
 SERVER_NAME = "DragonCompanionSingleInstanceLock_v1"
+MUTEX_NAME = "DragonCompanion_GlobalLock_v1"
+_mutex_handle = None
 
 def notify_existing_instance():
     """
-    Attempts to connect to an existing running instance.
-    If successful, asks it to show its control panel and returns True.
+    Attempts to connect to an existing running instance using an atomic Windows Named Mutex
+    and QLocalSocket. Returns True if an instance is already running so the duplicate exits.
     """
+    global _mutex_handle
+    is_duplicate = False
+    try:
+        kernel32 = ctypes.windll.kernel32
+        _mutex_handle = kernel32.CreateMutexW(None, False, MUTEX_NAME)
+        if kernel32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
+            is_duplicate = True
+    except Exception:
+        pass
+
     socket = QLocalSocket()
     socket.connectToServer(SERVER_NAME)
-    if socket.waitForConnected(500):
+    if socket.waitForConnected(800):
         socket.write(b"SHOW_CONTROL_PANEL")
         socket.waitForBytesWritten(1000)
         socket.disconnectFromServer()
         return True
-    return False
+
+    return is_duplicate
 
 class SingleInstanceServer(QLocalServer):
     def __init__(self, main_window):
@@ -2383,6 +2450,7 @@ class SingleInstanceServer(QLocalServer):
                     self.main_window.control_panel.raise_()
                     self.main_window.control_panel.activateWindow()
             socket.disconnectFromServer()
+
 ```
 
 <a id="coreautostartpy"></a>
@@ -2544,7 +2612,7 @@ $shortcut.Save()
 ## File: `ui/chibi_window.py`
 
 **Description:** Primary frameless translucent desktop window, event loops, timers, dynamic tray character switching, wander physics, and character dispatch.  
-**Total Lines:** 856  
+**Total Lines:** 882  
 **Full Path:** `C:\Pet\ui\chibi_window.py`
 
 ```python
@@ -2804,6 +2872,12 @@ class DragonCompanionWindow(QWidget):
 
     def stop_pet(self):
         self.is_stopped = True
+        self._reset_white_hamster_autonomous_movement()
+        self.wander_target = None
+        self._wander_float_x = None
+        self._wander_float_y = None
+        if hasattr(self, 'typing_engine'):
+            self.typing_engine.stop_typing()
         self.hide()
         if hasattr(self, 'speech_bubble'):
             self.speech_bubble.hide()
@@ -2988,6 +3062,8 @@ class DragonCompanionWindow(QWidget):
         self.wander_chance = val
 
     def say(self, text, force_state=None):
+        if getattr(self, 'is_stopped', False):
+            return
         now = time.time()
         min_interval = getattr(self, '_speech_interval', 6.0)
         if hasattr(self, '_last_speech_time') and (now - self._last_speech_time) < min_interval:
@@ -3267,6 +3343,8 @@ class DragonCompanionWindow(QWidget):
                             self.state_machine.request_state('idle')
 
     def update_frame(self):
+        if getattr(self, 'is_stopped', False):
+            return
         self.state_machine.tick(0.025)
         self.animator.update()
         if self.current_character == "white_hamster":
@@ -3317,6 +3395,22 @@ class DragonCompanionWindow(QWidget):
         if self.speech_bubble.is_visible():
             bubble_rect = self.layout_manager.get_bubble_rect(self.speech_bubble.get_text_size())
             self.speech_bubble.draw(painter, bubble_rect)
+
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        if getattr(self, 'is_stopped', False):
+            start_act = menu.addAction("Start Pet")
+            start_act.triggered.connect(self.start_pet_safe)
+        else:
+            stop_act = menu.addAction("Stop Pet")
+            stop_act.triggered.connect(self.stop_pet_safe)
+        menu.addSeparator()
+        panel_act = menu.addAction("Control Panel")
+        panel_act.triggered.connect(self.show_control_panel)
+        menu.addSeparator()
+        quit_act = menu.addAction("Quit")
+        quit_act.triggered.connect(QApplication.instance().quit)
+        menu.exec_(event.globalPos())
             
     def mouseDoubleClickEvent(self, event: QMouseEvent):
         if event.button() == Qt.LeftButton:
@@ -9342,11 +9436,11 @@ class ControlPanel(QDialog):
         power_layout.addWidget(self.status_label)
         
         btn_row = QHBoxLayout()
-        start_btn = QPushButton("Start System")
+        start_btn = QPushButton("Start Pet")
         start_btn.clicked.connect(self.handle_start)
         btn_row.addWidget(start_btn)
         
-        stop_btn = QPushButton("Stop System")
+        stop_btn = QPushButton("Stop Pet")
         stop_btn.setObjectName("dangerBtn")
         stop_btn.clicked.connect(self.handle_stop)
         btn_row.addWidget(stop_btn)
@@ -9495,10 +9589,10 @@ class ControlPanel(QDialog):
 
     def update_status_label(self):
         if getattr(self.pet, 'is_stopped', False):
-            self.status_label.setText("Status: Stopped")
+            self.status_label.setText("Status: Stopped (Pet Hidden)")
             self.status_label.setStyleSheet("color: #FF858F; border-color: #49262B; background: rgba(255, 133, 143, 0.08);")
         else:
-            self.status_label.setText("Status: Active")
+            self.status_label.setText("Status: Active (Pet Running)")
             self.status_label.setStyleSheet("color: #65D391; border-color: rgba(101, 211, 145, 0.25); background: rgba(101, 211, 145, 0.08);")
 
     def handle_start(self):
@@ -9589,6 +9683,7 @@ class ControlPanel(QDialog):
     def clear_chat(self):
         self.pet.ai.clear_memory()
         self.pet.say_safe("Memory cleared!")
+
 ```
 
 <a id="uidashboardhtml"></a>
