@@ -85,6 +85,25 @@ for expr, fname in required_files.items():
 laugh_path = os.path.join(asset_dir, "laugh.png")
 assert os.path.getsize(laugh_path) == 34398, "laugh.png must remain locked and unchanged (34398 bytes)"
 
+# 2b. 8 New Action Stickers Verification
+action_files = {
+    "laugh_action": "actions/laugh_action.png",
+    "magic": "actions/magic.png",
+    "type": "actions/type.png",
+    "eat": "actions/eat.png",
+    "sad": "actions/sad.png",
+    "happy": "actions/happy.png",
+    "paint": "actions/paint.png",
+    "cook": "actions/cook.png",
+}
+
+for act, rel_fname in action_files.items():
+    fpath = os.path.join(asset_dir, rel_fname.replace("/", os.sep))
+    assert os.path.exists(fpath), f"Missing action sticker asset {fpath}"
+    qimg = QImage(fpath)
+    assert not qimg.isNull(), f"Invalid action image {fpath}"
+    assert qimg.hasAlphaChannel(), f"Action image {fpath} must have an alpha channel"
+
 # 3. White Meme Hamster animator verification
 dummy = Dummy("idle")
 white_anim = WhiteHamsterAnimator(dummy)
@@ -106,6 +125,29 @@ for expr in WhiteHamsterAnimator.EXPRESSIONS:
         painter = QPainter(img)
         white_anim.draw(painter, rect)
         painter.end()
+
+# Verify all 8 action stickers render without error
+for act in WhiteHamsterAnimator.ACTIONS:
+    white_anim.set_special_action(act, duration=1.0)
+    expected_act = "type" if act == "focus" else act
+    assert white_anim.special_action == expected_act
+    img = QImage(350, 400, QImage.Format_ARGB32)
+    img.fill(0)
+    painter = QPainter(img)
+    white_anim.draw(painter, rect)
+    painter.end()
+    white_anim.clear_special_action()
+    assert white_anim.special_action is None
+
+# Verify typing persistent action
+white_anim.set_special_action("type", persistent=True)
+assert white_anim.special_action == "type"
+assert white_anim.special_action_duration == float('inf')
+for _ in range(100):
+    white_anim.update()
+assert white_anim.special_action == "type", "Persistent typing action must not expire automatically"
+white_anim.clear_special_action()
+assert white_anim.special_action is None
 
 # Verify state-machine expression switching in draw()
 for expr in WhiteHamsterAnimator.EXPRESSIONS:
@@ -161,6 +203,19 @@ class MockVideoDetector:
     def is_watching_video(self):
         return False
 
+class MockMood:
+    def __init__(self):
+        self.typing_active = False
+
+    def register_typing(self, dt):
+        self.typing_active = True
+
+    def stop_typing(self):
+        self.typing_active = False
+
+    def wake_up_refresh(self):
+        pass
+
 class MockPetWindow:
     def __init__(self):
         self._x = 500
@@ -184,7 +239,7 @@ class MockPetWindow:
         self.pomodoro.is_running = False
         self.typing_engine = MockTypingEngine()
         self.is_generating = False
-        self.mood = Dummy()
+        self.mood = MockMood()
         self.video_detector = MockVideoDetector()
         self.hidden = False
         self.wander_target = None
@@ -219,6 +274,8 @@ class MockPetWindow:
         self._y = y
 
 mock_win = MockPetWindow()
+
+# Trigger original expressions
 for expr in WhiteHamsterAnimator.EXPRESSIONS:
     mock_win.updated = False
     DragonCompanionWindow.trigger_anim_safe(mock_win, expr)
@@ -226,6 +283,22 @@ for expr in WhiteHamsterAnimator.EXPRESSIONS:
     assert mock_win.animator.manual_action_lock > 0.0, "trigger_anim_safe should set manual_action_lock"
     assert mock_win.state_machine.get_state() == expr, "trigger_anim_safe should force action state"
     assert mock_win.updated, "trigger_anim_safe did not request window update"
+
+# Trigger action stickers via trigger_anim_safe
+for act in WhiteHamsterAnimator.ACTIONS:
+    mock_win.updated = False
+    DragonCompanionWindow.trigger_anim_safe(mock_win, act)
+    expected_act = "type" if act == "focus" else act
+    assert mock_win.animator.special_action == expected_act, f"trigger_anim_safe failed to set special action {act}"
+    assert mock_win.updated, f"trigger_anim_safe did not request window update for action {act}"
+    mock_win.animator.clear_special_action()
+
+# Test typing autonomous detection: typing sets type sticker, stopping typing clears it
+mock_win.animator.clear_special_action()
+DragonCompanionWindow._white_autonomous_tick(mock_win, dt=0.5, idle_secs=0.5)
+assert mock_win.animator.special_action == "type", "Typing (idle < 2.0s) must trigger 'type' sticker"
+DragonCompanionWindow._white_autonomous_tick(mock_win, dt=0.5, idle_secs=3.0)
+assert mock_win.animator.special_action is None, "Inactivity (idle >= 2.0s) must clear typing sticker"
 
 # Test manual jump and manual wander triggers
 DragonCompanionWindow.trigger_anim_safe(mock_win, "jump")
@@ -272,9 +345,12 @@ assert mock_win.state_machine.get_state() == "wake", "start_pet must force wake 
 
 # 4. Character profiles and actions
 prof = CHARACTER_PROFILES["white_hamster"]
-assert prof["supported_actions"] == [
-    "laugh", "smile", "neutral", "tongue_out", "halo", "costume", "jump", "wander"
-], f"Unexpected actions: {prof['supported_actions']}"
+expected_actions = [
+    "laugh", "smile", "neutral", "tongue_out", "halo", "costume",
+    "jump", "wander",
+    "magic", "type", "focus", "eat", "sad", "happy", "paint", "cook"
+]
+assert prof["supported_actions"] == expected_actions, f"Unexpected actions: {prof['supported_actions']}"
 
 # Verify other characters exist
 for c in ["dragon", "dog", "luffy", "cat_orange", "cat_tuxedo", "cats_duo", "fox", "rabbit", "penguin", "hamster", "owl", "panda", "yellow_guardian_hamster"]:
@@ -283,14 +359,22 @@ for c in ["dragon", "dog", "luffy", "cat_orange", "cat_tuxedo", "cats_duo", "fox
 # 5. Layout and Speech Bubble
 dummy_win = DummyWindow("white_hamster")
 layout_mgr = LayoutManager(dummy_win)
+dragon_rect = layout_mgr.get_dragon_rect()
+assert dragon_rect.width() == 220, f"Expected 220 width for white_hamster, got {dragon_rect.width()}"
+assert dragon_rect.height() == 300, f"Expected 300 height for white_hamster, got {dragon_rect.height()}"
+
 bubble_rect = layout_mgr.get_bubble_rect(QRect(0, 0, 100, 40))
-assert bubble_rect.width() <= 178, f"Bubble width {bubble_rect.width()} exceeds max 178"
-assert bubble_rect.height() <= 54, f"Bubble height {bubble_rect.height()} exceeds max 54"
+assert bubble_rect.width() <= 196, f"Bubble width {bubble_rect.width()} exceeds max 196"
+assert bubble_rect.bottom() <= dragon_rect.top(), f"Bubble bottom ({bubble_rect.bottom()}) overlaps hamster top ({dragon_rect.top()})"
+
+# Generic companion layout check
+dummy_dragon = DummyWindow("dragon")
+layout_dragon = LayoutManager(dummy_dragon)
+d_rect = layout_dragon.get_dragon_rect()
+assert d_rect.width() == 150 and d_rect.height() == 160
 
 # 6. Chat Overlay separation
 chat = ChatInputWidget()
-# Verify show_overlay calculates target_y above pet window
-# target_y = pet_y - self.height() - 18
 pet_y = 500
 target_y = pet_y - chat.height() - 18
 assert target_y < pet_y, "Chat overlay must appear above the pet window"
@@ -303,4 +387,4 @@ yellow_painter = QPainter(yellow_img)
 yellow_anim.draw(yellow_painter, QRect(100, 230, 150, 160))
 yellow_painter.end()
 
-print("All White Meme Hamster 6-expression, layout, bubble, chat, and regression tests passed!")
+print("ALL WHITE MEME HAMSTER 6-EXPRESSION + 8-ACTION STICKERS + LAYOUT + MOVEMENT + STOP/START TESTS PASSED!")

@@ -159,7 +159,7 @@ class DragonCompanionWindow(QWidget):
         self._white_auto_wander_x = None
         self._white_auto_wander_y = None
         self._white_auto_wander_clock = 0.0
-        self._white_auto_next_wander = random.uniform(9.0, 15.0)
+        self._white_auto_next_wander = random.uniform(7.0, 12.0)
         
         self.setup_tray()
         
@@ -308,18 +308,48 @@ class DragonCompanionWindow(QWidget):
 
     @pyqtSlot(str)
     def trigger_anim_safe(self, state):
-        if self.current_character == "white_hamster" or isinstance(self.animator, WhiteHamsterAnimator):
-            if state in WhiteHamsterAnimator.EXPRESSIONS or state in WhiteHamsterAnimator.ONE_SHOT_DURATIONS:
-                if hasattr(self.animator, "set_expression") and state in WhiteHamsterAnimator.EXPRESSIONS:
-                    self.animator.set_expression(state)
-                if hasattr(self.animator, "manual_action_lock"):
-                    self.animator.manual_action_lock = WhiteHamsterAnimator.ONE_SHOT_DURATIONS.get(state, 2.0)
-                if hasattr(self.animator, "elapsed"):
-                    self.animator.elapsed = 0.0
+        if (
+            self.current_character == "white_hamster"
+            or isinstance(self.animator, WhiteHamsterAnimator)
+        ):
+            # Original six expression controls.
+            if state in WhiteHamsterAnimator.EXPRESSIONS:
+                self.animator.clear_special_action()
+                self.animator.set_expression(state)
+                self.animator.manual_action_lock = WhiteHamsterAnimator.ONE_SHOT_DURATIONS.get(
+                    state,
+                    1.5,
+                )
+                self.animator.elapsed = 0.0
                 self.state_machine.force_state(state)
                 self.update()
                 return
-            elif state == "wander":
+
+            # Additional supplied sticker controls.
+            if state in WhiteHamsterAnimator.ACTIONS:
+                self.animator.set_special_action(
+                    state,
+                    duration=WhiteHamsterAnimator.ONE_SHOT_DURATIONS.get(
+                        state,
+                        2.0,
+                    ),
+                    persistent=False,
+                )
+                self.state_machine.force_state("idle")
+                self.update()
+                return
+
+            # Manual jump.
+            if state == "jump":
+                self.animator.clear_special_action()
+                self.animator.manual_action_lock = WhiteHamsterAnimator.ONE_SHOT_DURATIONS["jump"]
+                self.animator.elapsed = 0.0
+                self.state_machine.force_state("jump")
+                self.update()
+                return
+
+            # Manual wander.
+            if state == "wander":
                 target = self.layout_manager.get_wander_target()
                 self._white_auto_wander_active = True
                 self._white_auto_wander_target = target
@@ -412,7 +442,13 @@ class DragonCompanionWindow(QWidget):
         elif self.current_character == "luffy":
             self.say("MEAAAT! *nom nom nom*", force_state='celebrate')
         elif self.current_character == "white_hamster":
-            self.say("CRUNCH CRUNCH!", force_state='tongue_out')
+            if hasattr(self.animator, "set_special_action"):
+                self.animator.set_special_action(
+                    "eat",
+                    duration=WhiteHamsterAnimator.ONE_SHOT_DURATIONS["eat"],
+                    persistent=False,
+                )
+            self.say("CRUNCH CRUNCH!")
         elif self.current_character == "yellow_guardian_hamster":
             self.say("CRUNCH.", force_state='happy')
         elif self.current_character == "hamster":
@@ -493,7 +529,7 @@ class DragonCompanionWindow(QWidget):
         self._white_auto_wander_x = None
         self._white_auto_wander_y = None
         self._white_auto_wander_clock = 0.0
-        self._white_auto_next_wander = random.uniform(9.0, 15.0)
+        self._white_auto_next_wander = random.uniform(7.0, 12.0)
 
     def _update_white_hamster_autonomous_movement(self):
         if self.current_character != "white_hamster":
@@ -547,8 +583,8 @@ class DragonCompanionWindow(QWidget):
                 if distance < 180.0:
                     self._white_auto_wander_clock = 0.0
                     self._white_auto_next_wander = random.uniform(
-                        4.0,
-                        7.0,
+                        3.0,
+                        5.0,
                     )
                     return
 
@@ -583,8 +619,8 @@ class DragonCompanionWindow(QWidget):
                 self._white_auto_wander_y = None
                 self._white_auto_wander_clock = 0.0
                 self._white_auto_next_wander = random.uniform(
-                    9.0,
-                    15.0,
+                    7.0,
+                    12.0,
                 )
                 return
 
@@ -607,6 +643,40 @@ class DragonCompanionWindow(QWidget):
                 int(round(self._white_auto_wander_x)),
                 int(round(self._white_auto_wander_y)),
             )
+
+
+    def _white_autonomous_tick(self, dt, idle_secs):
+        """
+        White Meme Hamster-specific autonomous behavior.
+
+        The automatic six-expression cycle remains inside the animator.
+        This method only connects real user activity to the supplied
+        action-specific sticker sprites.
+        """
+
+        if self.current_character != "white_hamster":
+            return
+
+        # Keyboard activity -> ALWAYS show the supplied reading/typing sticker.
+        if idle_secs < 2.0:
+            self.mood.register_typing(dt)
+
+            if hasattr(self.animator, "set_special_action"):
+                self.animator.set_special_action(
+                    "type",
+                    persistent=True,
+                )
+
+            return
+
+        self.mood.stop_typing()
+
+        # Release the typing sticker as soon as typing stops.
+        if (
+            hasattr(self.animator, "special_action")
+            and self.animator.special_action == "type"
+        ):
+            self.animator.clear_special_action()
 
     def do_behavior_tick(self):
         # Update logic that happens regularly
@@ -647,7 +717,11 @@ class DragonCompanionWindow(QWidget):
                     self.mood.wake_up_refresh()
                     self.state_machine.force_state("idle")
                     return
-                self._white_autonomous_tick(0.5, idle_secs)
+
+                self._white_autonomous_tick(
+                    0.5,
+                    idle_secs,
+                )
                 return
 
             # WAKE UP on ANY system input (mouse or keyboard)
@@ -777,7 +851,7 @@ class DragonCompanionWindow(QWidget):
         if self.speech_bubble.is_visible():
             bubble_rect = self.layout_manager.get_bubble_rect(self.speech_bubble.get_text_size())
             self.speech_bubble.draw(painter, bubble_rect)
-
+            
     def contextMenuEvent(self, event):
         menu = QMenu(self)
         if getattr(self, 'is_stopped', False):
@@ -793,7 +867,7 @@ class DragonCompanionWindow(QWidget):
         quit_act = menu.addAction("Quit")
         quit_act.triggered.connect(QApplication.instance().quit)
         menu.exec_(event.globalPos())
-            
+
     def mouseDoubleClickEvent(self, event: QMouseEvent):
         if event.button() == Qt.LeftButton:
             # Show the chat overlay, passing the pet's global position and width
