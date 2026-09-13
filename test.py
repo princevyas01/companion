@@ -107,9 +107,57 @@ for expr in WhiteHamsterAnimator.EXPRESSIONS:
         white_anim.draw(painter, rect)
         painter.end()
 
+# Verify state-machine expression switching in draw()
+for expr in WhiteHamsterAnimator.EXPRESSIONS:
+    dummy.force_state(expr)
+    img = QImage(350, 400, QImage.Format_ARGB32)
+    img.fill(0)
+    painter = QPainter(img)
+    white_anim.draw(painter, rect)
+    painter.end()
+    assert white_anim.get_expression() == expr, f"draw() did not adopt expression state {expr}"
+
 # Sprite is never mirrored
 white_anim.set_facing(-1)
 assert white_anim.facing == 1, "White Hamster facing must never be mirrored (-1)"
+
+# 3b. Verify trigger_anim_safe logic for White Hamster
+from ui.chibi_window import DragonCompanionWindow
+class MockPetWindow:
+    def __init__(self):
+        self.current_character = "white_hamster"
+        self.state_machine = Dummy("idle")
+        self.animator = WhiteHamsterAnimator(self.state_machine)
+        self._white_expression_cycle = ("laugh","smile","neutral","tongue_out","halo","costume")
+        self._white_expression_index = 0
+        self._white_expression_elapsed = 3.5
+        self.updated = False
+
+    def update(self):
+        self.updated = True
+
+    def _white_wander_target(self):
+        return QPoint(200, 200)
+
+    def x(self): return 100
+    def y(self): return 100
+
+mock_win = MockPetWindow()
+for expr in WhiteHamsterAnimator.EXPRESSIONS:
+    mock_win.updated = False
+    DragonCompanionWindow.trigger_anim_safe(mock_win, expr)
+    assert mock_win.animator.get_expression() == expr, f"trigger_anim_safe failed to set expression {expr}"
+    assert mock_win._white_expression_elapsed == 0.0, "trigger_anim_safe did not reset expression elapsed"
+    assert mock_win._white_expression_cycle[mock_win._white_expression_index] == expr, "trigger_anim_safe did not sync expression index"
+    assert mock_win.updated, "trigger_anim_safe did not request window update"
+
+# Test jump and wander
+DragonCompanionWindow.trigger_anim_safe(mock_win, "jump")
+assert mock_win.state_machine.get_state() == "jump"
+
+DragonCompanionWindow.trigger_anim_safe(mock_win, "wander")
+assert mock_win.state_machine.get_state() == "wander"
+assert mock_win.wander_target == QPoint(200, 200)
 
 # 4. Character profiles and actions
 prof = CHARACTER_PROFILES["white_hamster"]

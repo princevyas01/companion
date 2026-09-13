@@ -705,9 +705,57 @@ for expr in WhiteHamsterAnimator.EXPRESSIONS:
         white_anim.draw(painter, rect)
         painter.end()
 
+# Verify state-machine expression switching in draw()
+for expr in WhiteHamsterAnimator.EXPRESSIONS:
+    dummy.force_state(expr)
+    img = QImage(350, 400, QImage.Format_ARGB32)
+    img.fill(0)
+    painter = QPainter(img)
+    white_anim.draw(painter, rect)
+    painter.end()
+    assert white_anim.get_expression() == expr, f"draw() did not adopt expression state {expr}"
+
 # Sprite is never mirrored
 white_anim.set_facing(-1)
 assert white_anim.facing == 1, "White Hamster facing must never be mirrored (-1)"
+
+# 3b. Verify trigger_anim_safe logic for White Hamster
+from ui.chibi_window import DragonCompanionWindow
+class MockPetWindow:
+    def __init__(self):
+        self.current_character = "white_hamster"
+        self.state_machine = Dummy("idle")
+        self.animator = WhiteHamsterAnimator(self.state_machine)
+        self._white_expression_cycle = ("laugh","smile","neutral","tongue_out","halo","costume")
+        self._white_expression_index = 0
+        self._white_expression_elapsed = 3.5
+        self.updated = False
+
+    def update(self):
+        self.updated = True
+
+    def _white_wander_target(self):
+        return QPoint(200, 200)
+
+    def x(self): return 100
+    def y(self): return 100
+
+mock_win = MockPetWindow()
+for expr in WhiteHamsterAnimator.EXPRESSIONS:
+    mock_win.updated = False
+    DragonCompanionWindow.trigger_anim_safe(mock_win, expr)
+    assert mock_win.animator.get_expression() == expr, f"trigger_anim_safe failed to set expression {expr}"
+    assert mock_win._white_expression_elapsed == 0.0, "trigger_anim_safe did not reset expression elapsed"
+    assert mock_win._white_expression_cycle[mock_win._white_expression_index] == expr, "trigger_anim_safe did not sync expression index"
+    assert mock_win.updated, "trigger_anim_safe did not request window update"
+
+# Test jump and wander
+DragonCompanionWindow.trigger_anim_safe(mock_win, "jump")
+assert mock_win.state_machine.get_state() == "jump"
+
+DragonCompanionWindow.trigger_anim_safe(mock_win, "wander")
+assert mock_win.state_machine.get_state() == "wander"
+assert mock_win.wander_target == QPoint(200, 200)
 
 # 4. Character profiles and actions
 prof = CHARACTER_PROFILES["white_hamster"]
@@ -2741,6 +2789,30 @@ class DragonCompanionWindow(QWidget):
 
     @pyqtSlot(str)
     def trigger_anim_safe(self, state):
+        if self.current_character == "white_hamster" or isinstance(self.animator, WhiteHamsterAnimator):
+            if state in WhiteHamsterAnimator.EXPRESSIONS:
+                if hasattr(self.animator, "set_expression"):
+                    self.animator.set_expression(state)
+                self._white_expression_elapsed = 0.0
+                if hasattr(self, "_white_expression_cycle") and state in self._white_expression_cycle:
+                    self._white_expression_index = self._white_expression_cycle.index(state)
+                self.state_machine.force_state("idle")
+                self.update()
+                return
+            elif state == "jump":
+                self.state_machine.force_state("jump")
+                if hasattr(self.animator, "elapsed"):
+                    self.animator.elapsed = 0.0
+                self.update()
+                return
+            elif state == "wander":
+                self.wander_target = self._white_wander_target()
+                self._wander_float_x = float(self.x())
+                self._wander_float_y = float(self.y())
+                self.state_machine.force_state("wander")
+                self.update()
+                return
+
         if state in {"gum_stretch", "gear2", "gear3", "gear5"}:
             if hasattr(self.animator, "trigger_special"):
                 self.animator.trigger_special(state)
@@ -2749,6 +2821,7 @@ class DragonCompanionWindow(QWidget):
             self.state_machine.force_state("celebrate")
         else:
             self.state_machine.force_state(state)
+        self.update()
         
     def say_safe(self, text):
         if not self.is_destroyed:
@@ -2923,6 +2996,7 @@ class DragonCompanionWindow(QWidget):
             self.chibi_animators["white_hamster"].set_expression(
                 self._white_expression_cycle[self._white_expression_index]
             )
+            self.update()
 
         self._white_jump_elapsed += dt
         if self._white_jump_elapsed >= 14.0 and self.state_machine.get_state() not in ("jump","drag","react_drag"):
@@ -3161,7 +3235,10 @@ class DragonCompanionWindow(QWidget):
                 elif self.current_character == "white_hamster":
                     self.chibi_animators["white_hamster"].set_expression("smile")
                     self._white_expression_elapsed = 0.0
+                    if hasattr(self, "_white_expression_cycle") and "smile" in self._white_expression_cycle:
+                        self._white_expression_index = self._white_expression_cycle.index("smile")
                     self.say("hehe.", force_state="idle")
+                    self.update()
                     event.accept()
                     return
                 elif hasattr(self, 'chibi_animators') and self.current_character in self.chibi_animators:
@@ -7790,6 +7867,8 @@ class WhiteHamsterAnimator:
 
     def draw(self, painter, rect):
         state = self.state_machine.get_state()
+        if state in self.EXPRESSIONS:
+            self.current_expression = state
         pixmap = self.frames[self.current_expression]
         y_offset = 0.0
         if state == "jump":
