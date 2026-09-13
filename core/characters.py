@@ -236,7 +236,63 @@ CHARACTER_PROFILES = {
             "pomodoroStart": ["Let's work steadily like a calm panda.", "Focus time, then nap time!"],
             "pomodoroEnd": ["Break time! Time to roll around!", "You did great, now relax!"]
         }
-    }
+    },
+
+    "white_hamster": {
+        "name": "White Meme Hamster",
+        "type": "white_hamster",
+        "supported_actions": [
+            "jump",
+            "laugh",
+            "smile",
+            "neutral",
+            "tongue_out",
+            "halo",
+            "costume",
+            "wander",
+            "celebrate",
+            "sleep",
+            "think",
+            "focus",
+            "type",
+            "wake"
+        ],
+        "lines": {
+            "idle": [
+                "*stares at you*",
+                "*tiny hamster noises*",
+                "hmm.",
+                "*wiggles*"
+            ],
+            "hungry": [
+                "*looks for snacks*",
+                "I want a tiny snack.",
+                "*stares intensely at food*"
+            ],
+            "clicked": [
+                "*big hamster smile*",
+                "hehe.",
+                "*wiggles happily*"
+            ],
+            "click": [
+                "*big hamster smile*",
+                "hehe.",
+                "*wiggles happily*"
+            ],
+            "pomodoroStart": [
+                "*puts on the serious outfit*",
+                "Okay. We work now."
+            ],
+            "pomodoroEnd": [
+                "*throws paws in the air*",
+                "Done! Time to celebrate."
+            ],
+            "lateNight": [
+                "*sleepy hamster stare*",
+                "I think it is nap time."
+            ]
+        }
+    },
 }
 
 def get_character_config(char_id):
@@ -248,46 +304,4 @@ def get_character_line(char_id, category):
     # Fallback to default if category is missing in this character's lines
     lines = lines_dict.get(category, DEFAULT_LINES.get(category, ["..."]))
     import random
-    return random.choice(lines)
-
-
-# Deterministic autonomous behavior cycles. These are deliberately ordered rather
-# than randomly selected so characters do not appear to perform unrelated actions.
-AUTONOMOUS_CHARACTER_CYCLES = {
-    "dragon": ["idle", "wander", "idle", "sit", "idle"],
-    "dog": ["idle", "wander", "idle", "sit", "idle"],
-    "cat_orange": ["idle", "wander", "idle", "clean", "idle"],
-    "cat_tuxedo": ["idle", "wander", "idle", "purr", "idle"],
-    "cats_duo": ["idle", "wander", "idle", "purr", "idle"],
-    "luffy": ["idle", "wander", "idle", "think", "idle"],
-    "fox": ["idle", "wander", "idle", "curious", "idle"],
-    "rabbit": ["idle", "wander", "idle", "hop", "idle"],
-    "penguin": ["idle", "wander", "idle", "waddle", "idle"],
-    "hamster": ["idle", "wander", "idle", "scurry", "idle"],
-    "owl": ["idle", "perch", "idle", "head_turn", "idle"],
-    "panda": ["idle", "wander", "idle", "slow_walk", "idle"],
-}
-
-ONE_SHOT_DURATIONS = {
-    "celebrate": 1.20,
-    "react_click": 0.55,
-    "curious": 1.20,
-    "hop": 1.10,
-    "nose_twitch": 0.80,
-    "waddle": 1.10,
-    "flap": 0.90,
-    "scurry": 1.00,
-    "cheek_puff": 1.10,
-    "head_turn": 1.20,
-    "wing_flap": 1.00,
-    "slow_walk": 1.40,
-    "roll": 1.20,
-    "pounce": 1.15,
-    "clean": 1.50,
-    "purr": 1.20,
-    "stretch": 1.15,
-    "jump": 1.80,
-    "bark": 1.10,
-    "meow": 1.00,
-    "happy": 1.00,
-}
+    return random.choice(lines)
