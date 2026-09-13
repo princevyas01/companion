@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import (
+    QApplication,
     QWidget,
     QLineEdit,
     QVBoxLayout,
@@ -7,7 +8,7 @@ from PyQt5.QtWidgets import (
     QGraphicsDropShadowEffect
 )
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtGui import QColor
 
 
@@ -85,22 +86,22 @@ class ChatInputWidget(QWidget):
         self.submit_callback = callback
 
     def show_overlay(self, pet_x, pet_y, pet_width):
-        target_x = (
-            pet_x +
-            (pet_width // 2) -
-            (self.width() // 2)
-        )
+        target_x = pet_x + (pet_width // 2) - (self.width() // 2)
+        target_y = pet_y - self.height() - 18
 
-        target_y = pet_y + 100
+        screen = QApplication.screenAt(QPoint(target_x, target_y))
+        if screen is None:
+            screen = QApplication.primaryScreen()
+        if screen is not None:
+            available = screen.availableGeometry()
+            target_x = max(available.left() + 8, min(
+                target_x, available.right() - self.width() - 8
+            ))
+            target_y = max(available.top() + 8, target_y)
 
-        self.move(
-            target_x,
-            target_y
-        )
-
+        self.move(target_x, target_y)
         self.show()
         self.activateWindow()
-
         self.input_field.clear()
         self.input_field.setFocus()
 
