@@ -116,6 +116,14 @@ class DragonCompanionWindow(QWidget):
         self.is_stopped = False
         self._was_watching_video = False
         
+        # White Hamster Autonomous Controllers
+        self._white_expression_cycle = ("laugh","smile","neutral","tongue_out","halo","costume")
+        self._white_expression_index = 0
+        self._white_expression_elapsed = 0.0
+        self._white_jump_elapsed = 0.0
+        self._white_wander_elapsed = 0.0
+        self._white_next_wander = 11.0
+        
         # Main Loop
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
@@ -146,35 +154,6 @@ class DragonCompanionWindow(QWidget):
         self.mood_timer.timeout.connect(self.mood.tick)
         self.mood_timer.start(8000)
         
-        # ------------------------------------------------------------
-        # White Meme Hamster autonomous controller
-        # ------------------------------------------------------------
-        # Deterministic:
-        #   - expression/action changes every 7 seconds
-        #   - desktop wander every 14 seconds
-        self._white_expression_index = -1
-        self._white_expression_cycle = [
-            "tongue_out",
-            "neutral",
-            "halo",
-            "costume",
-            "smile",
-            "jump",
-            "laugh",
-        ]
-
-        self.white_expression_timer = QTimer(self)
-        self.white_expression_timer.timeout.connect(
-            self.white_hamster_expression_tick
-        )
-        self.white_expression_timer.start(7000)
-
-        self.white_wander_timer = QTimer(self)
-        self.white_wander_timer.timeout.connect(
-            self.white_hamster_wander_tick
-        )
-        self.white_wander_timer.start(14000)
-
         # Interaction State
         self.drag_position = None
         self.click_count = 0
@@ -294,13 +273,20 @@ class DragonCompanionWindow(QWidget):
             self.animator.clear_special()
         self._wander_float_x = None
         self._wander_float_y = None
-        self.wander_target = None
         self.current_character = name
 
         if name == "white_hamster":
-            self._white_expression_index = -1
-            # idle in WhiteHamsterAnimator maps to the exact laugh source.
+            self._white_expression_cycle = ("laugh","smile","neutral","tongue_out","halo","costume")
+            self._white_expression_index = 0
+            self._white_expression_elapsed = 0.0
+            self._white_jump_elapsed = 0.0
+            self._white_wander_elapsed = 0.0
+            self._white_next_wander = 11.0
+            self.animator = self.chibi_animators["white_hamster"]
+            self.animator.set_expression("laugh")
             self.state_machine.force_state("idle")
+            self.update()
+            return
 
         if name == "dog":
             self.animator = self.animator_dog
@@ -449,78 +435,6 @@ class DragonCompanionWindow(QWidget):
             if power_status.ACLineStatus == 0 and power_status.BatteryLifePercent <= 20:
                 self.say(get_character_line(self.current_character, "lowBattery"))
 
-    def _white_behavior_blocked(self):
-        """Return True when external application behavior must remain in control."""
-        if getattr(self, "is_stopped", False):
-            return True
-        if self.pomodoro.is_running:
-            return True
-        if self.typing_engine.timer.isActive():
-            return True
-        if self.is_generating:
-            return True
-        if self.drag_position is not None:
-            return True
-        if self.video_detector.is_watching_video():
-            return True
-
-        state = self.state_machine.get_state()
-
-        return state in {
-            "drag",
-            "react_drag",
-            "type",
-            "speak",
-            "sleep",
-            "exhausted",
-            "break_time",
-        }
-
-    @pyqtSlot()
-    def white_hamster_expression_tick(self):
-        """Guaranteed seven-second deterministic expression cycle."""
-        if self.current_character != "white_hamster":
-            return
-        if self._white_behavior_blocked():
-            return
-
-        self.wander_target = None
-        self._wander_float_x = None
-        self._wander_float_y = None
-
-        self._white_expression_index = (
-            self._white_expression_index + 1
-        ) % len(self._white_expression_cycle)
-
-        next_state = self._white_expression_cycle[
-            self._white_expression_index
-        ]
-
-        self.state_machine.force_state(next_state)
-
-    @pyqtSlot()
-    def white_hamster_wander_tick(self):
-        """Reliably send White Meme Hamster to a new safe desktop position."""
-        if self.current_character != "white_hamster":
-            return
-        if self._white_behavior_blocked():
-            return
-        if self.state_machine.get_state() not in {
-            "idle",
-            "sit",
-            "wander",
-        }:
-            return
-
-        target = self.layout_manager.get_wander_target()
-        if target is None:
-            return
-
-        self.wander_target = target
-        self._wander_float_x = float(self.x())
-        self._wander_float_y = float(self.y())
-        self.state_machine.force_state("wander")
-
     def do_fire_breathe(self):
         if getattr(self, 'is_stopped', False):
             return
@@ -546,6 +460,49 @@ class DragonCompanionWindow(QWidget):
                     action = 'pounce' if random.random() < 0.5 else 'clean'
                     self.state_machine.request_state(action)
                     QTimer.singleShot(2200, lambda: self.state_machine.request_state('idle'))
+
+    def _white_wander_target(self):
+        screen = self.layout_manager._screen_rect
+        max_dx = max(140, min(300, self.width() * 1.25))
+        max_dy = max(80, min(180, self.height() * 0.60))
+
+        target_x = self.x() + random.randint(-int(max_dx), int(max_dx))
+        target_y = self.y() + random.randint(-int(max_dy), int(max_dy))
+
+        target_x = max(screen.left() + 20, min(target_x, screen.right() - self.width() - 20))
+        target_y = max(screen.top() + 20, min(target_y, screen.bottom() - self.height() - 20))
+        return QPoint(target_x, target_y)
+
+    def _white_autonomous_tick(self, dt, idle_secs):
+        if self.current_character != "white_hamster":
+            return
+        if self.pomodoro.is_running or self.is_generating or self.typing_engine.timer.isActive():
+            return
+        if idle_secs < 1.25:
+            return
+
+        self._white_expression_elapsed += dt
+        if self._white_expression_elapsed >= 7.0:
+            self._white_expression_elapsed -= 7.0
+            self._white_expression_index = (self._white_expression_index + 1) % len(self._white_expression_cycle)
+            self.chibi_animators["white_hamster"].set_expression(
+                self._white_expression_cycle[self._white_expression_index]
+            )
+
+        self._white_jump_elapsed += dt
+        if self._white_jump_elapsed >= 14.0 and self.state_machine.get_state() not in ("jump","drag","react_drag"):
+            self._white_jump_elapsed = 0.0
+            self.state_machine.force_state("jump")
+
+        self._white_wander_elapsed += dt
+        state = self.state_machine.get_state()
+        if self._white_wander_elapsed >= self._white_next_wander and state not in ("jump","drag","react_drag"):
+            self._white_wander_elapsed = 0.0
+            self._white_next_wander = random.uniform(9.0,15.0)
+            self.wander_target = self._white_wander_target()
+            self._wander_float_x = float(self.x())
+            self._wander_float_y = float(self.y())
+            self.state_machine.force_state("wander")
 
     def do_behavior_tick(self):
         # Update logic that happens regularly
@@ -578,16 +535,19 @@ class DragonCompanionWindow(QWidget):
                 return
             self._was_watching_video = False
 
+            if self.current_character == "white_hamster":
+                if idle_secs < 1.0 and current_state == "sleep":
+                    self.mood.wake_up_refresh()
+                    self.state_machine.force_state("idle")
+                    return
+                self._white_autonomous_tick(0.5, idle_secs)
+                return
+
             # WAKE UP on ANY system input (mouse or keyboard)
             if idle_secs < 1.0 and current_state == 'sleep':
                 self.mood.wake_up_refresh()
                 self.state_machine.force_state('wake')
                 self.say("You're back!")
-                return
-
-            # White Meme Hamster uses its own deterministic controller.
-            # Do not let the legacy random behavior tree overwrite it.
-            if self.current_character == "white_hamster":
                 return
                 
             # 1. Check Global Activity (Working)
@@ -686,11 +646,7 @@ class DragonCompanionWindow(QWidget):
                 if hasattr(self.animator, 'set_facing'):
                     self.animator.set_facing(direction)
 
-                speed = (
-                    2.2
-                    if self.current_character == "white_hamster"
-                    else 3.0
-                )
+                speed = 3.0
                 self._wander_float_x += (dx / dist) * speed
                 self._wander_float_y += (dy / dist) * speed
                 self.move(int(round(self._wander_float_x)), int(round(self._wander_float_y)))
@@ -768,13 +724,11 @@ class DragonCompanionWindow(QWidget):
                         ("curious", "Is that meat?!"),
                     ]
                 elif self.current_character == "white_hamster":
-                    line = get_character_line(
-                        self.current_character,
-                        "click",
-                    )
-                    actions = [
-                        ("laugh", line or "hehe."),
-                    ]
+                    self.chibi_animators["white_hamster"].set_expression("smile")
+                    self._white_expression_elapsed = 0.0
+                    self.say("hehe.", force_state="idle")
+                    event.accept()
+                    return
                 elif hasattr(self, 'chibi_animators') and self.current_character in self.chibi_animators:
                     line = get_character_line(self.current_character, "click")
                     actions = [
