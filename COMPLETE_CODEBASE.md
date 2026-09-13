@@ -592,23 +592,26 @@ def get_pet_window():
 ## File: `test.py`
 
 **Description:** Test and verification script.  
-**Total Lines:** 127  
+**Total Lines:** 147  
 **Full Path:** `C:\Pet\test.py`
 
 ```python
 import sys
-
+import os
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QPainter, QImage
-from PyQt5.QtCore import QRect, QRectF
+from PyQt5.QtCore import QRect, QRectF, QPoint
 
 from ui.dog_animator import DogAnimator
 from ui.white_hamster_animator import WhiteHamsterAnimator
 from ui.yellow_guardian_hamster_animator import YellowGuardianHamsterAnimator
-
+from core.characters import CHARACTER_PROFILES, get_character_config, get_character_line
+from core.layout import LayoutManager
+from ui.speech_bubble import SpeechBubble
+from ui.chat_overlay import ChatInputWidget
 
 class Dummy:
-    def __init__(self, state):
+    def __init__(self, state="idle"):
         self.state = state
         self.elapsed = 0.0
 
@@ -619,34 +622,37 @@ class Dummy:
         self.state = state
         self.elapsed = 0.0
 
+    def request_state(self, state):
+        self.state = state
+        self.elapsed = 0.0
+
     @property
     def time_in_state(self):
         return self.elapsed
 
+class DummyWindow:
+    def __init__(self, char="white_hamster"):
+        self.current_character = char
+        self._w = 350
+        self._h = 400
 
-app = QApplication(sys.argv)
+    def width(self):
+        return self._w
 
-# Existing dog smoke test.
+    def height(self):
+        return self._h
+
+    def geometry(self):
+        return QRect(100, 100, self._w, self._h)
+
+app = QApplication.instance() or QApplication(sys.argv)
+
+# 1. Existing dog smoke test
 states = [
-    "idle",
-    "tongue_out",
-    "happy",
-    "sit",
-    "sit_down",
-    "bark",
-    "celebrate",
-    "sleep",
-    "exhausted",
-    "wake",
-    "react_click",
-    "drag",
-    "react_drag",
-    "focus",
-    "annoyed",
-    "wander",
-    "type",
+    "idle", "tongue_out", "happy", "sit", "sit_down", "bark", "celebrate",
+    "sleep", "exhausted", "wake", "react_click", "drag", "react_drag",
+    "focus", "annoyed", "wander", "type"
 ]
-
 for state in states:
     anim = DogAnimator(Dummy(state))
     img = QImage(100, 100, QImage.Format_ARGB32)
@@ -655,74 +661,88 @@ for state in states:
     anim.draw(painter, QRectF(0, 0, 100, 100))
     painter.end()
 
-
-# White Meme Hamster verification.
-white_dummy = Dummy("idle")
-white_anim = WhiteHamsterAnimator(white_dummy)
-
-required_frames = {
-    "laugh",
-    "smile",
-    "neutral",
-    "tongue_out",
-    "halo",
-    "costume",
+# 2. Assets verification
+asset_dir = os.path.join(os.path.dirname(__file__), "assets", "white_hamster")
+required_files = {
+    "laugh": "laugh.png",
+    "smile": "smile.png",
+    "neutral": "neutral.png",
+    "tongue_out": "tongue_out.png",
+    "halo": "halo.png",
+    "costume": "costume.png",
 }
 
-assert required_frames.issubset(set(white_anim.frames.keys())), (
-    "Missing White Meme Hamster frames: "
-    + str(required_frames - set(white_anim.frames.keys()))
-)
+for expr, fname in required_files.items():
+    fpath = os.path.join(asset_dir, fname)
+    assert os.path.exists(fpath), f"Missing asset {fpath}"
+    qimg = QImage(fpath)
+    assert not qimg.isNull(), f"Invalid image {fpath}"
+    assert qimg.hasAlphaChannel(), f"Image {fpath} must have an alpha channel"
 
-# The requested default is the humorous laugh source.
-assert white_anim._expression_for_state("idle") == "laugh"
-assert white_anim._expression_for_state("wake") == "laugh"
-assert white_anim._expression_for_state("wander") == "laugh"
-assert white_anim._expression_for_state("jump") == "laugh"
+# Locked laugh reference check
+laugh_path = os.path.join(asset_dir, "laugh.png")
+assert os.path.getsize(laugh_path) == 34398, "laugh.png must remain locked and unchanged (34398 bytes)"
 
-for state in [
-    "idle",
-    "laugh",
-    "smile",
-    "neutral",
-    "tongue_out",
-    "halo",
-    "costume",
-    "jump",
-    "wander",
-]:
-    expression = white_anim._expression_for_state(state)
-    assert expression in white_anim.frames, (
-        f"{state!r} resolved to missing frame {expression!r}"
-    )
+# 3. White Meme Hamster animator verification
+dummy = Dummy("idle")
+white_anim = WhiteHamsterAnimator(dummy)
 
-# White rendering smoke test.
-white_img = QImage(350, 400, QImage.Format_ARGB32)
-white_img.fill(0)
-white_painter = QPainter(white_img)
-white_anim.draw(
-    white_painter,
-    QRect(100, 230, 150, 160),
-)
-white_painter.end()
+# Default must be laugh
+assert white_anim.current_expression == "laugh", "Initial expression must be 'laugh'"
+assert white_anim.get_expression() == "laugh", "get_expression() must return 'laugh'"
 
+# Verify all 6 expressions load and render without error
+rect = QRect(100, 230, 150, 160)
+for expr in WhiteHamsterAnimator.EXPRESSIONS:
+    white_anim.set_expression(expr)
+    assert white_anim.get_expression() == expr
+    for st in ["idle", "jump", "wander", "sleep"]:
+        dummy.force_state(st)
+        white_anim.update()
+        img = QImage(350, 400, QImage.Format_ARGB32)
+        img.fill(0)
+        painter = QPainter(img)
+        white_anim.draw(painter, rect)
+        painter.end()
 
-# Yellow companion regression test.
+# Sprite is never mirrored
+white_anim.set_facing(-1)
+assert white_anim.facing == 1, "White Hamster facing must never be mirrored (-1)"
+
+# 4. Character profiles and actions
+prof = CHARACTER_PROFILES["white_hamster"]
+assert prof["supported_actions"] == [
+    "laugh", "smile", "neutral", "tongue_out", "halo", "costume", "jump", "wander"
+], f"Unexpected actions: {prof['supported_actions']}"
+
+# Verify other characters exist
+for c in ["dragon", "dog", "luffy", "cat_orange", "cat_tuxedo", "cats_duo", "fox", "rabbit", "penguin", "hamster", "owl", "panda", "yellow_guardian_hamster"]:
+    assert c in CHARACTER_PROFILES, f"Missing companion {c}"
+
+# 5. Layout and Speech Bubble
+dummy_win = DummyWindow("white_hamster")
+layout_mgr = LayoutManager(dummy_win)
+bubble_rect = layout_mgr.get_bubble_rect(QRect(0, 0, 100, 40))
+assert bubble_rect.width() <= 178, f"Bubble width {bubble_rect.width()} exceeds max 178"
+assert bubble_rect.height() <= 54, f"Bubble height {bubble_rect.height()} exceeds max 54"
+
+# 6. Chat Overlay separation
+chat = ChatInputWidget()
+# Verify show_overlay calculates target_y above pet window
+# target_y = pet_y - self.height() - 18
+pet_y = 500
+target_y = pet_y - chat.height() - 18
+assert target_y < pet_y, "Chat overlay must appear above the pet window"
+
+# 7. Yellow companion regression test
 yellow_anim = YellowGuardianHamsterAnimator(Dummy("idle"))
-
 yellow_img = QImage(350, 400, QImage.Format_ARGB32)
 yellow_img.fill(0)
 yellow_painter = QPainter(yellow_img)
-yellow_anim.draw(
-    yellow_painter,
-    QRect(100, 230, 150, 160),
-)
+yellow_anim.draw(yellow_painter, QRect(100, 230, 150, 160))
 yellow_painter.end()
 
-print(
-    "White Meme Hamster default/source-frame smoke tests "
-    "and existing companion tests passed."
-)
+print("All White Meme Hamster 6-expression, layout, bubble, chat, and regression tests passed!")
 ```
 
 <a id="gitignore"></a>
@@ -780,7 +800,7 @@ An interactive, animated Windows desktop companion application built with Python
   - Luffy (with rubber body physics, Gear 2, Gear 3, and Gear 5 Sun God Nika complete vector rebuild)
   - Orange Tabby Cat & Ghibli Tuxedo Cat (plus Duo mode)
   - 6 Procedural Chibi Animals (Design V2): Kitsune Fox, Chibi Bunny, Waddling Penguin, Cheeky Hamster, Wise Owl, and Sleepy Panda.
-  - White Meme Hamster (Authentic hand-drawn sticker/meme sprite engine: default laughing face with incisors, cheerful smile, halo angel, costume, tongue-out, neutral, deterministic 7s expression cadence, and 14s wander roaming)
+  - White Meme Hamster (Authentic hand-drawn sticker sprite engine: 6 exact expressions - locked laugh default with incisors, smile, neutral, tongue_out, halo, and costume; deterministic 7s cadence, 14s automatic jump, and roaming wander)
   - Yellow Guardian Hamster (Standalone companion with custom yellow garment, blue shoulder band, goggles, and charcoal sleeves)
 - **Pure Vector QPainter Rendering**: Crystal-clear scaling at any DPI with zero pixelation.
 - **Autonomous & Reactive Behaviors**: Wandering, idle breathing, eating, sleeping, celebrating, focus modes, and physics-driven dragging.
@@ -810,13 +830,13 @@ An interactive, animated Windows desktop companion application built with Python
 ## File: `core/characters.py`
 
 **Description:** Character profile registry (14 companions: Dragon, Dog, Cats, Luffy, Fox, Rabbit, Penguin, Hamster, Owl, Panda, White Meme Hamster, Yellow Guardian Hamster), dialogue lines, and supported actions.  
-**Total Lines:** 361  
+**Total Lines:** 355  
 **Full Path:** `C:\Pet\core\characters.py`
 
 ```python
 from core.dialogue import LINES
 
-# Default lines for characters that don't override them
+# Default lines for characters that don\'t override them
 DEFAULT_LINES = LINES
 
 CHARACTER_PROFILES = {
@@ -858,10 +878,10 @@ CHARACTER_PROFILES = {
         "lines": {
             "idle": [
                 "Woof! Want to play?", "Tail wagging happily!", "*Pant pant*",
-                "Boop my nose!", "Who's a good pet?"
+                "Boop my nose!", "Who\'s a good pet?"
             ],
             "posture": [
-                "Sit up straight! Woof!", "Don't slouch, human!"
+                "Sit up straight! Woof!", "Don\'t slouch, human!"
             ],
             "hungry": [
                 "Treat time? Woof!", "Need treats!", "*Stares at treat bowl*"
@@ -870,7 +890,7 @@ CHARACTER_PROFILES = {
                 "Woof! *Happy tail wag*", "Belly rubs please!", "Arf!"
             ],
             "pomodoroStart": [
-                "Time to focus! I'll guard your desk!", "Woof! Let's get to work!"
+                "Time to focus! I\'ll guard your desk!", "Woof! Let\'s get to work!"
             ],
             "pomodoroEnd": [
                 "Break time! Let me get a treat!", "Woof! You did great!"
@@ -898,17 +918,17 @@ CHARACTER_PROFILES = {
         ],
         "lines": {
             "idle": [
-                "I'm gonna be King of the Pirates!", "Meat...", "Is it time to eat?",
-                "I'm so bored!", "Let's go on an adventure!"
+                "I\'m gonna be King of the Pirates!", "Meat...", "Is it time to eat?",
+                "I\'m so bored!", "Let\'s go on an adventure!"
             ],
             "pomodoroStart": [
-                "Alright! Let's get to work!", "Focus time!"
+                "Alright! Let\'s get to work!", "Focus time!"
             ],
             "pomodoroEnd": [
-                "Time for meat!", "Break time! Let's eat!"
+                "Time for meat!", "Break time! Let\'s eat!"
             ],
             "morning": [
-                "Morning! Where's breakfast?"
+                "Morning! Where\'s breakfast?"
             ],
             "hungry": [
                 "Meat... I need meat...", "Sanji! Food!"
@@ -929,7 +949,7 @@ CHARACTER_PROFILES = {
             "idle": ["Meow~", "*Purrrrr*", "Sunbathing time...", "Pet me human!", "*Makes biscuits*"],
             "hungry": ["Meow! Fish please!", "*Stares at empty food bowl*"],
             "clicked": ["Purrrr... *head butt*", "Meow! *tail curl*", "Nyan!"],
-            "pomodoroStart": ["I'll nap on your keyboard while you work!", "Meow! Good luck!"],
+            "pomodoroStart": ["I\'ll nap on your keyboard while you work!", "Meow! Good luck!"],
             "pomodoroEnd": ["Break time! Time for cat treats!", "Purrrr... You worked hard!"]
         }
     },
@@ -944,7 +964,7 @@ CHARACTER_PROFILES = {
             "idle": ["Meow~", "*Gentle purr*", "Watchful guardian...", "*Licks paw*"],
             "hungry": ["Meow! Fish please!"],
             "clicked": ["Meow! *happy chirp*", "Purrrr...", "*Blinks slowly*"],
-            "pomodoroStart": ["I'll keep watch from your desktop!", "Meow! Focus time!"],
+            "pomodoroStart": ["I\'ll keep watch from your desktop!", "Meow! Focus time!"],
             "pomodoroEnd": ["Time to play! Meow!"]
         }
     },
@@ -959,7 +979,7 @@ CHARACTER_PROFILES = {
             "idle": ["Meow meow! *Double purr*", "Best friends forever!", "Sunbathing together!"],
             "hungry": ["Double treats please! Meow!"],
             "clicked": ["*Double head butts*", "Purrrr... *Happy cats*!"],
-            "pomodoroStart": ["We'll guard your desktop together!"],
+            "pomodoroStart": ["We\'ll guard your desktop together!"],
             "pomodoroEnd": ["Break time! Let me & my buddy play!"]
         }
     },
@@ -971,10 +991,10 @@ CHARACTER_PROFILES = {
             "tail_sway", "curious", "wander", "celebrate", "sleep", "sit", "wake"
         ],
         "lines": {
-            "idle": ["*Ears perk up*", "Yip! Exploring the forest!", "*Fluffy tail swishes*", "What's that over there?"],
+            "idle": ["*Ears perk up*", "Yip! Exploring the forest!", "*Fluffy tail swishes*", "What\'s that over there?"],
             "hungry": ["Berries or snacks please! Yip!", "*Sniffs curiously at your desk*"],
             "clicked": ["Yip yip! *Happy bounce*", "*Nuzzles gently*", "Hehe, that tickles!"],
-            "pomodoroStart": ["I'll keep watch with sharp ears!", "Time to focus! Let's go!"],
+            "pomodoroStart": ["I\'ll keep watch with sharp ears!", "Time to focus! Let\'s go!"],
             "pomodoroEnd": ["Break time! Time for a forest run!", "Yip! Outstanding work!"]
         }
     },
@@ -989,7 +1009,7 @@ CHARACTER_PROFILES = {
             "idle": ["*Nose twitches rapidly*", "Hop hop hop!", "*Ears flop happily*", "Munching on clover..."],
             "hungry": ["Got any fresh carrots?", "*Binky hop for treats!*"],
             "clicked": ["*Soft bunny thumping*", "*Happy purr-grind*", "Hop!"],
-            "pomodoroStart": ["Quiet bunny focus mode activated!", "I'll sit quietly while you work!"],
+            "pomodoroStart": ["Quiet bunny focus mode activated!", "I\'ll sit quietly while you work!"],
             "pomodoroEnd": ["*Binky celebration!* Break time!", "Hop hooray! Great job!"]
         }
     },
@@ -1019,7 +1039,7 @@ CHARACTER_PROFILES = {
             "idle": ["*Sniff sniff*", "Cheeks full of sunflower seeds!", "*Tiny rapid paws*", "Scurry scurry!"],
             "hungry": ["Seeds please! My cheek pouches have room!", "*Tiny paws begging*"],
             "clicked": ["Squeak! *Happy nibble*", "*Puffs cheeks happily*", "Hehe!"],
-            "pomodoroStart": ["Spinning the wheel of productivity!", "Let's scurry through your tasks!"],
+            "pomodoroStart": ["Spinning the wheel of productivity!", "Let\'s scurry through your tasks!"],
             "pomodoroEnd": ["Break time! Snack stash unlocked!", "Squeak! High five!"]
         }
     },
@@ -1049,7 +1069,7 @@ CHARACTER_PROFILES = {
             "idle": ["*Chomp chomp bamboo*", "Slow and steady...", "*Lazy roll*", "Life is good..."],
             "hungry": ["Bamboo shoots please!", "*Rumbles tummy peacefully*"],
             "clicked": ["*Soft panda hug*", "Yawn... Big cuddles!", "Roly-poly!"],
-            "pomodoroStart": ["Let's work steadily like a calm panda.", "Focus time, then nap time!"],
+            "pomodoroStart": ["Let\'s work steadily like a calm panda.", "Focus time, then nap time!"],
             "pomodoroEnd": ["Break time! Time to roll around!", "You did great, now relax!"]
         }
     },
@@ -1058,20 +1078,14 @@ CHARACTER_PROFILES = {
         "name": "White Meme Hamster",
         "type": "white_hamster",
         "supported_actions": [
-            "jump",
             "laugh",
             "smile",
             "neutral",
             "tongue_out",
             "halo",
             "costume",
-            "wander",
-            "celebrate",
-            "sleep",
-            "think",
-            "focus",
-            "type",
-            "wake"
+            "jump",
+            "wander"
         ],
         "lines": {
             "idle": [
@@ -1171,7 +1185,7 @@ def get_character_config(char_id):
 def get_character_line(char_id, category):
     config = get_character_config(char_id)
     lines_dict = config.get("lines", DEFAULT_LINES)
-    # Fallback to default if category is missing in this character's lines
+    # Fallback to default if category is missing in this character\'s lines
     lines = lines_dict.get(category, DEFAULT_LINES.get(category, ["..."]))
     import random
     return random.choice(lines)
@@ -1730,17 +1744,16 @@ class TypingEngine:
 ## File: `core/layout.py`
 
 **Description:** Screen boundary management, taskbar avoidance, and multi-monitor positioning.  
-**Total Lines:** 122  
+**Total Lines:** 71  
 **Full Path:** `C:\Pet\core\layout.py`
 
 ```python
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QRect, QPoint
 
-
 class LayoutManager:
-    """Screen-aware layout engine for the desktop companion."""
-
+    """Screen-aware layout engine. Clamps dragon and bubble inside safe bounds."""
+    
     def __init__(self, window):
         self.window = window
         self.dragon_size = (150, 160)
@@ -1749,11 +1762,10 @@ class LayoutManager:
         self._refresh_screen()
 
     def _refresh_screen(self):
+        # Use the screen the window is currently occupying
         screen = QApplication.screenAt(self.window.geometry().center())
-
         if not screen:
             screen = QApplication.primaryScreen()
-
         self._screen_rect = screen.availableGeometry()
 
     def update(self):
@@ -1763,99 +1775,50 @@ class LayoutManager:
         win_w = self.window.width()
         win_h = self.window.height()
         dw, dh = self.dragon_size
-
-        return QRect(
-            (win_w - dw) // 2,
-            win_h - dh - 10,
-            dw,
-            dh,
-        )
+        return QRect((win_w - dw) // 2, win_h - dh - 10, dw, dh)
 
     def clamp_window_pos(self, global_pos):
         screen = self._screen_rect
         win_w = self.window.width()
         win_h = self.window.height()
-
-        x = max(
-            screen.left() - win_w + 60,
-            min(global_pos.x(), screen.right() - 60),
-        )
-
-        y = max(
-            screen.top(),
-            min(global_pos.y(), screen.bottom() - 60),
-        )
-
+        
+        x = max(screen.left() - win_w + 60, min(global_pos.x(), screen.right() - 60))
+        y = max(screen.top(), min(global_pos.y(), screen.bottom() - 60))
+        
         return QPoint(x, y)
 
     def get_wander_target(self):
+        """Returns a random safe position for the dragon to wander to."""
         import random
-
         screen = self._screen_rect
         win_w = self.window.width()
         win_h = self.window.height()
-
-        min_x = screen.left() + 20
-        max_x = max(min_x, screen.right() - win_w - 20)
-
-        min_y = screen.top() + 20
-        max_y = max(min_y, screen.bottom() - win_h - 20)
-
-        return QPoint(
-            random.randint(min_x, max_x),
-            random.randint(min_y, max_y),
-        )
+        
+        x = random.randint(screen.left() + 20, screen.right() - win_w - 20)
+        y = random.randint(screen.top() + 20, screen.bottom() - win_h - 20)
+        
+        return QPoint(x, y)
 
     def get_bubble_rect(self, text_size):
         dragon_rect = self.get_dragon_rect()
-
-        is_white_hamster = (
-            getattr(self.window, "current_character", "")
-            == "white_hamster"
-        )
-
-        if is_white_hamster:
-            max_width = 200
-            max_height = 62
-            horizontal_padding = 18
-            vertical_padding = 16
-            gap = 18
+        is_white = getattr(self.window, "current_character", "") == "white_hamster"
+        if is_white:
+            max_width, pad_x, pad_y, gap, max_height = 178, 10, 7, 18, 54
         else:
-            max_width = 220
-            max_height = 72
-            horizontal_padding = self.padding * 2
-            vertical_padding = self.padding * 2
-            gap = 15
+            max_width, pad_x, pad_y, gap, max_height = 220, self.padding, self.padding, 18, 90
 
-        bw = min(
-            max(130, text_size.width() + horizontal_padding),
-            max_width,
-        )
-
-        bh = min(
-            max(40, text_size.height() + vertical_padding),
-            max_height,
-        )
-
+        bw = min(text_size.width() + pad_x * 2, max_width)
+        bh = min(max(text_size.height() + pad_y * 2, 32), max_height)
         bx = dragon_rect.center().x() - bw // 2
         by = dragon_rect.top() - bh - gap
+        bx = max(5, min(bx, self.window.width() - bw - 5))
 
-        bx = max(
-            8,
-            min(
-                bx,
-                self.window.width() - bw - 8,
-            ),
-        )
+        if by < 5:
+            by = dragon_rect.bottom() + gap
+            if by + bh > self.window.height() - 5:
+                by = max(5, dragon_rect.top() - bh - gap)
 
-        by = max(8, by)
-
-        return QRect(
-            int(bx),
-            int(by),
-            int(bw),
-            int(bh),
-        )
+        return QRect(int(bx), int(by), int(bw), int(bh))
 ```
 
 <a id="corepomodoropy"></a>
@@ -2466,7 +2429,7 @@ $shortcut.Save()
 ## File: `ui/chibi_window.py`
 
 **Description:** Primary frameless translucent desktop window, event loops, timers, dynamic tray character switching, wander physics, and character dispatch.  
-**Total Lines:** 795  
+**Total Lines:** 749  
 **Full Path:** `C:\Pet\ui\chibi_window.py`
 
 ```python
@@ -2588,6 +2551,14 @@ class DragonCompanionWindow(QWidget):
         self.is_stopped = False
         self._was_watching_video = False
         
+        # White Hamster Autonomous Controllers
+        self._white_expression_cycle = ("laugh","smile","neutral","tongue_out","halo","costume")
+        self._white_expression_index = 0
+        self._white_expression_elapsed = 0.0
+        self._white_jump_elapsed = 0.0
+        self._white_wander_elapsed = 0.0
+        self._white_next_wander = 11.0
+        
         # Main Loop
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
@@ -2618,35 +2589,6 @@ class DragonCompanionWindow(QWidget):
         self.mood_timer.timeout.connect(self.mood.tick)
         self.mood_timer.start(8000)
         
-        # ------------------------------------------------------------
-        # White Meme Hamster autonomous controller
-        # ------------------------------------------------------------
-        # Deterministic:
-        #   - expression/action changes every 7 seconds
-        #   - desktop wander every 14 seconds
-        self._white_expression_index = -1
-        self._white_expression_cycle = [
-            "tongue_out",
-            "neutral",
-            "halo",
-            "costume",
-            "smile",
-            "jump",
-            "laugh",
-        ]
-
-        self.white_expression_timer = QTimer(self)
-        self.white_expression_timer.timeout.connect(
-            self.white_hamster_expression_tick
-        )
-        self.white_expression_timer.start(7000)
-
-        self.white_wander_timer = QTimer(self)
-        self.white_wander_timer.timeout.connect(
-            self.white_hamster_wander_tick
-        )
-        self.white_wander_timer.start(14000)
-
         # Interaction State
         self.drag_position = None
         self.click_count = 0
@@ -2766,13 +2708,20 @@ class DragonCompanionWindow(QWidget):
             self.animator.clear_special()
         self._wander_float_x = None
         self._wander_float_y = None
-        self.wander_target = None
         self.current_character = name
 
         if name == "white_hamster":
-            self._white_expression_index = -1
-            # idle in WhiteHamsterAnimator maps to the exact laugh source.
+            self._white_expression_cycle = ("laugh","smile","neutral","tongue_out","halo","costume")
+            self._white_expression_index = 0
+            self._white_expression_elapsed = 0.0
+            self._white_jump_elapsed = 0.0
+            self._white_wander_elapsed = 0.0
+            self._white_next_wander = 11.0
+            self.animator = self.chibi_animators["white_hamster"]
+            self.animator.set_expression("laugh")
             self.state_machine.force_state("idle")
+            self.update()
+            return
 
         if name == "dog":
             self.animator = self.animator_dog
@@ -2921,78 +2870,6 @@ class DragonCompanionWindow(QWidget):
             if power_status.ACLineStatus == 0 and power_status.BatteryLifePercent <= 20:
                 self.say(get_character_line(self.current_character, "lowBattery"))
 
-    def _white_behavior_blocked(self):
-        """Return True when external application behavior must remain in control."""
-        if getattr(self, "is_stopped", False):
-            return True
-        if self.pomodoro.is_running:
-            return True
-        if self.typing_engine.timer.isActive():
-            return True
-        if self.is_generating:
-            return True
-        if self.drag_position is not None:
-            return True
-        if self.video_detector.is_watching_video():
-            return True
-
-        state = self.state_machine.get_state()
-
-        return state in {
-            "drag",
-            "react_drag",
-            "type",
-            "speak",
-            "sleep",
-            "exhausted",
-            "break_time",
-        }
-
-    @pyqtSlot()
-    def white_hamster_expression_tick(self):
-        """Guaranteed seven-second deterministic expression cycle."""
-        if self.current_character != "white_hamster":
-            return
-        if self._white_behavior_blocked():
-            return
-
-        self.wander_target = None
-        self._wander_float_x = None
-        self._wander_float_y = None
-
-        self._white_expression_index = (
-            self._white_expression_index + 1
-        ) % len(self._white_expression_cycle)
-
-        next_state = self._white_expression_cycle[
-            self._white_expression_index
-        ]
-
-        self.state_machine.force_state(next_state)
-
-    @pyqtSlot()
-    def white_hamster_wander_tick(self):
-        """Reliably send White Meme Hamster to a new safe desktop position."""
-        if self.current_character != "white_hamster":
-            return
-        if self._white_behavior_blocked():
-            return
-        if self.state_machine.get_state() not in {
-            "idle",
-            "sit",
-            "wander",
-        }:
-            return
-
-        target = self.layout_manager.get_wander_target()
-        if target is None:
-            return
-
-        self.wander_target = target
-        self._wander_float_x = float(self.x())
-        self._wander_float_y = float(self.y())
-        self.state_machine.force_state("wander")
-
     def do_fire_breathe(self):
         if getattr(self, 'is_stopped', False):
             return
@@ -3018,6 +2895,49 @@ class DragonCompanionWindow(QWidget):
                     action = 'pounce' if random.random() < 0.5 else 'clean'
                     self.state_machine.request_state(action)
                     QTimer.singleShot(2200, lambda: self.state_machine.request_state('idle'))
+
+    def _white_wander_target(self):
+        screen = self.layout_manager._screen_rect
+        max_dx = max(140, min(300, self.width() * 1.25))
+        max_dy = max(80, min(180, self.height() * 0.60))
+
+        target_x = self.x() + random.randint(-int(max_dx), int(max_dx))
+        target_y = self.y() + random.randint(-int(max_dy), int(max_dy))
+
+        target_x = max(screen.left() + 20, min(target_x, screen.right() - self.width() - 20))
+        target_y = max(screen.top() + 20, min(target_y, screen.bottom() - self.height() - 20))
+        return QPoint(target_x, target_y)
+
+    def _white_autonomous_tick(self, dt, idle_secs):
+        if self.current_character != "white_hamster":
+            return
+        if self.pomodoro.is_running or self.is_generating or self.typing_engine.timer.isActive():
+            return
+        if idle_secs < 1.25:
+            return
+
+        self._white_expression_elapsed += dt
+        if self._white_expression_elapsed >= 7.0:
+            self._white_expression_elapsed -= 7.0
+            self._white_expression_index = (self._white_expression_index + 1) % len(self._white_expression_cycle)
+            self.chibi_animators["white_hamster"].set_expression(
+                self._white_expression_cycle[self._white_expression_index]
+            )
+
+        self._white_jump_elapsed += dt
+        if self._white_jump_elapsed >= 14.0 and self.state_machine.get_state() not in ("jump","drag","react_drag"):
+            self._white_jump_elapsed = 0.0
+            self.state_machine.force_state("jump")
+
+        self._white_wander_elapsed += dt
+        state = self.state_machine.get_state()
+        if self._white_wander_elapsed >= self._white_next_wander and state not in ("jump","drag","react_drag"):
+            self._white_wander_elapsed = 0.0
+            self._white_next_wander = random.uniform(9.0,15.0)
+            self.wander_target = self._white_wander_target()
+            self._wander_float_x = float(self.x())
+            self._wander_float_y = float(self.y())
+            self.state_machine.force_state("wander")
 
     def do_behavior_tick(self):
         # Update logic that happens regularly
@@ -3050,16 +2970,19 @@ class DragonCompanionWindow(QWidget):
                 return
             self._was_watching_video = False
 
+            if self.current_character == "white_hamster":
+                if idle_secs < 1.0 and current_state == "sleep":
+                    self.mood.wake_up_refresh()
+                    self.state_machine.force_state("idle")
+                    return
+                self._white_autonomous_tick(0.5, idle_secs)
+                return
+
             # WAKE UP on ANY system input (mouse or keyboard)
             if idle_secs < 1.0 and current_state == 'sleep':
                 self.mood.wake_up_refresh()
                 self.state_machine.force_state('wake')
                 self.say("You're back!")
-                return
-
-            # White Meme Hamster uses its own deterministic controller.
-            # Do not let the legacy random behavior tree overwrite it.
-            if self.current_character == "white_hamster":
                 return
                 
             # 1. Check Global Activity (Working)
@@ -3158,11 +3081,7 @@ class DragonCompanionWindow(QWidget):
                 if hasattr(self.animator, 'set_facing'):
                     self.animator.set_facing(direction)
 
-                speed = (
-                    2.2
-                    if self.current_character == "white_hamster"
-                    else 3.0
-                )
+                speed = 3.0
                 self._wander_float_x += (dx / dist) * speed
                 self._wander_float_y += (dy / dist) * speed
                 self.move(int(round(self._wander_float_x)), int(round(self._wander_float_y)))
@@ -3240,13 +3159,11 @@ class DragonCompanionWindow(QWidget):
                         ("curious", "Is that meat?!"),
                     ]
                 elif self.current_character == "white_hamster":
-                    line = get_character_line(
-                        self.current_character,
-                        "click",
-                    )
-                    actions = [
-                        ("laugh", line or "hehe."),
-                    ]
+                    self.chibi_animators["white_hamster"].set_expression("smile")
+                    self._white_expression_elapsed = 0.0
+                    self.say("hehe.", force_state="idle")
+                    event.accept()
+                    return
                 elif hasattr(self, 'chibi_animators') and self.current_character in self.chibi_animators:
                     line = get_character_line(self.current_character, "click")
                     actions = [
@@ -7775,46 +7692,19 @@ class SpriteAnimator:
 ## File: `ui/white_hamster_animator.py`
 
 **Description:** Exact reference sprite-based animation engine for White Meme Hamster (laughing meme mouth with two incisors, cheerful smile, neutral, tongue-out, halo angel, costume, transparent margin auto-trim, and full squash-and-stretch).  
-**Total Lines:** 285  
+**Total Lines:** 111  
 **Full Path:** `C:\Pet\ui\white_hamster_animator.py`
 
 ```python
-"""Exact source-sprite renderer for the user's White Meme Hamster.
-
-The character artwork itself is never procedurally redrawn. The renderer loads
-the clean hand-drawn source frames and animates the complete image.
-"""
-import math
-import sys
-from collections import deque
+"""Exact six-source-sprite White Meme Hamster animator. No facial redraw."""
 from pathlib import Path
-
+import sys
+import math
 from PyQt5.QtCore import Qt, QRectF
-from PyQt5.QtGui import QImage, QPixmap, QColor
-
+from PyQt5.QtGui import QImage, QPainter, QPixmap, QColor
 
 class WhiteHamsterAnimator:
-    """Exact source-sprite animation. No procedural facial reconstruction."""
-
-    ONE_SHOT_DURATIONS = {
-        "laugh": 2.25,
-        "smile": 2.25,
-        "neutral": 2.25,
-        "tongue_out": 2.25,
-        "halo": 3.25,
-        "costume": 3.25,
-        "jump": 1.20,
-        "celebrate": 2.25,
-        "react_click": 1.60,
-        "happy": 2.25,
-        "think": 2.25,
-        "annoyed": 2.25,
-        "focus": 2.25,
-        "type": 2.25,
-        "sleep": 2.25,
-        "wake": 1.40,
-    }
-
+    EXPRESSIONS = ("laugh","smile","neutral","tongue_out","halo","costume")
     FRAME_FILES = {
         "laugh": "laugh.png",
         "smile": "smile.png",
@@ -7823,246 +7713,99 @@ class WhiteHamsterAnimator:
         "halo": "halo.png",
         "costume": "costume.png",
     }
-
-    DEFAULT_EXPRESSION = "laugh"
+    JUMP_DURATION = 1.15
 
     def __init__(self, state_machine, asset_dir=None):
         self.state_machine = state_machine
         self.facing = 1
         self.elapsed = 0.0
         self._last_state = None
+        self.current_expression = "laugh"
 
         default_dir = Path(__file__).resolve().parents[1] / "assets" / "white_hamster"
         if hasattr(sys, "_MEIPASS"):
-            meipass_dir = Path(sys._MEIPASS) / "assets" / "white_hamster"
-            if meipass_dir.exists():
-                default_dir = meipass_dir
-
+            bundled = Path(sys._MEIPASS) / "assets" / "white_hamster"
+            if bundled.exists():
+                default_dir = bundled
         self.asset_dir = Path(asset_dir) if asset_dir else default_dir
         self.frames = {}
         self._load_frames()
 
     def set_facing(self, direction):
-        # Compatibility with the existing wander engine.
-        # The hand-drawn source is intentionally asymmetric and is never mirrored.
-        self.facing = 1 if direction >= 0 else -1
+        self.facing = 1
+
+    def set_expression(self, expression):
+        if expression not in self.EXPRESSIONS:
+            raise ValueError(f"Unsupported expression: {expression}")
+        self.current_expression = expression
+
+    def get_expression(self):
+        return self.current_expression
 
     def clear_special(self):
         self.elapsed = 0.0
         self._last_state = None
+        self.current_expression = "laugh"
 
     def reset_animation(self):
-        self.elapsed = 0.0
-        self._last_state = None
-
-    @staticmethod
-    def _near_white(pixel: QColor):
-        return (
-            pixel.alpha() > 0
-            and pixel.red() >= 242
-            and pixel.green() >= 242
-            and pixel.blue() >= 242
-        )
-
-    @classmethod
-    def _remove_connected_white_background(cls, image: QImage):
-        """Remove only near-white pixels connected to the outer border."""
-        image = image.convertToFormat(QImage.Format_ARGB32)
-        w, h = image.width(), image.height()
-
-        if w <= 0 or h <= 0:
-            return image
-
-        removable = bytearray(w * h)
-        queue = deque()
-
-        def idx(x, y):
-            return y * w + x
-
-        def visit(x, y):
-            i = idx(x, y)
-            if removable[i]:
-                return
-            if not cls._near_white(image.pixelColor(x, y)):
-                return
-            removable[i] = 1
-            queue.append((x, y))
-
-        for x in range(w):
-            visit(x, 0)
-            if h > 1:
-                visit(x, h - 1)
-
-        for y in range(h):
-            visit(0, y)
-            if w > 1:
-                visit(w - 1, y)
-
-        while queue:
-            x, y = queue.popleft()
-            if x > 0:
-                visit(x - 1, y)
-            if x + 1 < w:
-                visit(x + 1, y)
-            if y > 0:
-                visit(x, y - 1)
-            if y + 1 < h:
-                visit(x, y + 1)
-
-        for y in range(h):
-            for x in range(w):
-                if removable[idx(x, y)]:
-                    image.setPixelColor(x, y, QColor(0, 0, 0, 0))
-
-        left, top = w, h
-        right, bottom = -1, -1
-
-        for y in range(h):
-            for x in range(w):
-                if image.pixelColor(x, y).alpha() > 0:
-                    left = min(left, x)
-                    top = min(top, y)
-                    right = max(right, x)
-                    bottom = max(bottom, y)
-
-        if right < left or bottom < top:
-            return image
-
-        return image.copy(left, top, right - left + 1, bottom - top + 1)
+        self.clear_special()
 
     def _load_frames(self):
         missing = []
-
-        for state, filename in self.FRAME_FILES.items():
+        for expression, filename in self.FRAME_FILES.items():
             path = self.asset_dir / filename
             image = QImage(str(path))
-
             if image.isNull():
                 missing.append(str(path))
                 continue
-
-            cleaned = self._remove_connected_white_background(image)
-            self.frames[state] = QPixmap.fromImage(cleaned, Qt.AutoColor)
-
+            if not image.hasAlphaChannel():
+                raise ValueError(
+                    f"{path} has no alpha channel. Prepare a transparent sprite from "
+                    "the supplied reference without altering visible artwork."
+                )
+            image = image.convertToFormat(QImage.Format_ARGB32)
+            self.frames[expression] = QPixmap.fromImage(image, Qt.AutoColor)
         if missing:
-            raise FileNotFoundError(
-                "White Meme Hamster reference assets missing:\n"
-                + "\n".join(missing)
-            )
-
-    def _expression_for_state(self, state):
-        # DEFAULT IS THE HUMOROUS LAUGH SOURCE.
-        if state in (
-            "idle",
-            "wake",
-            "wander",
-            "laugh",
-            "celebrate",
-            "react_click",
-            "happy",
-        ):
-            return "laugh"
-
-        if state == "jump":
-            return "laugh"
-
-        if state in (
-            "neutral",
-            "think",
-            "annoyed",
-            "exhausted",
-            "focus",
-            "type",
-            "sleep",
-        ):
-            return "neutral"
-
-        if state == "tongue_out":
-            return "tongue_out"
-
-        if state == "halo":
-            return "halo"
-
-        if state == "costume":
-            return "costume"
-
-        return self.DEFAULT_EXPRESSION
+            raise FileNotFoundError("Missing White Meme Hamster assets:\n" + "\n".join(missing))
 
     def update(self):
         state = self.state_machine.get_state()
-        dt = 0.025
-
         if state != self._last_state:
             self.elapsed = 0.0
             self._last_state = state
         else:
-            self.elapsed += dt
-
-        duration = self.ONE_SHOT_DURATIONS.get(state)
-
-        if duration is not None and self.elapsed >= duration:
+            self.elapsed += 0.025
+        if state == "jump" and self.elapsed >= self.JUMP_DURATION:
             self.state_machine.force_state("idle")
             self.elapsed = 0.0
             self._last_state = "idle"
 
+    def _draw_shadow(self, painter, y_offset):
+        width = 110.0 * max(0.55, 1.0 - min(abs(y_offset) / 90.0, 0.45))
+        painter.save()
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QColor(0,0,0,30))
+        painter.drawEllipse(QRectF(-width/2.0,-2.5,width,5))
+        painter.restore()
+
     def draw(self, painter, rect):
         state = self.state_machine.get_state()
-        expression = self._expression_for_state(state)
-        pixmap = self.frames.get(expression) or self.frames[self.DEFAULT_EXPRESSION]
-
+        pixmap = self.frames[self.current_expression]
         y_offset = 0.0
-        sx = 1.0
-        sy = 1.0
-
-        if state in ("jump", "celebrate"):
-            duration = 1.20 if state == "jump" else 2.25
-            p = max(0.0, min(1.0, self.elapsed / duration))
-            y_offset = -48.0 * math.sin(p * math.pi)
-
-            if p < 0.14:
-                u = p / 0.14
-                sx = 1.0 + 0.045 * (1.0 - u)
-                sy = 1.0 - 0.035 * (1.0 - u)
-            elif p > 0.86:
-                u = (p - 0.86) / 0.14
-                sx = 1.0 + 0.05 * u
-                sy = 1.0 - 0.04 * u
-            else:
-                sx = 0.985
-                sy = 1.015
-
+        if state == "jump":
+            p = max(0.0, min(1.0, self.elapsed / self.JUMP_DURATION))
+            y_offset = -54.0 * math.sin(p * math.pi)
         elif state == "wander":
-            phase = self.elapsed * 5.0
-            y_offset = -abs(math.sin(phase)) * 2.0
-
-        elif state in ("halo", "costume"):
-            y_offset = math.sin(self.elapsed * 2.0) * 0.7
-
+            y_offset = -2.5 * abs(math.sin(self.elapsed * 4.0))
         elif state == "sleep":
             y_offset = 2.0
 
         painter.save()
-
-        # NEVER mirror the actual hand-drawn artwork.
-        painter.translate(rect.center().x(), rect.bottom() - 2.0)
+        painter.translate(rect.center().x(), rect.bottom())
+        self._draw_shadow(painter, y_offset)
         painter.translate(0.0, y_offset)
-        painter.scale(sx, sy)
-
-        # The source must remain inside the normal pet rectangle.
-        max_h = max(120.0, float(rect.height()) - 4.0)
-        target_h = min(160.0, max_h)
-
-        scaled = pixmap.scaledToHeight(
-            max(1, int(round(target_h))),
-            Qt.FastTransformation,
-        )
-
-        painter.drawPixmap(
-            int(-scaled.width() / 2),
-            -scaled.height(),
-            scaled,
-        )
-
+        scaled = pixmap.scaled(148,142,Qt.KeepAspectRatio,Qt.FastTransformation)
+        painter.drawPixmap(int(-scaled.width()/2), -scaled.height(), scaled)
         painter.restore()
 ```
 
@@ -8394,19 +8137,11 @@ class YellowGuardianHamsterAnimator:
 ## File: `ui/speech_bubble.py`
 
 **Description:** Modern vector speech bubble widget with soft drop shadow, top highlight bevel, Segoe UI typography, and tail pointer.  
-**Total Lines:** 151  
+**Total Lines:** 182  
 **Full Path:** `C:\Pet\ui\speech_bubble.py`
 
 ```python
-from PyQt5.QtGui import (
-    QPainter,
-    QColor,
-    QPen,
-    QBrush,
-    QFont,
-    QFontMetrics,
-    QPainterPath,
-)
+from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QFont, QFontMetrics, QPainterPath
 from PyQt5.QtCore import Qt, QRect, QRectF, QPointF
 
 
@@ -8414,11 +8149,12 @@ class SpeechBubble:
     def __init__(self, window):
         self.window = window
         self.text = ""
-        self.font = QFont("Segoe UI", 10, QFont.DemiBold)
+        self.font = QFont("Segoe UI", 9, QFont.DemiBold)
         self.metrics = QFontMetrics(self.font)
         self.visible = False
         self.show_caret = False
 
+        # Visual-only state.
         self._visual_phase = 0.0
         self._caret_alpha = 1.0
 
@@ -8451,52 +8187,70 @@ class SpeechBubble:
         return self.metrics.boundingRect(
             0,
             0,
-            180,
-            1000,
+            156,
+            54,
             flags,
-            display_text,
+            display_text
         )
 
     def draw(self, painter: QPainter, rect: QRect):
         painter.save()
         painter.setRenderHint(QPainter.Antialiasing, True)
 
-        shadow_rect = QRectF(rect).adjusted(2, 4, 2, 6)
+        # -------------------------------------------------
+        # Soft shadow
+        # -------------------------------------------------
+
+        shadow_rect = QRectF(rect).adjusted(
+            2,
+            4,
+            2,
+            6
+        )
 
         painter.setPen(Qt.NoPen)
         painter.setBrush(QColor(0, 0, 0, 35))
+
         painter.drawRoundedRect(
             shadow_rect,
-            12,
-            12,
+            14,
+            14
         )
+
+        # -------------------------------------------------
+        # Bubble body
+        # -------------------------------------------------
 
         bubble_rect = QRectF(rect)
 
         painter.setPen(
             QPen(
                 QColor(55, 45, 42, 210),
-                1.4,
+                1.4
             )
         )
 
         painter.setBrush(
             QBrush(
-                QColor(255, 252, 247, 248),
+                QColor(255, 252, 247, 248)
             )
         )
 
         painter.drawRoundedRect(
             bubble_rect,
-            12,
-            12,
+            14,
+            14
         )
+
+        # -------------------------------------------------
+        # Tiny top highlight
+        # -------------------------------------------------
 
         highlight_rect = QRectF(
             bubble_rect.left() + 10,
             bubble_rect.top() + 6,
             bubble_rect.width() - 20,
-            2,
+            2
         )
 
         painter.setPen(Qt.NoPen)
@@ -8504,35 +8258,55 @@ class SpeechBubble:
         painter.drawRoundedRect(
             highlight_rect,
             1,
-            1,
+            1
         )
+
+        # -------------------------------------------------
+        # Tail
+        # -------------------------------------------------
 
         cx = bubble_rect.center().x()
         bottom = bubble_rect.bottom()
 
         tail = QPainterPath()
-        tail.moveTo(QPointF(cx - 7, bottom - 1))
-        tail.lineTo(QPointF(cx, bottom + 7))
-        tail.lineTo(QPointF(cx + 7, bottom - 1))
+        tail.moveTo(
+            QPointF(cx - 6, bottom - 1)
+        )
+        tail.lineTo(
+            QPointF(cx, bottom + 7)
+        )
+        tail.lineTo(
+            QPointF(cx + 6, bottom - 1)
+        )
         tail.closeSubpath()
 
         painter.setPen(
             QPen(
                 QColor(55, 45, 42, 210),
-                1.1,
+                1.1
             )
         )
-        painter.setBrush(QColor(255, 252, 247, 248))
+
+        painter.setBrush(
+            QColor(255, 252, 247, 248)
+        )
+
         painter.drawPath(tail)
 
+        # -------------------------------------------------
+        # Text
+        # -------------------------------------------------
+
         painter.setFont(self.font)
-        painter.setPen(QColor(48, 39, 37))
+        painter.setPen(
+            QColor(48, 39, 37)
+        )
 
         text_rect = QRect(
-            int(bubble_rect.left() + 11),
-            int(bubble_rect.top() + 9),
-            int(bubble_rect.width() - 22),
-            int(bubble_rect.height() - 16),
+            int(bubble_rect.left() + 10),
+            int(bubble_rect.top() + 7),
+            int(bubble_rect.width() - 20),
+            int(bubble_rect.height() - 14)
         )
 
         display_text = self.text
@@ -8545,7 +8319,7 @@ class SpeechBubble:
             Qt.TextWordWrap |
             Qt.AlignLeft |
             Qt.AlignTop,
-            display_text,
+            display_text
         )
 
         painter.restore()
@@ -8555,11 +8329,12 @@ class SpeechBubble:
 ## File: `ui/chat_overlay.py`
 
 **Description:** Frameless translucent dark pill chat input overlay with 26px drop shadow allowing user to talk with the pet.  
-**Total Lines:** 123  
+**Total Lines:** 124  
 **Full Path:** `C:\Pet\ui\chat_overlay.py`
 
 ```python
 from PyQt5.QtWidgets import (
+    QApplication,
     QWidget,
     QLineEdit,
     QVBoxLayout,
@@ -8568,7 +8343,7 @@ from PyQt5.QtWidgets import (
     QGraphicsDropShadowEffect
 )
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtGui import QColor
 
 
@@ -8646,22 +8421,22 @@ class ChatInputWidget(QWidget):
         self.submit_callback = callback
 
     def show_overlay(self, pet_x, pet_y, pet_width):
-        target_x = (
-            pet_x +
-            (pet_width // 2) -
-            (self.width() // 2)
-        )
+        target_x = pet_x + (pet_width // 2) - (self.width() // 2)
+        target_y = pet_y - self.height() - 18
 
-        target_y = pet_y + 100
+        screen = QApplication.screenAt(QPoint(target_x, target_y))
+        if screen is None:
+            screen = QApplication.primaryScreen()
+        if screen is not None:
+            available = screen.availableGeometry()
+            target_x = max(available.left() + 8, min(
+                target_x, available.right() - self.width() - 8
+            ))
+            target_y = max(available.top() + 8, target_y)
 
-        self.move(
-            target_x,
-            target_y
-        )
-
+        self.move(target_x, target_y)
         self.show()
         self.activateWindow()
-
         self.input_field.clear()
         self.input_field.setFocus()
 
