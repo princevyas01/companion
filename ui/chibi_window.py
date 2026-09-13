@@ -254,6 +254,12 @@ class DragonCompanionWindow(QWidget):
 
     def stop_pet(self):
         self.is_stopped = True
+        self._reset_white_hamster_autonomous_movement()
+        self.wander_target = None
+        self._wander_float_x = None
+        self._wander_float_y = None
+        if hasattr(self, 'typing_engine'):
+            self.typing_engine.stop_typing()
         self.hide()
         if hasattr(self, 'speech_bubble'):
             self.speech_bubble.hide()
@@ -438,6 +444,8 @@ class DragonCompanionWindow(QWidget):
         self.wander_chance = val
 
     def say(self, text, force_state=None):
+        if getattr(self, 'is_stopped', False):
+            return
         now = time.time()
         min_interval = getattr(self, '_speech_interval', 6.0)
         if hasattr(self, '_last_speech_time') and (now - self._last_speech_time) < min_interval:
@@ -717,6 +725,8 @@ class DragonCompanionWindow(QWidget):
                             self.state_machine.request_state('idle')
 
     def update_frame(self):
+        if getattr(self, 'is_stopped', False):
+            return
         self.state_machine.tick(0.025)
         self.animator.update()
         if self.current_character == "white_hamster":
@@ -767,6 +777,22 @@ class DragonCompanionWindow(QWidget):
         if self.speech_bubble.is_visible():
             bubble_rect = self.layout_manager.get_bubble_rect(self.speech_bubble.get_text_size())
             self.speech_bubble.draw(painter, bubble_rect)
+
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        if getattr(self, 'is_stopped', False):
+            start_act = menu.addAction("Start Pet")
+            start_act.triggered.connect(self.start_pet_safe)
+        else:
+            stop_act = menu.addAction("Stop Pet")
+            stop_act.triggered.connect(self.stop_pet_safe)
+        menu.addSeparator()
+        panel_act = menu.addAction("Control Panel")
+        panel_act.triggered.connect(self.show_control_panel)
+        menu.addSeparator()
+        quit_act = menu.addAction("Quit")
+        quit_act.triggered.connect(QApplication.instance().quit)
+        menu.exec_(event.globalPos())
             
     def mouseDoubleClickEvent(self, event: QMouseEvent):
         if event.button() == Qt.LeftButton:
