@@ -242,14 +242,27 @@ CHARACTER_PROFILES = {
         "name": "White Meme Hamster",
         "type": "white_hamster",
         "supported_actions": [
+            # Six existing expression controls.
             "laugh",
             "smile",
             "neutral",
             "tongue_out",
             "halo",
             "costume",
+
+            # Movement controls.
             "jump",
-            "wander"
+            "wander",
+
+            # Additional supplied sticker actions.
+            "magic",
+            "type",
+            "focus",
+            "eat",
+            "sad",
+            "happy",
+            "paint",
+            "cook"
         ],
         "lines": {
             "idle": [
@@ -267,6 +280,34 @@ CHARACTER_PROFILES = {
                 "*big hamster smile*",
                 "hehe.",
                 "*wiggles happily*"
+            ],
+            "action_magic": [
+                "*waves the magic wand*",
+                "*tiny magical hamster*"
+            ],
+            "action_type": [
+                "*opens the book and gets serious*",
+                "Focus time."
+            ],
+            "action_eat": [
+                "*munch munch*",
+                "Watermelon!"
+            ],
+            "action_sad": [
+                "*tiny hamster tears*",
+                "Oh no..."
+            ],
+            "action_happy": [
+                "hehe!",
+                "*big happy hamster grin*"
+            ],
+            "action_paint": [
+                "*paints carefully*",
+                "Art time."
+            ],
+            "action_cook": [
+                "*chef hamster at work*",
+                "Cooking!"
             ],
             "click": [
                 "*big hamster smile*",
