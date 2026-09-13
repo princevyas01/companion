@@ -95,7 +95,7 @@ class WhiteHamsterAnimator:
             i = idx(x, y)
             if removable[i]:
                 return
-            if not cls._near_white(QColor(image.pixel(x, y))):
+            if not cls._near_white(image.pixelColor(x, y)):
                 return
             removable[i] = 1
             queue.append((x, y))
@@ -123,15 +123,14 @@ class WhiteHamsterAnimator:
         for y in range(h):
             for x in range(w):
                 if removable[idx(x, y)]:
-                    image.setPixelColor(x, y, QColor(255, 255, 255, 0))
+                    image.setPixelColor(x, y, QColor(0, 0, 0, 0))
 
         # Trim transparent-only margins. This does not alter opaque pixels.
-        bbox = image.convertToFormat(QImage.Format_ARGB32).mirrored(False, False)
         left, top = w, h
         right, bottom = -1, -1
         for y in range(h):
             for x in range(w):
-                if QColor(bbox.pixel(x, y)).alpha() > 0:
+                if image.pixelColor(x, y).alpha() > 0:
                     left = min(left, x)
                     top = min(top, y)
                     right = max(right, x)
@@ -186,7 +185,7 @@ class WhiteHamsterAnimator:
             self._last_state = "idle"
 
     def _draw_shadow(self, painter, y_offset):
-        width = 150.0 * max(0.55, 1.0 - min(abs(y_offset) / 90.0, 0.50))
+        width = 160.0 * max(0.55, 1.0 - min(abs(y_offset) / 90.0, 0.50))
         painter.save()
         painter.setPen(Qt.NoPen)
         painter.setBrush(QColor(0, 0, 0, 42))
@@ -241,7 +240,7 @@ class WhiteHamsterAnimator:
         painter.rotate(rotation)
         painter.scale(sx, sy)
 
-        target_h = min(float(rect.height()) * 0.78, 300.0)
+        target_h = max(175.0, min(float(rect.height()) * 1.15, 300.0))
         scaled = pixmap.scaledToHeight(max(1, int(target_h)), Qt.FastTransformation)
         painter.drawPixmap(
             int(-scaled.width() / 2),
