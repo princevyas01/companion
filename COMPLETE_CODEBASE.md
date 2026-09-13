@@ -592,7 +592,7 @@ def get_pet_window():
 ## File: `test.py`
 
 **Description:** Test and verification script.  
-**Total Lines:** 306  
+**Total Lines:** 390  
 **Full Path:** `C:\Pet\test.py`
 
 ```python
@@ -683,6 +683,25 @@ for expr, fname in required_files.items():
 laugh_path = os.path.join(asset_dir, "laugh.png")
 assert os.path.getsize(laugh_path) == 34398, "laugh.png must remain locked and unchanged (34398 bytes)"
 
+# 2b. 8 New Action Stickers Verification
+action_files = {
+    "laugh_action": "actions/laugh_action.png",
+    "magic": "actions/magic.png",
+    "type": "actions/type.png",
+    "eat": "actions/eat.png",
+    "sad": "actions/sad.png",
+    "happy": "actions/happy.png",
+    "paint": "actions/paint.png",
+    "cook": "actions/cook.png",
+}
+
+for act, rel_fname in action_files.items():
+    fpath = os.path.join(asset_dir, rel_fname.replace("/", os.sep))
+    assert os.path.exists(fpath), f"Missing action sticker asset {fpath}"
+    qimg = QImage(fpath)
+    assert not qimg.isNull(), f"Invalid action image {fpath}"
+    assert qimg.hasAlphaChannel(), f"Action image {fpath} must have an alpha channel"
+
 # 3. White Meme Hamster animator verification
 dummy = Dummy("idle")
 white_anim = WhiteHamsterAnimator(dummy)
@@ -704,6 +723,29 @@ for expr in WhiteHamsterAnimator.EXPRESSIONS:
         painter = QPainter(img)
         white_anim.draw(painter, rect)
         painter.end()
+
+# Verify all 8 action stickers render without error
+for act in WhiteHamsterAnimator.ACTIONS:
+    white_anim.set_special_action(act, duration=1.0)
+    expected_act = "type" if act == "focus" else act
+    assert white_anim.special_action == expected_act
+    img = QImage(350, 400, QImage.Format_ARGB32)
+    img.fill(0)
+    painter = QPainter(img)
+    white_anim.draw(painter, rect)
+    painter.end()
+    white_anim.clear_special_action()
+    assert white_anim.special_action is None
+
+# Verify typing persistent action
+white_anim.set_special_action("type", persistent=True)
+assert white_anim.special_action == "type"
+assert white_anim.special_action_duration == float('inf')
+for _ in range(100):
+    white_anim.update()
+assert white_anim.special_action == "type", "Persistent typing action must not expire automatically"
+white_anim.clear_special_action()
+assert white_anim.special_action is None
 
 # Verify state-machine expression switching in draw()
 for expr in WhiteHamsterAnimator.EXPRESSIONS:
@@ -759,6 +801,19 @@ class MockVideoDetector:
     def is_watching_video(self):
         return False
 
+class MockMood:
+    def __init__(self):
+        self.typing_active = False
+
+    def register_typing(self, dt):
+        self.typing_active = True
+
+    def stop_typing(self):
+        self.typing_active = False
+
+    def wake_up_refresh(self):
+        pass
+
 class MockPetWindow:
     def __init__(self):
         self._x = 500
@@ -782,7 +837,7 @@ class MockPetWindow:
         self.pomodoro.is_running = False
         self.typing_engine = MockTypingEngine()
         self.is_generating = False
-        self.mood = Dummy()
+        self.mood = MockMood()
         self.video_detector = MockVideoDetector()
         self.hidden = False
         self.wander_target = None
@@ -817,6 +872,8 @@ class MockPetWindow:
         self._y = y
 
 mock_win = MockPetWindow()
+
+# Trigger original expressions
 for expr in WhiteHamsterAnimator.EXPRESSIONS:
     mock_win.updated = False
     DragonCompanionWindow.trigger_anim_safe(mock_win, expr)
@@ -824,6 +881,22 @@ for expr in WhiteHamsterAnimator.EXPRESSIONS:
     assert mock_win.animator.manual_action_lock > 0.0, "trigger_anim_safe should set manual_action_lock"
     assert mock_win.state_machine.get_state() == expr, "trigger_anim_safe should force action state"
     assert mock_win.updated, "trigger_anim_safe did not request window update"
+
+# Trigger action stickers via trigger_anim_safe
+for act in WhiteHamsterAnimator.ACTIONS:
+    mock_win.updated = False
+    DragonCompanionWindow.trigger_anim_safe(mock_win, act)
+    expected_act = "type" if act == "focus" else act
+    assert mock_win.animator.special_action == expected_act, f"trigger_anim_safe failed to set special action {act}"
+    assert mock_win.updated, f"trigger_anim_safe did not request window update for action {act}"
+    mock_win.animator.clear_special_action()
+
+# Test typing autonomous detection: typing sets type sticker, stopping typing clears it
+mock_win.animator.clear_special_action()
+DragonCompanionWindow._white_autonomous_tick(mock_win, dt=0.5, idle_secs=0.5)
+assert mock_win.animator.special_action == "type", "Typing (idle < 2.0s) must trigger 'type' sticker"
+DragonCompanionWindow._white_autonomous_tick(mock_win, dt=0.5, idle_secs=3.0)
+assert mock_win.animator.special_action is None, "Inactivity (idle >= 2.0s) must clear typing sticker"
 
 # Test manual jump and manual wander triggers
 DragonCompanionWindow.trigger_anim_safe(mock_win, "jump")
@@ -870,9 +943,12 @@ assert mock_win.state_machine.get_state() == "wake", "start_pet must force wake 
 
 # 4. Character profiles and actions
 prof = CHARACTER_PROFILES["white_hamster"]
-assert prof["supported_actions"] == [
-    "laugh", "smile", "neutral", "tongue_out", "halo", "costume", "jump", "wander"
-], f"Unexpected actions: {prof['supported_actions']}"
+expected_actions = [
+    "laugh", "smile", "neutral", "tongue_out", "halo", "costume",
+    "jump", "wander",
+    "magic", "type", "focus", "eat", "sad", "happy", "paint", "cook"
+]
+assert prof["supported_actions"] == expected_actions, f"Unexpected actions: {prof['supported_actions']}"
 
 # Verify other characters exist
 for c in ["dragon", "dog", "luffy", "cat_orange", "cat_tuxedo", "cats_duo", "fox", "rabbit", "penguin", "hamster", "owl", "panda", "yellow_guardian_hamster"]:
@@ -881,14 +957,22 @@ for c in ["dragon", "dog", "luffy", "cat_orange", "cat_tuxedo", "cats_duo", "fox
 # 5. Layout and Speech Bubble
 dummy_win = DummyWindow("white_hamster")
 layout_mgr = LayoutManager(dummy_win)
+dragon_rect = layout_mgr.get_dragon_rect()
+assert dragon_rect.width() == 220, f"Expected 220 width for white_hamster, got {dragon_rect.width()}"
+assert dragon_rect.height() == 300, f"Expected 300 height for white_hamster, got {dragon_rect.height()}"
+
 bubble_rect = layout_mgr.get_bubble_rect(QRect(0, 0, 100, 40))
-assert bubble_rect.width() <= 178, f"Bubble width {bubble_rect.width()} exceeds max 178"
-assert bubble_rect.height() <= 54, f"Bubble height {bubble_rect.height()} exceeds max 54"
+assert bubble_rect.width() <= 196, f"Bubble width {bubble_rect.width()} exceeds max 196"
+assert bubble_rect.bottom() <= dragon_rect.top(), f"Bubble bottom ({bubble_rect.bottom()}) overlaps hamster top ({dragon_rect.top()})"
+
+# Generic companion layout check
+dummy_dragon = DummyWindow("dragon")
+layout_dragon = LayoutManager(dummy_dragon)
+d_rect = layout_dragon.get_dragon_rect()
+assert d_rect.width() == 150 and d_rect.height() == 160
 
 # 6. Chat Overlay separation
 chat = ChatInputWidget()
-# Verify show_overlay calculates target_y above pet window
-# target_y = pet_y - self.height() - 18
 pet_y = 500
 target_y = pet_y - chat.height() - 18
 assert target_y < pet_y, "Chat overlay must appear above the pet window"
@@ -901,7 +985,7 @@ yellow_painter = QPainter(yellow_img)
 yellow_anim.draw(yellow_painter, QRect(100, 230, 150, 160))
 yellow_painter.end()
 
-print("All White Meme Hamster 6-expression, layout, bubble, chat, and regression tests passed!")
+print("ALL WHITE MEME HAMSTER 6-EXPRESSION + 8-ACTION STICKERS + LAYOUT + MOVEMENT + STOP/START TESTS PASSED!")
 
 ```
 
@@ -990,7 +1074,7 @@ An interactive, animated Windows desktop companion application built with Python
 ## File: `core/characters.py`
 
 **Description:** Character profile registry (14 companions: Dragon, Dog, Cats, Luffy, Fox, Rabbit, Penguin, Hamster, Owl, Panda, White Meme Hamster, Yellow Guardian Hamster), dialogue lines, and supported actions.  
-**Total Lines:** 355  
+**Total Lines:** 396  
 **Full Path:** `C:\Pet\core\characters.py`
 
 ```python
@@ -1238,14 +1322,27 @@ CHARACTER_PROFILES = {
         "name": "White Meme Hamster",
         "type": "white_hamster",
         "supported_actions": [
+            # Six existing expression controls.
             "laugh",
             "smile",
             "neutral",
             "tongue_out",
             "halo",
             "costume",
+
+            # Movement controls.
             "jump",
-            "wander"
+            "wander",
+
+            # Additional supplied sticker actions.
+            "magic",
+            "type",
+            "focus",
+            "eat",
+            "sad",
+            "happy",
+            "paint",
+            "cook"
         ],
         "lines": {
             "idle": [
@@ -1263,6 +1360,34 @@ CHARACTER_PROFILES = {
                 "*big hamster smile*",
                 "hehe.",
                 "*wiggles happily*"
+            ],
+            "action_magic": [
+                "*waves the magic wand*",
+                "*tiny magical hamster*"
+            ],
+            "action_type": [
+                "*opens the book and gets serious*",
+                "Focus time."
+            ],
+            "action_eat": [
+                "*munch munch*",
+                "Watermelon!"
+            ],
+            "action_sad": [
+                "*tiny hamster tears*",
+                "Oh no..."
+            ],
+            "action_happy": [
+                "hehe!",
+                "*big happy hamster grin*"
+            ],
+            "action_paint": [
+                "*paints carefully*",
+                "Art time."
+            ],
+            "action_cook": [
+                "*chef hamster at work*",
+                "Cooking!"
             ],
             "click": [
                 "*big hamster smile*",
@@ -1349,6 +1474,7 @@ def get_character_line(char_id, category):
     lines = lines_dict.get(category, DEFAULT_LINES.get(category, ["..."]))
     import random
     return random.choice(lines)
+
 ```
 
 <a id="corestatemachinepy"></a>
@@ -1904,7 +2030,7 @@ class TypingEngine:
 ## File: `core/layout.py`
 
 **Description:** Screen boundary management, taskbar avoidance, and multi-monitor positioning.  
-**Total Lines:** 71  
+**Total Lines:** 83  
 **Full Path:** `C:\Pet\core\layout.py`
 
 ```python
@@ -1934,8 +2060,20 @@ class LayoutManager:
     def get_dragon_rect(self):
         win_w = self.window.width()
         win_h = self.window.height()
-        dw, dh = self.dragon_size
-        return QRect((win_w - dw) // 2, win_h - dh - 10, dw, dh)
+        if getattr(self.window, "current_character", "") == "white_hamster":
+            # White Meme Hamster is rendered as a ~300px-tall sprite. The
+            # generic 150x160 rect caused the speech bubble to be positioned
+            # in the middle of the enlarged sprite, creating overlap.
+            dw, dh = 220, 300
+        else:
+            dw, dh = self.dragon_size
+
+        return QRect(
+            (win_w - dw) // 2,
+            win_h - dh - 10,
+            dw,
+            dh,
+        )
 
     def clamp_window_pos(self, global_pos):
         screen = self._screen_rect
@@ -1979,6 +2117,7 @@ class LayoutManager:
                 by = max(5, dragon_rect.top() - bh - gap)
 
         return QRect(int(bx), int(by), int(bw), int(bh))
+
 ```
 
 <a id="corepomodoropy"></a>
@@ -2612,7 +2751,7 @@ $shortcut.Save()
 ## File: `ui/chibi_window.py`
 
 **Description:** Primary frameless translucent desktop window, event loops, timers, dynamic tray character switching, wander physics, and character dispatch.  
-**Total Lines:** 882  
+**Total Lines:** 956  
 **Full Path:** `C:\Pet\ui\chibi_window.py`
 
 ```python
@@ -2777,7 +2916,7 @@ class DragonCompanionWindow(QWidget):
         self._white_auto_wander_x = None
         self._white_auto_wander_y = None
         self._white_auto_wander_clock = 0.0
-        self._white_auto_next_wander = random.uniform(9.0, 15.0)
+        self._white_auto_next_wander = random.uniform(7.0, 12.0)
         
         self.setup_tray()
         
@@ -2926,18 +3065,48 @@ class DragonCompanionWindow(QWidget):
 
     @pyqtSlot(str)
     def trigger_anim_safe(self, state):
-        if self.current_character == "white_hamster" or isinstance(self.animator, WhiteHamsterAnimator):
-            if state in WhiteHamsterAnimator.EXPRESSIONS or state in WhiteHamsterAnimator.ONE_SHOT_DURATIONS:
-                if hasattr(self.animator, "set_expression") and state in WhiteHamsterAnimator.EXPRESSIONS:
-                    self.animator.set_expression(state)
-                if hasattr(self.animator, "manual_action_lock"):
-                    self.animator.manual_action_lock = WhiteHamsterAnimator.ONE_SHOT_DURATIONS.get(state, 2.0)
-                if hasattr(self.animator, "elapsed"):
-                    self.animator.elapsed = 0.0
+        if (
+            self.current_character == "white_hamster"
+            or isinstance(self.animator, WhiteHamsterAnimator)
+        ):
+            # Original six expression controls.
+            if state in WhiteHamsterAnimator.EXPRESSIONS:
+                self.animator.clear_special_action()
+                self.animator.set_expression(state)
+                self.animator.manual_action_lock = WhiteHamsterAnimator.ONE_SHOT_DURATIONS.get(
+                    state,
+                    1.5,
+                )
+                self.animator.elapsed = 0.0
                 self.state_machine.force_state(state)
                 self.update()
                 return
-            elif state == "wander":
+
+            # Additional supplied sticker controls.
+            if state in WhiteHamsterAnimator.ACTIONS:
+                self.animator.set_special_action(
+                    state,
+                    duration=WhiteHamsterAnimator.ONE_SHOT_DURATIONS.get(
+                        state,
+                        2.0,
+                    ),
+                    persistent=False,
+                )
+                self.state_machine.force_state("idle")
+                self.update()
+                return
+
+            # Manual jump.
+            if state == "jump":
+                self.animator.clear_special_action()
+                self.animator.manual_action_lock = WhiteHamsterAnimator.ONE_SHOT_DURATIONS["jump"]
+                self.animator.elapsed = 0.0
+                self.state_machine.force_state("jump")
+                self.update()
+                return
+
+            # Manual wander.
+            if state == "wander":
                 target = self.layout_manager.get_wander_target()
                 self._white_auto_wander_active = True
                 self._white_auto_wander_target = target
@@ -3030,7 +3199,13 @@ class DragonCompanionWindow(QWidget):
         elif self.current_character == "luffy":
             self.say("MEAAAT! *nom nom nom*", force_state='celebrate')
         elif self.current_character == "white_hamster":
-            self.say("CRUNCH CRUNCH!", force_state='tongue_out')
+            if hasattr(self.animator, "set_special_action"):
+                self.animator.set_special_action(
+                    "eat",
+                    duration=WhiteHamsterAnimator.ONE_SHOT_DURATIONS["eat"],
+                    persistent=False,
+                )
+            self.say("CRUNCH CRUNCH!")
         elif self.current_character == "yellow_guardian_hamster":
             self.say("CRUNCH.", force_state='happy')
         elif self.current_character == "hamster":
@@ -3111,7 +3286,7 @@ class DragonCompanionWindow(QWidget):
         self._white_auto_wander_x = None
         self._white_auto_wander_y = None
         self._white_auto_wander_clock = 0.0
-        self._white_auto_next_wander = random.uniform(9.0, 15.0)
+        self._white_auto_next_wander = random.uniform(7.0, 12.0)
 
     def _update_white_hamster_autonomous_movement(self):
         if self.current_character != "white_hamster":
@@ -3165,8 +3340,8 @@ class DragonCompanionWindow(QWidget):
                 if distance < 180.0:
                     self._white_auto_wander_clock = 0.0
                     self._white_auto_next_wander = random.uniform(
-                        4.0,
-                        7.0,
+                        3.0,
+                        5.0,
                     )
                     return
 
@@ -3201,8 +3376,8 @@ class DragonCompanionWindow(QWidget):
                 self._white_auto_wander_y = None
                 self._white_auto_wander_clock = 0.0
                 self._white_auto_next_wander = random.uniform(
-                    9.0,
-                    15.0,
+                    7.0,
+                    12.0,
                 )
                 return
 
@@ -3225,6 +3400,40 @@ class DragonCompanionWindow(QWidget):
                 int(round(self._white_auto_wander_x)),
                 int(round(self._white_auto_wander_y)),
             )
+
+
+    def _white_autonomous_tick(self, dt, idle_secs):
+        """
+        White Meme Hamster-specific autonomous behavior.
+
+        The automatic six-expression cycle remains inside the animator.
+        This method only connects real user activity to the supplied
+        action-specific sticker sprites.
+        """
+
+        if self.current_character != "white_hamster":
+            return
+
+        # Keyboard activity -> ALWAYS show the supplied reading/typing sticker.
+        if idle_secs < 2.0:
+            self.mood.register_typing(dt)
+
+            if hasattr(self.animator, "set_special_action"):
+                self.animator.set_special_action(
+                    "type",
+                    persistent=True,
+                )
+
+            return
+
+        self.mood.stop_typing()
+
+        # Release the typing sticker as soon as typing stops.
+        if (
+            hasattr(self.animator, "special_action")
+            and self.animator.special_action == "type"
+        ):
+            self.animator.clear_special_action()
 
     def do_behavior_tick(self):
         # Update logic that happens regularly
@@ -3265,7 +3474,11 @@ class DragonCompanionWindow(QWidget):
                     self.mood.wake_up_refresh()
                     self.state_machine.force_state("idle")
                     return
-                self._white_autonomous_tick(0.5, idle_secs)
+
+                self._white_autonomous_tick(
+                    0.5,
+                    idle_secs,
+                )
                 return
 
             # WAKE UP on ANY system input (mouse or keyboard)
@@ -3395,7 +3608,7 @@ class DragonCompanionWindow(QWidget):
         if self.speech_bubble.is_visible():
             bubble_rect = self.layout_manager.get_bubble_rect(self.speech_bubble.get_text_size())
             self.speech_bubble.draw(painter, bubble_rect)
-
+            
     def contextMenuEvent(self, event):
         menu = QMenu(self)
         if getattr(self, 'is_stopped', False):
@@ -3411,7 +3624,7 @@ class DragonCompanionWindow(QWidget):
         quit_act = menu.addAction("Quit")
         quit_act.triggered.connect(QApplication.instance().quit)
         menu.exec_(event.globalPos())
-            
+
     def mouseDoubleClickEvent(self, event: QMouseEvent):
         if event.button() == Qt.LeftButton:
             # Show the chat overlay, passing the pet's global position and width
@@ -8009,16 +8222,22 @@ class SpriteAnimator:
 ## File: `ui/white_hamster_animator.py`
 
 **Description:** Exact reference sprite-based animation engine for White Meme Hamster (laughing meme mouth with two incisors, cheerful smile, neutral, tongue-out, halo angel, costume, transparent margin auto-trim, and full squash-and-stretch).  
-**Total Lines:** 498  
+**Total Lines:** 865  
 **Full Path:** `C:\Pet\ui\white_hamster_animator.py`
 
 ```python
 """
-Exact reference-sprite renderer for the user's White Meme Hamster.
+White Meme Hamster exact reference-sprite renderer.
 
-The hamster artwork is NEVER redrawn procedurally.
-The six supplied source images remain the only visual source of truth.
-All animation happens by transforming the complete source sprite.
+The six original expression images are the visual source of truth.
+The additional sticker images are action-specific reference sprites.
+
+IMPORTANT:
+- Never redraw the hamster's face/body procedurally.
+- Never generate replacement artwork.
+- Animate the complete sprite only.
+- Preserve all hand-drawn imperfections.
+- Background transparency is derived without changing RGB artwork.
 """
 
 import math
@@ -8031,7 +8250,7 @@ from PyQt5.QtGui import QImage, QPainter, QPixmap, QColor
 
 
 class WhiteHamsterAnimator:
-    """Reference sprite animator with autonomous expression and motion."""
+    """Exact sprite renderer plus autonomous movement and action stickers."""
 
     ONE_SHOT_DURATIONS = {
         "laugh": 1.80,
@@ -8043,15 +8262,38 @@ class WhiteHamsterAnimator:
         "jump": 1.15,
         "celebrate": 1.80,
         "react_click": 1.20,
+
+        # Additional supplied sticker actions.
+        "magic": 2.50,
+        "type": 2.00,
+        "focus": 2.00,
+        "eat": 2.50,
+        "sad": 2.20,
+        "happy": 2.00,
+        "paint": 3.00,
+        "cook": 3.00,
     }
 
     FRAME_FILES = {
+        # Existing six expression assets. DO NOT replace their artwork.
         "laugh": "laugh.png",
         "smile": "smile.png",
         "neutral": "neutral.png",
         "tongue_out": "tongue_out.png",
         "halo": "halo.png",
         "costume": "costume.png",
+    }
+
+    ACTION_FRAME_FILES = {
+        # These are the eight additional user-supplied sticker references.
+        "laugh_action": "actions/laugh_action.png",
+        "magic": "actions/magic.png",
+        "type": "actions/type.png",
+        "eat": "actions/eat.png",
+        "sad": "actions/sad.png",
+        "happy": "actions/happy.png",
+        "paint": "actions/paint.png",
+        "cook": "actions/cook.png",
     }
 
     EXPRESSION_SEQUENCE = (
@@ -8062,26 +8304,50 @@ class WhiteHamsterAnimator:
         "halo",
         "costume",
     )
+
     EXPRESSIONS = EXPRESSION_SEQUENCE
+
+    ACTIONS = (
+        "magic",
+        "type",
+        "focus",
+        "eat",
+        "sad",
+        "happy",
+        "paint",
+        "cook",
+    )
 
     AUTO_EXPRESSION_INTERVAL = 7.0
     AUTO_JUMP_INTERVAL = 11.0
     AUTO_JUMP_DURATION = 1.15
-    JUMP_DURATION = 1.15
+
+    BASE_TARGET_HEIGHT = 300.0
+    ACTION_TARGET_HEIGHT = 280.0
 
     def __init__(self, state_machine, asset_dir=None):
         self.state_machine = state_machine
         self.facing = 1
+
+        # State-machine animation time.
         self.elapsed = 0.0
         self._last_state = None
 
+        # Autonomous expression system.
         self.auto_elapsed = 0.0
         self.auto_expression_elapsed = 0.0
-        self.auto_jump_countdown = self.AUTO_JUMP_INTERVAL
-        self.auto_jump_active_time = 0.0
         self.auto_expression_index = 0
         self.auto_expression = "laugh"
+
+        # Autonomous jump system.
+        self.auto_jump_countdown = self.AUTO_JUMP_INTERVAL
+        self.auto_jump_active_time = 0.0
+
+        # Manual/action sticker state.
         self.manual_action_lock = 0.0
+        self.special_action = None
+        self.special_action_elapsed = 0.0
+        self.special_action_duration = 0.0
 
         default_dir = (
             Path(__file__).resolve().parents[1]
@@ -8097,7 +8363,13 @@ class WhiteHamsterAnimator:
         self.asset_dir = Path(asset_dir) if asset_dir else default_dir
 
         self.frames = {}
+        self.action_frames = {}
+
         self._load_frames()
+
+    # ------------------------------------------------------------
+    # Public state/control API
+    # ------------------------------------------------------------
 
     def set_facing(self, direction):
         self.facing = 1 if direction >= 0 else -1
@@ -8105,11 +8377,17 @@ class WhiteHamsterAnimator:
     def set_expression(self, expression):
         if expression in self.EXPRESSION_SEQUENCE:
             self.auto_expression = expression
-            self.auto_expression_index = self.EXPRESSION_SEQUENCE.index(expression)
+            self.auto_expression_index = (
+                self.EXPRESSION_SEQUENCE.index(expression)
+            )
             self.auto_expression_elapsed = 0.0
 
     def get_expression(self):
         state = self.state_machine.get_state()
+
+        if self.special_action:
+            return self.special_action
+
         return self._expression_for_state(state)
 
     @property
@@ -8117,27 +8395,79 @@ class WhiteHamsterAnimator:
         return self.get_expression()
 
     @current_expression.setter
-    def current_expression(self, expr):
-        self.set_expression(expr)
+    def current_expression(self, expression):
+        self.set_expression(expression)
+
+    def set_special_action(self, action, duration=None, persistent=False):
+        """
+        Show one of the supplied additional sticker references.
+
+        persistent=True is used for keyboard typing so the type/read sticker
+        remains visible while the user continues typing.
+        """
+        if action == "laugh":
+            action = "laugh_action"
+
+        if action == "focus":
+            action = "type"
+
+        if action not in self.action_frames:
+            return False
+
+        self.special_action = action
+        self.special_action_elapsed = 0.0
+
+        if persistent:
+            self.special_action_duration = float("inf")
+        else:
+            self.special_action_duration = float(
+                duration
+                if duration is not None
+                else self.ONE_SHOT_DURATIONS.get(
+                    action,
+                    2.0,
+                )
+            )
+
+        self.manual_action_lock = (
+            0.0
+            if persistent
+            else self.special_action_duration
+        )
+
+        return True
+
+    def clear_special_action(self):
+        self.special_action = None
+        self.special_action_elapsed = 0.0
+        self.special_action_duration = 0.0
+        self.manual_action_lock = 0.0
 
     def clear_special(self):
         self.elapsed = 0.0
         self._last_state = None
-        self.manual_action_lock = 0.0
+        self.clear_special_action()
 
     def reset_animation(self):
         self.elapsed = 0.0
         self._last_state = None
+
         self.auto_elapsed = 0.0
         self.auto_expression_elapsed = 0.0
-        self.auto_jump_countdown = self.AUTO_JUMP_INTERVAL
-        self.auto_jump_active_time = 0.0
         self.auto_expression_index = 0
         self.auto_expression = "laugh"
-        self.manual_action_lock = 0.0
+
+        self.auto_jump_countdown = self.AUTO_JUMP_INTERVAL
+        self.auto_jump_active_time = 0.0
+
+        self.clear_special_action()
+
+    # ------------------------------------------------------------
+    # Safe reference-image background extraction
+    # ------------------------------------------------------------
 
     @staticmethod
-    def _near_white(pixel: QColor):
+    def _near_white(pixel):
         return (
             pixel.alpha() > 0
             and pixel.red() >= 242
@@ -8146,7 +8476,16 @@ class WhiteHamsterAnimator:
         )
 
     @classmethod
-    def _remove_connected_white_background(cls, image: QImage):
+    def _prepare_reference_image(cls, image):
+        """
+        Preserve the original RGB artwork and only derive transparency.
+
+        The old implementation flood-filled white pixels directly from the
+        border. Hand-drawn outlines have tiny gaps, so the white body could
+        become connected to the outside and turn transparent on a dark
+        desktop. This method closes only the temporary barrier mask before
+        flood-filling. Artwork pixels themselves are never altered.
+        """
         image = image.convertToFormat(QImage.Format_ARGB32)
 
         w = image.width()
@@ -8155,22 +8494,70 @@ class WhiteHamsterAnimator:
         if w <= 0 or h <= 0:
             return image
 
-        removable = bytearray(w * h)
-        queue = deque()
+        # If the supplied image already has real transparency, preserve it.
+        has_transparency = False
+        for y in range(h):
+            for x in range(w):
+                if image.pixelColor(x, y).alpha() < 250:
+                    has_transparency = True
+                    break
+            if has_transparency:
+                break
+
+        if has_transparency:
+            return cls._trim_alpha_only(image)
+
+        # Temporary "ink barrier": all non-near-white pixels.
+        ink = bytearray(w * h)
 
         def idx(x, y):
             return y * w + x
 
+        for y in range(h):
+            for x in range(w):
+                p = image.pixelColor(x, y)
+                if not cls._near_white(p):
+                    ink[idx(x, y)] = 1
+
+        # Dilate ONLY the temporary barrier.
+        # This seals small hand-drawn outline gaps without touching RGB data.
+        radius = 3
+        sealed = bytearray(w * h)
+
+        for y in range(h):
+            for x in range(w):
+                found = False
+                for oy in range(-radius, radius + 1):
+                    yy = y + oy
+                    if yy < 0 or yy >= h:
+                        continue
+                    for ox in range(-radius, radius + 1):
+                        xx = x + ox
+                        if xx < 0 or xx >= w:
+                            continue
+                        if ink[idx(xx, yy)]:
+                            found = True
+                            break
+                    if found:
+                        break
+
+                if found:
+                    sealed[idx(x, y)] = 1
+
+        # Flood-fill outer near-white background, blocked by the sealed ink.
+        background = bytearray(w * h)
+        queue = deque()
+
         def visit(x, y):
             i = idx(x, y)
 
-            if removable[i]:
+            if background[i] or sealed[i]:
                 return
 
             if not cls._near_white(image.pixelColor(x, y)):
                 return
 
-            removable[i] = 1
+            background[i] = 1
             queue.append((x, y))
 
         for x in range(w):
@@ -8195,10 +8582,22 @@ class WhiteHamsterAnimator:
             if y + 1 < h:
                 visit(x, y + 1)
 
+        # Change ONLY alpha of actual outside background pixels.
         for y in range(h):
             for x in range(w):
-                if removable[idx(x, y)]:
-                    image.setPixelColor(x, y, QColor(0, 0, 0, 0))
+                if background[idx(x, y)]:
+                    image.setPixelColor(
+                        x,
+                        y,
+                        QColor(0, 0, 0, 0),
+                    )
+
+        return cls._trim_alpha_only(image)
+
+    @staticmethod
+    def _trim_alpha_only(image):
+        w = image.width()
+        h = image.height()
 
         left = w
         top = h
@@ -8234,10 +8633,25 @@ class WhiteHamsterAnimator:
                 missing.append(str(path))
                 continue
 
-            cleaned = self._remove_connected_white_background(image)
+            prepared = self._prepare_reference_image(image)
 
             self.frames[state] = QPixmap.fromImage(
-                cleaned,
+                prepared,
+                Qt.AutoColor,
+            )
+
+        for action, filename in self.ACTION_FRAME_FILES.items():
+            path = self.asset_dir / filename
+            image = QImage(str(path))
+
+            if image.isNull():
+                missing.append(str(path))
+                continue
+
+            prepared = self._prepare_reference_image(image)
+
+            self.action_frames[action] = QPixmap.fromImage(
+                prepared,
                 Qt.AutoColor,
             )
 
@@ -8247,22 +8661,28 @@ class WhiteHamsterAnimator:
                 + "\n".join(missing)
             )
 
+    # ------------------------------------------------------------
+    # Animation state
+    # ------------------------------------------------------------
+
     def _expression_for_state(self, state):
-        if state == "laugh":
-            return "laugh"
-        if state == "smile":
-            return "smile"
-        if state == "neutral":
-            return "neutral"
-        if state == "tongue_out":
-            return "tongue_out"
-        if state == "halo":
-            return "halo"
-        if state == "costume":
-            return "costume"
-        if state in ("jump", "celebrate", "react_click"):
-            return self.auto_expression
+        if state in self.EXPRESSIONS:
+            return state
+
         return self.auto_expression
+
+    def _is_manual_expression_state(self, state):
+        return state in {
+            "laugh",
+            "smile",
+            "neutral",
+            "tongue_out",
+            "halo",
+            "costume",
+            "jump",
+            "celebrate",
+            "react_click",
+        }
 
     def update(self):
         state = self.state_machine.get_state()
@@ -8272,23 +8692,25 @@ class WhiteHamsterAnimator:
             self.elapsed = 0.0
             self._last_state = state
 
-            if state in {
-                "laugh",
-                "smile",
-                "neutral",
-                "tongue_out",
-                "halo",
-                "costume",
-                "jump",
-                "celebrate",
-                "react_click",
-            }:
+            if self._is_manual_expression_state(state):
                 self.manual_action_lock = self.ONE_SHOT_DURATIONS.get(
                     state,
                     1.0,
                 )
+
         else:
             self.elapsed += dt
+
+        # Special action lifecycle.
+        if self.special_action:
+            self.special_action_elapsed += dt
+
+            if (
+                not math.isinf(self.special_action_duration)
+                and self.special_action_elapsed
+                >= self.special_action_duration
+            ):
+                self.clear_special_action()
 
         if self.manual_action_lock > 0.0:
             self.manual_action_lock = max(
@@ -8298,13 +8720,21 @@ class WhiteHamsterAnimator:
 
         duration = self.ONE_SHOT_DURATIONS.get(state)
 
-        if duration is not None and self.elapsed >= duration:
+        if (
+            duration is not None
+            and self.elapsed >= duration
+            and state not in self.EXPRESSIONS
+        ):
             self.state_machine.force_state("idle")
             self.elapsed = 0.0
             self._last_state = "idle"
             self.manual_action_lock = 0.0
 
         self.auto_elapsed += dt
+
+        # When an action sticker is active, keep its artwork until the action ends.
+        if self.special_action:
+            return
 
         autonomous_allowed = (
             self.manual_action_lock <= 0.0
@@ -8319,19 +8749,28 @@ class WhiteHamsterAnimator:
         if not autonomous_allowed:
             return
 
+        # Six original expression sprites remain the ONLY automatic cycle.
         self.auto_expression_elapsed += dt
 
-        if self.auto_expression_elapsed >= self.AUTO_EXPRESSION_INTERVAL:
-            self.auto_expression_elapsed -= self.AUTO_EXPRESSION_INTERVAL
+        if (
+            self.auto_expression_elapsed
+            >= self.AUTO_EXPRESSION_INTERVAL
+        ):
+            self.auto_expression_elapsed -= (
+                self.AUTO_EXPRESSION_INTERVAL
+            )
+
             self.auto_expression_index = (
                 self.auto_expression_index + 1
             ) % len(self.EXPRESSION_SEQUENCE)
+
             self.auto_expression = (
                 self.EXPRESSION_SEQUENCE[
                     self.auto_expression_index
                 ]
             )
 
+        # Autonomous whole-sprite jump.
         self.auto_jump_countdown -= dt
 
         if self.auto_jump_active_time > 0.0:
@@ -8344,8 +8783,16 @@ class WhiteHamsterAnimator:
             self.auto_jump_countdown <= 0.0
             and self.auto_jump_active_time <= 0.0
         ):
-            self.auto_jump_active_time = self.AUTO_JUMP_DURATION
-            self.auto_jump_countdown = self.AUTO_JUMP_INTERVAL
+            self.auto_jump_active_time = (
+                self.AUTO_JUMP_DURATION
+            )
+            self.auto_jump_countdown = (
+                self.AUTO_JUMP_INTERVAL
+            )
+
+    # ------------------------------------------------------------
+    # Drawing
+    # ------------------------------------------------------------
 
     def _draw_shadow(self, painter, y_offset):
         width = (
@@ -8359,6 +8806,7 @@ class WhiteHamsterAnimator:
         painter.save()
         painter.setPen(Qt.NoPen)
         painter.setBrush(QColor(0, 0, 0, 42))
+
         painter.drawEllipse(
             QRectF(
                 -width / 2,
@@ -8367,23 +8815,37 @@ class WhiteHamsterAnimator:
                 7,
             )
         )
+
         painter.restore()
 
-    def draw(self, painter, rect):
-        state = self.state_machine.get_state()
+    def _current_pixmap(self, state):
+        if self.special_action:
+            pixmap = self.action_frames.get(
+                self.special_action,
+            )
+            if pixmap is not None:
+                return pixmap
+
         expression = self._expression_for_state(state)
-        pixmap = (
+
+        return (
             self.frames.get(expression)
             or self.frames["laugh"]
         )
 
+    def draw(self, painter, rect):
+        state = self.state_machine.get_state()
+
+        pixmap = self._current_pixmap(state)
+
         x_offset = 0.0
         y_offset = 0.0
-        sx = 1.0
-        sy = 1.0
+        scale_x = 1.0
+        scale_y = 1.0
         rotation = 0.0
 
-        if state in {
+        # Normal autonomous idle movement.
+        if not self.special_action and state in {
             "idle",
             "wander",
             "wake",
@@ -8392,95 +8854,213 @@ class WhiteHamsterAnimator:
             phase = self.auto_elapsed
             breathing = math.sin(phase * 2.4)
 
-            sx = 1.0 - breathing * 0.008
-            sy = 1.0 + breathing * 0.012
+            scale_x = 1.0 - breathing * 0.008
+            scale_y = 1.0 + breathing * 0.012
 
-            x_offset = math.sin(phase * 1.15) * 2.0
+            x_offset = math.sin(
+                phase * 1.15
+            ) * 2.0
+
             y_offset = -abs(
                 math.sin(phase * 1.8)
             ) * 1.8
-            rotation = math.sin(phase * 1.25) * 0.7
+
+            rotation = math.sin(
+                phase * 1.25
+            ) * 0.7
 
             if self.auto_expression == "laugh":
-                y_offset += math.sin(phase * 4.0) * 1.0
+                y_offset += (
+                    math.sin(phase * 4.0) * 1.0
+                )
             elif self.auto_expression == "smile":
-                x_offset += math.sin(phase * 1.7) * 1.1
+                x_offset += (
+                    math.sin(phase * 1.7) * 1.1
+                )
             elif self.auto_expression == "neutral":
-                rotation += math.sin(phase * 1.8) * 0.35
+                rotation += (
+                    math.sin(phase * 1.8) * 0.35
+                )
             elif self.auto_expression == "tongue_out":
-                y_offset += math.sin(phase * 3.6) * 1.2
+                y_offset += (
+                    math.sin(phase * 3.6) * 1.2
+                )
             elif self.auto_expression == "halo":
-                y_offset -= abs(
-                    math.sin(phase * 1.5)
-                ) * 1.5
+                y_offset -= (
+                    abs(math.sin(phase * 1.5)) * 1.5
+                )
             elif self.auto_expression == "costume":
-                rotation += math.sin(phase * 1.6) * 0.45
+                rotation += (
+                    math.sin(phase * 1.6) * 0.45
+                )
 
-        if self.auto_jump_active_time > 0.0:
+        # Additional action-specific whole-sprite movement.
+        if self.special_action:
+            phase = self.special_action_elapsed
+
+            if self.special_action == "type":
+                y_offset = math.sin(
+                    phase * 5.5
+                ) * 1.8
+                rotation = math.sin(
+                    phase * 3.0
+                ) * 0.45
+
+            elif self.special_action == "magic":
+                y_offset = -abs(
+                    math.sin(phase * 2.8)
+                ) * 3.0
+                rotation = math.sin(
+                    phase * 2.1
+                ) * 0.8
+
+            elif self.special_action == "eat":
+                y_offset = math.sin(
+                    phase * 5.0
+                ) * 2.0
+                scale_x = 1.0 + (
+                    math.sin(phase * 5.0) * 0.01
+                )
+                scale_y = 1.0 - (
+                    math.sin(phase * 5.0) * 0.01
+                )
+
+            elif self.special_action == "sad":
+                y_offset = (
+                    math.sin(phase * 2.0) * 1.2
+                    + 3.0
+                )
+                rotation = math.sin(
+                    phase * 1.6
+                ) * 0.5
+
+            elif self.special_action == "happy":
+                y_offset = -abs(
+                    math.sin(phase * 5.0)
+                ) * 4.0
+                rotation = math.sin(
+                    phase * 5.0
+                ) * 1.2
+
+            elif self.special_action == "paint":
+                x_offset = math.sin(
+                    phase * 2.4
+                ) * 2.0
+                rotation = math.sin(
+                    phase * 1.7
+                ) * 0.7
+
+            elif self.special_action == "cook":
+                y_offset = math.sin(
+                    phase * 3.0
+                ) * 1.6
+                rotation = math.sin(
+                    phase * 1.4
+                ) * 0.6
+
+            elif self.special_action == "laugh_action":
+                y_offset = -abs(
+                    math.sin(phase * 6.0)
+                ) * 4.0
+                rotation = math.sin(
+                    phase * 6.0
+                ) * 1.2
+
+        # Autonomous jump remains available during normal expressions.
+        if (
+            self.auto_jump_active_time > 0.0
+            and not self.special_action
+            and state in {
+                "idle",
+                "wander",
+                "wake",
+                "sit",
+            }
+        ):
             progress = 1.0 - (
                 self.auto_jump_active_time
                 / self.AUTO_JUMP_DURATION
             )
+
             progress = max(
                 0.0,
                 min(1.0, progress),
             )
 
-            y_offset -= 46.0 * math.sin(
-                progress * math.pi
+            y_offset -= (
+                46.0
+                * math.sin(
+                    progress * math.pi
+                )
             )
 
             if progress < 0.16:
                 u = progress / 0.16
-                sx = 1.0 + 0.07 * (1.0 - u)
-                sy = 1.0 - 0.08 * (1.0 - u)
+                scale_x = 1.0 + (
+                    0.07 * (1.0 - u)
+                )
+                scale_y = 1.0 - (
+                    0.08 * (1.0 - u)
+                )
             elif progress > 0.84:
-                u = (progress - 0.84) / 0.16
-                sx = 1.0 + 0.09 * u
-                sy = 1.0 - 0.07 * u
+                u = (
+                    progress - 0.84
+                ) / 0.16
+                scale_x = 1.0 + 0.09 * u
+                scale_y = 1.0 - 0.07 * u
             else:
-                sx = 0.965
-                sy = 1.035
+                scale_x = 0.965
+                scale_y = 1.035
 
             rotation += math.sin(
                 progress * math.pi * 2.0
             ) * 2.0
 
+        # Manual jump remains functional.
         if (
             state == "jump"
+            and not self.special_action
             and self.auto_jump_active_time <= 0.0
         ):
-            duration = self.ONE_SHOT_DURATIONS["jump"]
             progress = max(
                 0.0,
                 min(
                     1.0,
-                    self.elapsed / duration,
+                    self.elapsed / self.AUTO_JUMP_DURATION,
                 ),
             )
 
-            y_offset = -58.0 * math.sin(
-                progress * math.pi
+            y_offset = (
+                -58.0
+                * math.sin(
+                    progress * math.pi
+                )
             )
-            sx = 0.95
-            sy = 1.05
+
+            scale_x = 0.95
+            scale_y = 1.05
+
             rotation = math.sin(
                 progress * math.pi * 2.0
             ) * 2.5
 
         elif state == "sleep":
-            sx = 1.02
-            sy = 0.97
+            scale_x = 1.02
+            scale_y = 0.97
             y_offset = 3.0
 
         painter.save()
 
+        # Preserve source pixel look. No smooth vector redraw.
         painter.translate(
             rect.center().x() + x_offset,
             rect.bottom() + y_offset,
         )
 
-        painter.scale(self.facing, 1.0)
+        painter.scale(
+            self.facing,
+            1.0,
+        )
 
         self._draw_shadow(
             painter,
@@ -8488,14 +9068,15 @@ class WhiteHamsterAnimator:
         )
 
         painter.rotate(rotation)
-        painter.scale(sx, sy)
+        painter.scale(
+            scale_x,
+            scale_y,
+        )
 
-        target_h = max(
-            175.0,
-            min(
-                float(rect.height()) * 1.15,
-                300.0,
-            ),
+        target_h = (
+            self.ACTION_TARGET_HEIGHT
+            if self.special_action
+            else self.BASE_TARGET_HEIGHT
         )
 
         scaled = pixmap.scaledToHeight(
@@ -8510,7 +9091,6 @@ class WhiteHamsterAnimator:
         )
 
         painter.restore()
-
 
 ```
 
@@ -8854,7 +9434,7 @@ class SpeechBubble:
     def __init__(self, window):
         self.window = window
         self.text = ""
-        self.font = QFont("Segoe UI", 9, QFont.DemiBold)
+        self.font = QFont("Segoe UI", 10, QFont.DemiBold)
         self.metrics = QFontMetrics(self.font)
         self.visible = False
         self.show_caret = False
@@ -8892,8 +9472,8 @@ class SpeechBubble:
         return self.metrics.boundingRect(
             0,
             0,
-            156,
-            54,
+            172,
+            56,
             flags,
             display_text
         )
@@ -9028,6 +9608,7 @@ class SpeechBubble:
         )
 
         painter.restore()
+
 ```
 
 <a id="uichatoverlaypy"></a>
