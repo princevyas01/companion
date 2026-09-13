@@ -16,13 +16,14 @@ from ui.sprite_animator import SpriteAnimator
 from ui.dog_animator import DogAnimator
 from ui.cat_animator import CatAnimator
 from ui.chibi_animator import ChibiAnimalAnimator
+from ui.white_hamster_animator import WhiteHamsterAnimator
 from ui.speech_bubble import SpeechBubble
 from ui.chat_overlay import ChatInputWidget
 from core.mood import MoodSystem
 from ui.control_panel import ControlPanel
 from core.web_server import PetWebServer
 from core.dialogue import LINES
-from core.characters import CHARACTER_PROFILES, get_character_line, AUTONOMOUS_CHARACTER_CYCLES, ONE_SHOT_DURATIONS
+from core.characters import CHARACTER_PROFILES, get_character_line
 from core.weather import WeatherService
 from core.video_detector import VideoDetector
 
@@ -92,6 +93,7 @@ class DragonCompanionWindow(QWidget):
             sp: ChibiAnimalAnimator(self.state_machine, species=sp)
             for sp in ['fox', 'rabbit', 'penguin', 'hamster', 'owl', 'panda']
         }
+        self.chibi_animators["white_hamster"] = WhiteHamsterAnimator(self.state_machine)
         self.current_character = "dragon"
         self.animator = self.animator_dragon
         
@@ -148,14 +150,6 @@ class DragonCompanionWindow(QWidget):
         self.wander_target = None
         self._wander_float_x = None
         self._wander_float_y = None
-
-        # Deterministic behavior/action control.
-        self._behavior_cursor = {
-            char_id: 0 for char_id in AUTONOMOUS_CHARACTER_CYCLES
-        }
-        self._next_behavior_time = time.time() + 8.0
-        self._action_generation = 0
-        self._active_action_character = None
         
         self.setup_tray()
         
@@ -265,23 +259,11 @@ class DragonCompanionWindow(QWidget):
 
     @pyqtSlot(str)
     def switch_character_safe(self, name):
-        self._action_generation += 1
-        self._active_action_character = None
-
         if hasattr(self.animator, "clear_special"):
             self.animator.clear_special()
-        if hasattr(self.animator, "clear_particles"):
-            self.animator.clear_particles()
-
         self._wander_float_x = None
         self._wander_float_y = None
-        self.wander_target = None
-
-        if name not in CHARACTER_PROFILES:
-            name = "dragon"
-
         self.current_character = name
-
         if name == "dog":
             self.animator = self.animator_dog
         elif name == "cat_orange":
@@ -292,78 +274,23 @@ class DragonCompanionWindow(QWidget):
             self.animator = self.animator_cats_duo
         elif name == "luffy":
             self.animator = self.animator_luffy
-        elif hasattr(self, "chibi_animators") and name in self.chibi_animators:
+        elif hasattr(self, 'chibi_animators') and name in self.chibi_animators:
             self.animator = self.chibi_animators[name]
         else:
             self.animator = self.animator_dragon
-
-        self.state_machine.force_state("idle")
-
-        if hasattr(self.animator, "reset_animation"):
-            self.animator.reset_animation()
-
         self.update()
 
     @pyqtSlot(str)
     def trigger_anim_safe(self, state):
-        config = CHARACTER_PROFILES.get(self.current_character, CHARACTER_PROFILES["dragon"])
-        supported = config.get("supported_actions", [])
-
-        if state not in supported and state not in {"idle", "wander", "sleep", "focus", "think", "type", "react_click", "react_drag"}:
-            return
-
-        self._action_generation += 1
-        generation = self._action_generation
-        character = self.current_character
-        self._active_action_character = character
-
-        # Luffy transformations are animator-owned special actions, not StateMachine states.
-        if character == "luffy" and state in {"gum_stretch", "gear2", "gear3", "gear5"}:
-            self.animator_luffy.trigger_special(state)
-            self.state_machine.force_state("idle")
-
-            durations = {
-                "gum_stretch": 2.30,
-                "gear2": 3.00,
-                "gear3": 2.50,
-                "gear5": 3.50,
-            }
-
-            def finish_special():
-                if self.is_destroyed:
-                    return
-                if generation != self._action_generation:
-                    return
-                if character != self.current_character:
-                    return
-
-                self.animator_luffy.clear_special()
-                self._active_action_character = None
-                self.state_machine.force_state("idle")
-
-            QTimer.singleShot(int(durations[state] * 1000), finish_special)
-            return
-
-        self.state_machine.force_state(state)
-
-        duration = ONE_SHOT_DURATIONS.get(state)
-        if duration is None:
-            self._active_action_character = None
-            return
-
-        def finish_one_shot():
-            if self.is_destroyed:
-                return
-            if generation != self._action_generation:
-                return
-            if character != self.current_character:
-                return
-
-            self._active_action_character = None
-            self.state_machine.force_state("idle")
-
-        QTimer.singleShot(int(duration * 1000), finish_one_shot)
-
+        if state in {"gum_stretch", "gear2", "gear3", "gear5"}:
+            if hasattr(self.animator, "trigger_special"):
+                self.animator.trigger_special(state)
+            elif hasattr(self.animator_luffy, "trigger_special"):
+                self.animator_luffy.trigger_special(state)
+            self.state_machine.force_state("celebrate")
+        else:
+            self.state_machine.force_state(state)
+        
     def say_safe(self, text):
         if not self.is_destroyed:
             self.say(text)
@@ -436,7 +363,9 @@ class DragonCompanionWindow(QWidget):
             self.say("Yummy fish! Purrrr...", force_state='clean')
         elif self.current_character == "luffy":
             self.say("MEAAAT! *nom nom nom*", force_state='celebrate')
-        elif self.current_character in ["rabbit", "hamster"]:
+        elif self.current_character == "white_hamster":
+            self.say("CRUNCH CRUNCH!", force_state='tongue_out')
+        elif self.current_character == "hamster":
             self.say("Crunch crunch! Delicious!", force_state='celebrate')
         elif self.current_character == "fox":
             self.say("Yum yum! Tasty treat!", force_state='celebrate')
@@ -481,140 +410,135 @@ class DragonCompanionWindow(QWidget):
                 self.say(get_character_line(self.current_character, "lowBattery"))
 
     def do_fire_breathe(self):
-        if getattr(self, "is_stopped", False):
+        if getattr(self, 'is_stopped', False):
             return
         if self.pomodoro.is_running:
             return
         if self.typing_engine.timer.isActive() or self.is_generating:
             return
-        if self.current_character != "dragon":
-            return
-
+        
         current_state = self.state_machine.get_state()
-        if current_state in ["idle", "sit", "wander"]:
-            self._action_generation += 1
-            generation = self._action_generation
-            self.state_machine.request_state("fire_breathe")
-
-            def finish_fire():
-                if self.is_destroyed:
-                    return
-                if generation != self._action_generation:
-                    return
-                if self.current_character != "dragon":
-                    return
-                self.state_machine.force_state("idle")
-
-            QTimer.singleShot(2000, finish_fire)
-
-    def _schedule_next_behavior(self, seconds=12.0):
-        self._next_behavior_time = time.time() + float(seconds)
-
-    def _run_next_autonomous_behavior(self):
-        character = self.current_character
-        cycle = AUTONOMOUS_CHARACTER_CYCLES.get(character, ["idle"])
-
-        if not cycle:
-            self._schedule_next_behavior(12.0)
-            return
-
-        index = self._behavior_cursor.get(character, 0)
-        action = cycle[index % len(cycle)]
-        self._behavior_cursor[character] = index + 1
-        self._schedule_next_behavior(12.0)
-
-        if action == "idle":
-            self.state_machine.force_state("idle")
-            return
-
-        if action == "wander":
-            self.wander_target = self.layout_manager.get_wander_target()
-            self._wander_float_x = float(self.x())
-            self._wander_float_y = float(self.y())
-            self.state_machine.force_state("wander")
-            return
-
-        config = CHARACTER_PROFILES.get(character, CHARACTER_PROFILES["dragon"])
-        supported = config.get("supported_actions", [])
-
-        if action in supported:
-            self.trigger_anim_safe(action)
-        else:
-            self.state_machine.force_state("idle")
+        if current_state in ['idle', 'sit', 'wander']:
+            if self.current_character == "dragon":
+                # Dragon fire breathe - DO NOT TOUCH!
+                self.state_machine.request_state('fire_breathe')
+                QTimer.singleShot(2000, lambda: self.state_machine.request_state('idle'))
+            elif self.current_character == "dog":
+                # Dog: calm, relaxed occasional jump (once every ~20s)
+                if random.random() < 0.25:
+                    self.state_machine.request_state('jump')
+                    QTimer.singleShot(2200, lambda: self.state_machine.request_state('idle'))
+            elif "cat" in self.current_character:
+                # Cats: calm, relaxed occasional pounce/lick_paw (once every ~20s)
+                if random.random() < 0.25:
+                    action = 'pounce' if random.random() < 0.5 else 'clean'
+                    self.state_machine.request_state(action)
+                    QTimer.singleShot(2200, lambda: self.state_machine.request_state('idle'))
 
     def do_behavior_tick(self):
-        if getattr(self, "is_stopped", False):
+        # Update logic that happens regularly
+        if getattr(self, 'is_stopped', False):
             return
 
-        if not self.timer.isActive() or not self.idle_timer.isActive():
-            return
+        if self.timer.isActive() and self.idle_timer.isActive():
+            
+            idle_secs = self.keyboard_tracker.get_idle_time()
+            current_state = self.state_machine.get_state()
+            
+            if self.pomodoro.is_running:
+                return # Skip autonomous behaviors if locked in Pomodoro
+            
+            # Check Video Detection
+            watching_video = getattr(self.mood, 'sleep_on_video', True) and self.video_detector.is_watching_video()
+            if watching_video:
+                self._was_watching_video = True
+                if current_state != 'sleep':
+                    self.state_machine.force_state('sleep')
+                    self.speech_bubble.hide()
+                return
 
-        idle_secs = self.keyboard_tracker.get_idle_time()
-        current_state = self.state_machine.get_state()
-
-        if self.pomodoro.is_running:
-            return
-
-        watching_video = (
-            getattr(self.mood, "sleep_on_video", True)
-            and self.video_detector.is_watching_video()
-        )
-
-        if watching_video:
-            self._was_watching_video = True
-            self._action_generation += 1
-            if current_state != "sleep":
-                self.state_machine.force_state("sleep")
-                self.speech_bubble.hide()
-            return
-
-        if self._was_watching_video and current_state == "sleep":
+            # WAKE UP: video just ended — always wake regardless of idle time
+            if self._was_watching_video and current_state == 'sleep':
+                self._was_watching_video = False
+                self.mood.wake_up_refresh()
+                self.state_machine.force_state('wake')
+                self.say("Movie over! I'm awake!")
+                return
             self._was_watching_video = False
-            self.mood.wake_up_refresh()
-            self.state_machine.force_state("wake")
-            self.say("Movie over! I'm awake!")
-            self._schedule_next_behavior(8.0)
-            return
 
-        self._was_watching_video = False
-
-        if idle_secs < 1.0 and current_state == "sleep":
-            self.mood.wake_up_refresh()
-            self.state_machine.force_state("wake")
-            self.say("You're back!")
-            self._schedule_next_behavior(8.0)
-            return
-
-        if idle_secs < 2.0:
-            self.mood.register_typing(0.5)
-            if self.mood.is_exhausted_from_typing():
-                if current_state != "exhausted":
-                    self._action_generation += 1
-                    self.state_machine.force_state("exhausted")
-            elif current_state not in ["focus", "type", "think"]:
-                self.state_machine.force_state("focus")
-            return
-
-        self.mood.stop_typing()
-
-        if current_state in ["type", "focus", "think", "exhausted"]:
-            self.state_machine.force_state("idle")
-            self._schedule_next_behavior(8.0)
-            return
-
-        if idle_secs < 10.0:
-            return
-
-        if current_state not in ["idle", "sit"]:
-            return
-
-        if time.time() < self._next_behavior_time:
-            return
-
-        if self.current_character == "luffy" and self.animator_luffy.special_action is not None:
-            return
-
-        self._run_next_autonomous_behavior()
+            # WAKE UP on ANY system input (mouse or keyboard)
+            if idle_secs < 1.0 and current_state == 'sleep':
+                self.mood.wake_up_refresh()
+                self.state_machine.force_state('wake')
+                self.say("You're back!")
+                return
+                
+            # 1. Check Global Activity (Working)
+            if idle_secs < 2.0:
+                self.mood.register_typing(0.5)
+                if self.mood.is_exhausted_from_typing():
+                    if current_state != 'exhausted':
+                        self.state_machine.force_state('exhausted')
+                else:
+                    # Randomly switch between typing, focusing, and thinking while user works
+                    if current_state not in ['type', 'focus', 'think']:
+                        self.state_machine.request_state('focus')
+                    elif random.random() < 0.1:
+                        self.state_machine.request_state('think')
+                    elif random.random() < 0.2:
+                        self.state_machine.request_state('focus')
+                    elif random.random() < 0.2:
+                        self.state_machine.request_state('type')
+            else:
+                self.mood.stop_typing()
+                
+                # 2. Short pause (user is reading, moving mouse, or thinking)
+                if idle_secs < 10.0:
+                    if current_state == 'exhausted':
+                        self.state_machine.force_state('sit')
+                    elif current_state in ['type', 'focus']:
+                        if random.random() < 0.3:
+                            self.state_machine.request_state('think')
+                        else:
+                            self.state_machine.request_state('idle')
+                            
+                    # Allow wandering during short pauses!
+                    if current_state in ['idle', 'think'] and random.random() < 0.04:
+                        self.wander_target = self.layout_manager.get_wander_target()
+                        self.state_machine.request_state('wander')
+                
+                # 3. Truly idle (hands off mouse/keyboard for > 10s)
+                else:
+                    if current_state in ['type', 'focus', 'think', 'exhausted']:
+                        self.state_machine.force_state('idle')
+                        
+                    if current_state == 'idle':
+                        dt = datetime.datetime.now()
+                        now = time.time()
+                        if not hasattr(self, '_last_idle_dialogue_time'):
+                            self._last_idle_dialogue_time = 0
+                            
+                        # Only attempt dialogue pops if at least 5.0 to 7.0 seconds passed
+                        if (now - self._last_idle_dialogue_time) >= random.uniform(5.0, 7.0):
+                            if self.mood.is_hungry() and random.random() < 0.3:
+                                self._last_idle_dialogue_time = now
+                                self.say(get_character_line(self.current_character, "hungry"))
+                            elif self.mood.is_sleepy():
+                                self.state_machine.force_state('sleep')
+                                if self.mood.is_late_night():
+                                    self._last_idle_dialogue_time = now
+                                    self.say(get_character_line(self.current_character, "lateNight"))
+                            elif random.random() < getattr(self, 'wander_chance', 0.05):
+                                self.wander_target = self.layout_manager.get_wander_target()
+                                self.state_machine.request_state('wander')
+                            elif random.random() < 0.2:
+                                self._last_idle_dialogue_time = now
+                                self.say(get_character_line(self.current_character, "idle"))
+                            self.state_machine.request_state('sit')
+                            
+                    elif current_state == 'sit':
+                        if random.random() < 0.05:
+                            self.state_machine.request_state('idle')
 
     def update_frame(self):
         self.state_machine.tick(0.025)
