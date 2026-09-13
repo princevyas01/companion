@@ -92,6 +92,8 @@ class WhiteHamsterAnimator:
 
     def draw(self, painter, rect):
         state = self.state_machine.get_state()
+        if state in self.EXPRESSIONS:
+            self.current_expression = state
         pixmap = self.frames[self.current_expression]
         y_offset = 0.0
         if state == "jump":
