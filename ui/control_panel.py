@@ -262,11 +262,11 @@ class ControlPanel(QDialog):
         power_layout.addWidget(self.status_label)
         
         btn_row = QHBoxLayout()
-        start_btn = QPushButton("Start System")
+        start_btn = QPushButton("Start Pet")
         start_btn.clicked.connect(self.handle_start)
         btn_row.addWidget(start_btn)
         
-        stop_btn = QPushButton("Stop System")
+        stop_btn = QPushButton("Stop Pet")
         stop_btn.setObjectName("dangerBtn")
         stop_btn.clicked.connect(self.handle_stop)
         btn_row.addWidget(stop_btn)
@@ -415,10 +415,10 @@ class ControlPanel(QDialog):
 
     def update_status_label(self):
         if getattr(self.pet, 'is_stopped', False):
-            self.status_label.setText("Status: Stopped")
+            self.status_label.setText("Status: Stopped (Pet Hidden)")
             self.status_label.setStyleSheet("color: #FF858F; border-color: #49262B; background: rgba(255, 133, 143, 0.08);")
         else:
-            self.status_label.setText("Status: Active")
+            self.status_label.setText("Status: Active (Pet Running)")
             self.status_label.setStyleSheet("color: #65D391; border-color: rgba(101, 211, 145, 0.25); background: rgba(101, 211, 145, 0.08);")
 
     def handle_start(self):

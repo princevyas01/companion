@@ -134,9 +134,9 @@ class PetRequestHandler(BaseHTTPRequestHandler):
         elif self.path == '/api/pet_power':
             action = data.get('action')
             if action == 'start':
-                QMetaObject.invokeMethod(self.server.pet_window, "start_pet_safe", Qt.QueuedConnection)
+                QMetaObject.invokeMethod(self.server.pet_window, "start_pet_safe", Qt.BlockingQueuedConnection)
             elif action == 'stop':
-                QMetaObject.invokeMethod(self.server.pet_window, "stop_pet_safe", Qt.QueuedConnection)
+                QMetaObject.invokeMethod(self.server.pet_window, "stop_pet_safe", Qt.BlockingQueuedConnection)
 
         elif self.path == '/api/video_sleep':
             enabled = bool(data.get('enable', True))
@@ -170,10 +170,17 @@ class PetWebServer:
     def __init__(self, pet_window, port=8080):
         self.pet_window = pet_window
         self.port = port
-        self.server = HTTPServer(('127.0.0.1', self.port), PetRequestHandler)
-        self.server.pet_window = self.pet_window
-        
-        self.thread = threading.Thread(target=self.server.serve_forever)
-        self.thread.daemon = True
-        self.thread.start()
-        print(f"Web dashboard running at http://localhost:{self.port}")
+        self.server = None
+        for p in [port, port + 1, port + 2]:
+            try:
+                self.server = HTTPServer(('127.0.0.1', p), PetRequestHandler)
+                self.port = p
+                break
+            except OSError:
+                continue
+        if self.server:
+            self.server.pet_window = self.pet_window
+            self.thread = threading.Thread(target=self.server.serve_forever)
+            self.thread.daemon = True
+            self.thread.start()
+            print(f"Web dashboard running at http://localhost:{self.port}")
