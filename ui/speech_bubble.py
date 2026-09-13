@@ -6,7 +6,7 @@ class SpeechBubble:
     def __init__(self, window):
         self.window = window
         self.text = ""
-        self.font = QFont("Segoe UI", 9, QFont.DemiBold)
+        self.font = QFont("Segoe UI", 10, QFont.DemiBold)
         self.metrics = QFontMetrics(self.font)
         self.visible = False
         self.show_caret = False
@@ -44,8 +44,8 @@ class SpeechBubble:
         return self.metrics.boundingRect(
             0,
             0,
-            156,
-            54,
+            172,
+            56,
             flags,
             display_text
         )

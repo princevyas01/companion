@@ -24,8 +24,20 @@ class LayoutManager:
     def get_dragon_rect(self):
         win_w = self.window.width()
         win_h = self.window.height()
-        dw, dh = self.dragon_size
-        return QRect((win_w - dw) // 2, win_h - dh - 10, dw, dh)
+        if getattr(self.window, "current_character", "") == "white_hamster":
+            # White Meme Hamster is rendered as a ~300px-tall sprite. The
+            # generic 150x160 rect caused the speech bubble to be positioned
+            # in the middle of the enlarged sprite, creating overlap.
+            dw, dh = 220, 300
+        else:
+            dw, dh = self.dragon_size
+
+        return QRect(
+            (win_w - dw) // 2,
+            win_h - dh - 10,
+            dw,
+            dh,
+        )
 
     def clamp_window_pos(self, global_pos):
         screen = self._screen_rect
