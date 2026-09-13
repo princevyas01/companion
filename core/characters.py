@@ -1,6 +1,6 @@
 from core.dialogue import LINES
 
-# Default lines for characters that don't override them
+# Default lines for characters that don\'t override them
 DEFAULT_LINES = LINES
 
 CHARACTER_PROFILES = {
@@ -42,10 +42,10 @@ CHARACTER_PROFILES = {
         "lines": {
             "idle": [
                 "Woof! Want to play?", "Tail wagging happily!", "*Pant pant*",
-                "Boop my nose!", "Who's a good pet?"
+                "Boop my nose!", "Who\'s a good pet?"
             ],
             "posture": [
-                "Sit up straight! Woof!", "Don't slouch, human!"
+                "Sit up straight! Woof!", "Don\'t slouch, human!"
             ],
             "hungry": [
                 "Treat time? Woof!", "Need treats!", "*Stares at treat bowl*"
@@ -54,7 +54,7 @@ CHARACTER_PROFILES = {
                 "Woof! *Happy tail wag*", "Belly rubs please!", "Arf!"
             ],
             "pomodoroStart": [
-                "Time to focus! I'll guard your desk!", "Woof! Let's get to work!"
+                "Time to focus! I\'ll guard your desk!", "Woof! Let\'s get to work!"
             ],
             "pomodoroEnd": [
                 "Break time! Let me get a treat!", "Woof! You did great!"
@@ -82,17 +82,17 @@ CHARACTER_PROFILES = {
         ],
         "lines": {
             "idle": [
-                "I'm gonna be King of the Pirates!", "Meat...", "Is it time to eat?",
-                "I'm so bored!", "Let's go on an adventure!"
+                "I\'m gonna be King of the Pirates!", "Meat...", "Is it time to eat?",
+                "I\'m so bored!", "Let\'s go on an adventure!"
             ],
             "pomodoroStart": [
-                "Alright! Let's get to work!", "Focus time!"
+                "Alright! Let\'s get to work!", "Focus time!"
             ],
             "pomodoroEnd": [
-                "Time for meat!", "Break time! Let's eat!"
+                "Time for meat!", "Break time! Let\'s eat!"
             ],
             "morning": [
-                "Morning! Where's breakfast?"
+                "Morning! Where\'s breakfast?"
             ],
             "hungry": [
                 "Meat... I need meat...", "Sanji! Food!"
@@ -113,7 +113,7 @@ CHARACTER_PROFILES = {
             "idle": ["Meow~", "*Purrrrr*", "Sunbathing time...", "Pet me human!", "*Makes biscuits*"],
             "hungry": ["Meow! Fish please!", "*Stares at empty food bowl*"],
             "clicked": ["Purrrr... *head butt*", "Meow! *tail curl*", "Nyan!"],
-            "pomodoroStart": ["I'll nap on your keyboard while you work!", "Meow! Good luck!"],
+            "pomodoroStart": ["I\'ll nap on your keyboard while you work!", "Meow! Good luck!"],
             "pomodoroEnd": ["Break time! Time for cat treats!", "Purrrr... You worked hard!"]
         }
     },
@@ -128,7 +128,7 @@ CHARACTER_PROFILES = {
             "idle": ["Meow~", "*Gentle purr*", "Watchful guardian...", "*Licks paw*"],
             "hungry": ["Meow! Fish please!"],
             "clicked": ["Meow! *happy chirp*", "Purrrr...", "*Blinks slowly*"],
-            "pomodoroStart": ["I'll keep watch from your desktop!", "Meow! Focus time!"],
+            "pomodoroStart": ["I\'ll keep watch from your desktop!", "Meow! Focus time!"],
             "pomodoroEnd": ["Time to play! Meow!"]
         }
     },
@@ -143,7 +143,7 @@ CHARACTER_PROFILES = {
             "idle": ["Meow meow! *Double purr*", "Best friends forever!", "Sunbathing together!"],
             "hungry": ["Double treats please! Meow!"],
             "clicked": ["*Double head butts*", "Purrrr... *Happy cats*!"],
-            "pomodoroStart": ["We'll guard your desktop together!"],
+            "pomodoroStart": ["We\'ll guard your desktop together!"],
             "pomodoroEnd": ["Break time! Let me & my buddy play!"]
         }
     },
@@ -155,10 +155,10 @@ CHARACTER_PROFILES = {
             "tail_sway", "curious", "wander", "celebrate", "sleep", "sit", "wake"
         ],
         "lines": {
-            "idle": ["*Ears perk up*", "Yip! Exploring the forest!", "*Fluffy tail swishes*", "What's that over there?"],
+            "idle": ["*Ears perk up*", "Yip! Exploring the forest!", "*Fluffy tail swishes*", "What\'s that over there?"],
             "hungry": ["Berries or snacks please! Yip!", "*Sniffs curiously at your desk*"],
             "clicked": ["Yip yip! *Happy bounce*", "*Nuzzles gently*", "Hehe, that tickles!"],
-            "pomodoroStart": ["I'll keep watch with sharp ears!", "Time to focus! Let's go!"],
+            "pomodoroStart": ["I\'ll keep watch with sharp ears!", "Time to focus! Let\'s go!"],
             "pomodoroEnd": ["Break time! Time for a forest run!", "Yip! Outstanding work!"]
         }
     },
@@ -173,7 +173,7 @@ CHARACTER_PROFILES = {
             "idle": ["*Nose twitches rapidly*", "Hop hop hop!", "*Ears flop happily*", "Munching on clover..."],
             "hungry": ["Got any fresh carrots?", "*Binky hop for treats!*"],
             "clicked": ["*Soft bunny thumping*", "*Happy purr-grind*", "Hop!"],
-            "pomodoroStart": ["Quiet bunny focus mode activated!", "I'll sit quietly while you work!"],
+            "pomodoroStart": ["Quiet bunny focus mode activated!", "I\'ll sit quietly while you work!"],
             "pomodoroEnd": ["*Binky celebration!* Break time!", "Hop hooray! Great job!"]
         }
     },
@@ -203,7 +203,7 @@ CHARACTER_PROFILES = {
             "idle": ["*Sniff sniff*", "Cheeks full of sunflower seeds!", "*Tiny rapid paws*", "Scurry scurry!"],
             "hungry": ["Seeds please! My cheek pouches have room!", "*Tiny paws begging*"],
             "clicked": ["Squeak! *Happy nibble*", "*Puffs cheeks happily*", "Hehe!"],
-            "pomodoroStart": ["Spinning the wheel of productivity!", "Let's scurry through your tasks!"],
+            "pomodoroStart": ["Spinning the wheel of productivity!", "Let\'s scurry through your tasks!"],
             "pomodoroEnd": ["Break time! Snack stash unlocked!", "Squeak! High five!"]
         }
     },
@@ -233,7 +233,7 @@ CHARACTER_PROFILES = {
             "idle": ["*Chomp chomp bamboo*", "Slow and steady...", "*Lazy roll*", "Life is good..."],
             "hungry": ["Bamboo shoots please!", "*Rumbles tummy peacefully*"],
             "clicked": ["*Soft panda hug*", "Yawn... Big cuddles!", "Roly-poly!"],
-            "pomodoroStart": ["Let's work steadily like a calm panda.", "Focus time, then nap time!"],
+            "pomodoroStart": ["Let\'s work steadily like a calm panda.", "Focus time, then nap time!"],
             "pomodoroEnd": ["Break time! Time to roll around!", "You did great, now relax!"]
         }
     },
@@ -242,20 +242,14 @@ CHARACTER_PROFILES = {
         "name": "White Meme Hamster",
         "type": "white_hamster",
         "supported_actions": [
-            "jump",
             "laugh",
             "smile",
             "neutral",
             "tongue_out",
             "halo",
             "costume",
-            "wander",
-            "celebrate",
-            "sleep",
-            "think",
-            "focus",
-            "type",
-            "wake"
+            "jump",
+            "wander"
         ],
         "lines": {
             "idle": [
@@ -355,7 +349,7 @@ def get_character_config(char_id):
 def get_character_line(char_id, category):
     config = get_character_config(char_id)
     lines_dict = config.get("lines", DEFAULT_LINES)
-    # Fallback to default if category is missing in this character's lines
+    # Fallback to default if category is missing in this character\'s lines
     lines = lines_dict.get(category, DEFAULT_LINES.get(category, ["..."]))
     import random
     return random.choice(lines)
