@@ -117,47 +117,113 @@ for expr in WhiteHamsterAnimator.EXPRESSIONS:
     painter.end()
     assert white_anim.get_expression() == expr, f"draw() did not adopt expression state {expr}"
 
-# Sprite is never mirrored
+# Facing direction updates with movement
 white_anim.set_facing(-1)
-assert white_anim.facing == 1, "White Hamster facing must never be mirrored (-1)"
+assert white_anim.facing == -1, "White Hamster facing should support -1 for leftward movement"
+white_anim.set_facing(1)
+assert white_anim.facing == 1, "White Hamster facing should support 1 for rightward movement"
 
-# 3b. Verify trigger_anim_safe logic for White Hamster
+# Autonomous expression rotation test (7.0s cycle)
+dummy.force_state("idle")
+white_anim.reset_animation()
+assert white_anim.auto_expression == "laugh", "Autonomous cycle must start on laugh"
+# Advance 7.0s (280 ticks at 0.025s)
+for _ in range(280):
+    white_anim.update()
+assert white_anim.auto_expression == "smile", f"After 7s, expression should be 'smile', got {white_anim.auto_expression}"
+# Advance another 7.0s
+for _ in range(280):
+    white_anim.update()
+assert white_anim.auto_expression == "neutral", f"After 14s, expression should be 'neutral', got {white_anim.auto_expression}"
+
+# Autonomous jump test (11.0s interval, 1.15s duration)
+white_anim.reset_animation()
+assert white_anim.auto_jump_countdown == 11.0
+for _ in range(440):
+    white_anim.update()
+assert white_anim.auto_jump_active_time > 0.0, "Autonomous jump should become active after 11.0s"
+
+# 3b. Verify trigger_anim_safe and autonomous movement logic for White Hamster
 from ui.chibi_window import DragonCompanionWindow
+
+class MockTimer:
+    def isActive(self):
+        return False
+
+class MockTypingEngine:
+    def __init__(self):
+        self.timer = MockTimer()
+
+class MockVideoDetector:
+    def is_watching_video(self):
+        return False
+
 class MockPetWindow:
     def __init__(self):
+        self._x = 500
+        self._y = 500
+        self._w = 350
+        self._h = 400
         self.current_character = "white_hamster"
         self.state_machine = Dummy("idle")
         self.animator = WhiteHamsterAnimator(self.state_machine)
-        self._white_expression_cycle = ("laugh","smile","neutral","tongue_out","halo","costume")
-        self._white_expression_index = 0
-        self._white_expression_elapsed = 3.5
+        self._white_auto_wander_active = False
+        self._white_auto_wander_target = None
+        self._white_auto_wander_x = None
+        self._white_auto_wander_y = None
+        self._white_auto_wander_clock = 0.0
+        self._white_auto_next_wander = 11.0
+        self.layout_manager = LayoutManager(self)
         self.updated = False
+        self.is_stopped = False
+        self.drag_position = None
+        self.pomodoro = Dummy()
+        self.pomodoro.is_running = False
+        self.typing_engine = MockTypingEngine()
+        self.is_generating = False
+        self.mood = Dummy()
+        self.video_detector = MockVideoDetector()
 
     def update(self):
         self.updated = True
 
-    def _white_wander_target(self):
-        return QPoint(200, 200)
-
-    def x(self): return 100
-    def y(self): return 100
+    def x(self): return self._x
+    def y(self): return self._y
+    def width(self): return self._w
+    def height(self): return self._h
+    def geometry(self): return QRect(self._x, self._y, self._w, self._h)
+    def frameGeometry(self): return QRect(self._x, self._y, self._w, self._h)
+    def move(self, x, y):
+        self._x = x
+        self._y = y
 
 mock_win = MockPetWindow()
 for expr in WhiteHamsterAnimator.EXPRESSIONS:
     mock_win.updated = False
     DragonCompanionWindow.trigger_anim_safe(mock_win, expr)
     assert mock_win.animator.get_expression() == expr, f"trigger_anim_safe failed to set expression {expr}"
-    assert mock_win._white_expression_elapsed == 0.0, "trigger_anim_safe did not reset expression elapsed"
-    assert mock_win._white_expression_cycle[mock_win._white_expression_index] == expr, "trigger_anim_safe did not sync expression index"
+    assert mock_win.animator.manual_action_lock > 0.0, "trigger_anim_safe should set manual_action_lock"
+    assert mock_win.state_machine.get_state() == expr, "trigger_anim_safe should force action state"
     assert mock_win.updated, "trigger_anim_safe did not request window update"
 
-# Test jump and wander
+# Test manual jump and manual wander triggers
 DragonCompanionWindow.trigger_anim_safe(mock_win, "jump")
 assert mock_win.state_machine.get_state() == "jump"
+assert mock_win.animator.manual_action_lock > 0.0
 
 DragonCompanionWindow.trigger_anim_safe(mock_win, "wander")
-assert mock_win.state_machine.get_state() == "wander"
-assert mock_win.wander_target == QPoint(200, 200)
+assert mock_win._white_auto_wander_active is True
+assert mock_win._white_auto_wander_target is not None
+
+# Test autonomous movement controller
+mock_win._white_auto_wander_active = False
+mock_win._white_auto_wander_clock = 12.0
+mock_win._white_auto_next_wander = 10.0
+DragonCompanionWindow._update_white_hamster_autonomous_movement(mock_win)
+assert mock_win._white_auto_wander_active is True, "Autonomous wander should activate when clock >= next_wander"
+init_x = mock_win.x()
+DragonCompanionWindow._update_white_hamster_autonomous_movement(mock_win)
+assert mock_win.x() != init_x or mock_win.y() != 500, "Autonomous wander should move pet position"
 
 # 4. Character profiles and actions
 prof = CHARACTER_PROFILES["white_hamster"]
